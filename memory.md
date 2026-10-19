@@ -37,6 +37,24 @@ Journal des decisions, changements et points d'attention du projet.
 
 ---
 
+## 2026-10-19 — Deploiement GitHub Pages
+
+### Ce qui a change
+- Ajout de `.github/workflows/deploiement-pages.yml` : deploie le site statique sur GitHub Pages a chaque push sur `main` ou `claude/fervent-johnson-0vrd98`, ou a la demande.
+- Ajout de `.nojekyll` (pas de traitement Jekyll).
+- Apercu prive publie en Artifact Claude : https://claude.ai/artifact/GUK37bxVCZUMeL8Xf7s2bB (feuilles de style Bootstrap Icons et Leaflet embarquees, fonds de carte bloques par la sandbox).
+- `projet.md` reecrit pour refleter la refonte (pages, modules, acces, mise en production).
+
+### Pourquoi
+- Disposer d'une URL publique gratuite, sans build, coherente avec la regle « CDN only ».
+
+### Points d'attention
+- Premier lancement du workflow en echec : GitHub refuse qu'un workflow active Pages (« Resource not accessible by integration »). Le proprietaire doit choisir Settings → Pages → Source : GitHub Actions.
+- L'environnement `github-pages` n'autorise par defaut que la branche par defaut : ajouter la branche de travail dans ses regles, ou fusionner dans `main`.
+- Le site deploye tourne en mode demonstration tant que `js/config.js` n'a pas les cles Supabase.
+
+---
+
 ## 2026-10-19 — Refonte complete « Obsidian Glass »
 
 ### Ce qui a change

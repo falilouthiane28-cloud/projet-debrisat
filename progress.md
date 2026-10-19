@@ -13,6 +13,8 @@ Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 - [x] Schema SQL avec PostGIS, RLS, indexes
 - [x] Seed data (badges, zones a risque)
 - [x] Service Worker + manifest PWA
+- [x] Workflow de deploiement GitHub Pages (`.github/workflows/deploiement-pages.yml`)
+- [ ] Activation de GitHub Pages dans les reglages du depot (action du proprietaire)
 - [ ] Configuration Supabase (cles API)
 - [ ] Deploiement du schema en production
 - [ ] Bucket Storage "photos" cree
@@ -89,7 +91,8 @@ Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 - [ ] Route optimization pour equipes de nettoyage
 - [ ] Editeur de zones a risque (draw polygons)
 - [ ] Tests automatises
-- [ ] CI/CD
+- [x] CD : deploiement automatique GitHub Pages
+- [ ] CI : tests automatises a chaque push
 - [x] Logo definitif (`img/logo.png`)
 
 ---
@@ -99,4 +102,5 @@ Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 | Date | Action | Commit |
 |------|--------|--------|
 | 2026-10-18 | Initialisation complete (29 fichiers, 4000 lignes) | `b4fc3b6` |
-| 2026-10-19 | Refonte complete « Obsidian Glass » (5 pages, 8 CSS, 21 JS) | — |
+| 2026-10-19 | Refonte complete « Obsidian Glass » (5 pages, 8 CSS, 21 JS) | `f1f8ecb` |
+| 2026-10-19 | Workflow GitHub Pages + mise a jour de la documentation | `8bc4c73` |

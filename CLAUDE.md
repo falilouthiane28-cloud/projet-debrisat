@@ -34,6 +34,7 @@ debrisat/
 ├── css/                # tokens, reset, base, components, landing, app, dashboard, responsive
 ├── js/                 # voir ci-dessous
 ├── sw.js               # Service Worker (coquille + CDN + tuiles)
+├── .github/workflows/  # deploiement-pages.yml (GitHub Pages)
 ├── manifest.json       # PWA manifest
 ├── img/                # logo.png, logo-mark.png, icon-192/512.png, photos
 └── supabase/
@@ -53,6 +54,12 @@ Tant que `js/config.js` contient `YOUR_SUPABASE_URL`, `donnees.js` sert des donn
 (168 signalements dans 18 communes, generees avec une graine fixe). Les ajouts et changements de statut
 sont conserves dans `localStorage` (`debrisat-demo-v1`). Un badge « Demo » est affiche dans l'interface.
 Toute nouvelle lecture/ecriture passe par `donnees.js` pour fonctionner dans les deux modes.
+
+## Deploiement
+- GitHub Pages via `.github/workflows/deploiement-pages.yml` (push sur `main` ou la branche de travail, ou lancement manuel)
+- Pas de build : le workflow copie les pages HTML, `css/`, `js/`, `img/`, `sw.js`, `manifest.json` et `.nojekyll`
+- Tout nouveau fichier servi a la racine doit etre ajoute a la commande `cp` du workflow et a la liste `COQUILLE` de `sw.js`
+- URL : https://falilouthiane28-cloud.github.io/projet-debrisat/ (chemins relatifs obligatoires, le site est servi sous `/projet-debrisat/`)
 
 ## Supabase
 - Config dans `js/config.js` — remplacer `YOUR_SUPABASE_URL` et `YOUR_SUPABASE_ANON_KEY`
