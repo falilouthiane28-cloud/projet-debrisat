@@ -1,0 +1,41 @@
+# Deploiement du site statique sur GitHub Pages (aucune etape de build : HTML/CSS/JS servis tels quels)
+name: Deploiement GitHub Pages
+
+on:
+  push:
+    branches: [main, claude/fervent-johnson-0vrd98]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Preparer le site
+        run: |
+          mkdir -p _site
+          cp -r index.html app.html dashboard.html auth.html profil.html sw.js manifest.json .nojekyll css js img _site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deploiement
+        uses: actions/deploy-pages@v4
