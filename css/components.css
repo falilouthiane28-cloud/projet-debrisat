@@ -1,0 +1,167 @@
+/* Boutons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 24px; border: none; border-radius: var(--radius-sm);
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition); text-decoration: none; white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-light); color: #fff; }
+
+.btn-secondary { background: var(--secondary); color: #fff; }
+.btn-secondary:hover { background: var(--secondary-light); color: #fff; }
+
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent-light); color: #fff; }
+
+.btn-outline {
+  background: transparent; border: 2px solid var(--primary); color: var(--primary);
+}
+.btn-outline:hover { background: var(--primary); color: #fff; }
+
+.btn-ghost { background: transparent; color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--border); color: var(--text); }
+
+.btn-sm { padding: 8px 16px; font-size: 0.875rem; }
+.btn-lg { padding: 16px 32px; font-size: 1.125rem; }
+.btn-icon {
+  width: 44px; height: 44px; padding: 0; border-radius: 50%;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Cartes */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  box-shadow: var(--shadow); transition: all var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-lg); }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 12px; border-radius: 50px; font-size: 0.75rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.badge-success { background: rgba(76, 175, 80, 0.15); color: var(--success); }
+.badge-danger { background: rgba(229, 57, 53, 0.15); color: var(--danger); }
+.badge-warning { background: rgba(255, 193, 7, 0.15); color: #F59E0B; }
+.badge-info { background: rgba(33, 150, 243, 0.15); color: var(--secondary); }
+.badge-neutral { background: rgba(107, 114, 128, 0.15); color: var(--text-secondary); }
+
+/* Modale */
+.modal-overlay {
+  position: fixed; inset: 0; background: var(--bg-overlay);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.active { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--bg-card); border-radius: var(--radius-lg);
+  width: 90%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg); transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+.modal-overlay.active .modal { transform: translateY(0); }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { font-size: 1.25rem; }
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 12px;
+}
+
+.btn-close {
+  width: 36px; height: 36px; border: none; background: transparent;
+  font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+.btn-close:hover { background: var(--border); }
+
+/* Formulaires */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 0.875rem; font-weight: 600;
+  margin-bottom: 6px; color: var(--text);
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 12px 16px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 1rem; font-family: var(--font);
+  background: var(--bg-card); color: var(--text);
+  transition: border-color var(--transition);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(27, 77, 62, 0.15);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* Toast */
+.toast-container {
+  position: fixed; top: 16px; right: 16px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 14px 20px; border-radius: var(--radius-sm);
+  background: var(--bg-card); border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px;
+  animation: slideIn 0.3s ease; min-width: 280px; max-width: 400px;
+}
+.toast-success { border-left: 4px solid var(--success); }
+.toast-error { border-left: 4px solid var(--danger); }
+.toast-warning { border-left: 4px solid var(--warning); }
+.toast-info { border-left: 4px solid var(--secondary); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Tabs */
+.tabs {
+  display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px;
+}
+.tab {
+  padding: 12px 20px; border: none; background: none; cursor: pointer;
+  font-size: 0.9375rem; font-weight: 500; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all var(--transition);
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* Avatar */
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem;
+}
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, transparent 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* Points animation */
+.points-popup {
+  position: fixed; z-index: 9999; font-size: 1.5rem; font-weight: 800;
+  color: var(--success); pointer-events: none;
+  animation: pointsFloat 1.5s ease forwards;
+}
+@keyframes pointsFloat {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+}
