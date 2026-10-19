@@ -33,7 +33,46 @@ Journal des decisions, changements et points d'attention du projet.
 - [ ] Icones PWA dans `assets/icons/` (192x192 et 512x512)
 
 ### Commit
-- `b4fc3b6` — feat: initialisation complete de Debrisat
+- `b4fc3b6` — feat: initialisation complete de Debrisat (ancien dépôt ; le projet a depuis son propre dépôt GitHub, premier commit `b866fd9`)
+
+---
+
+## 2026-10-19 — Refonte complète « Obsidian Glass »
+
+### Ce qui a changé
+- Nouveau design system sombre par défaut, glassmorphism inspiré d'Apple (`css/tokens.css` à `css/responsive.css`, 8 fichiers ; `variables.css` supprimé).
+- Zéro emoji : toutes les icônes passent par Bootstrap Icons 1.11.3. Interface réécrite en français accentué.
+- Deux pages ajoutées : `auth.html` (connexion, inscription, réinitialisation) et `profil.html`.
+- JavaScript réécrit en modules ES, avec une couche d'accès unique (`js/donnees.js`) et un **mode démo** complet quand Supabase n'est pas configuré.
+- Assistant de signalement en 4 étapes dans une feuille glissante (glisser pour fermer, ressort interruptible), file d'attente hors ligne IndexedDB.
+- Tableau de bord : indicateurs, carte d'administration, tableau triable avec actions groupées et assignation, zones à risque, statistiques, export CSV.
+- Logo recadré sur fond transparent (`img/logo.png`), symbole seul (`img/symbole.png`), icônes PWA générées.
+
+### Décisions et pourquoi
+- **Fonds de carte Esri Canvas au lieu de CARTO** : les tuiles CARTO renvoient désormais « API KEY REQUIRED ». Esri fonctionne sans clé.
+- **Satellite : Sentinel-2 cloudless d'EOX** : l'ancienne couche Sentinel Hub exigeait un identifiant d'instance et ne s'affichait pas.
+- **Indicateurs « En attente » et « En cours » sans tendance** : comparer des stocks par période de création donnait des +1 700 % trompeurs ; on affiche à la place le nombre de cas graves et d'assignés.
+- **Repère fixe au centre de la mini-carte** (la carte glisse dessous) plutôt qu'un marqueur à faire glisser : plus précis au doigt.
+- **Contrastes** : `--color-muted` passé de #666 à #8A8A8A (et accents assombris en mode clair) pour respecter 4,5:1.
+- **Pas de fond animé dans le hero** : les animations plein écran en boucle sont déconseillées (vestibulaire).
+- **Wolof limité à quelques libellés sûrs** (`i18n/wo.json`) en attendant la relecture d'un locuteur natif.
+- **Historique d'inondations des zones** : 2009, 2012 et 2022 (événements documentés) au lieu de 2024 / 2026.
+
+### Failles de sécurité corrigées (version précédente)
+- Un utilisateur pouvait se donner le rôle admin et des points (politique UPDATE sur son profil sans restriction) → déclencheur `proteger_profil`.
+- Les points étaient ajoutés par le client → déclencheurs SQL uniquement, plus de politique INSERT sur `points_historique`.
+- La fonction `incrementer_confirmations` était appelable par n'importe qui → remplacée par un déclencheur sur `verifications`.
+- Les numéros de téléphone étaient lisibles publiquement → vue `classement_public` sans téléphone.
+- `envoyer-alerte` permettait à quiconque d'envoyer des SMS à tous les inscrits → réservé aux autorités.
+- Le webhook WhatsApp n'authentifiait pas Twilio, échappait mal le XML et gardait son état en mémoire (perdu entre deux appels) → signature vérifiée, table `sessions_whatsapp`.
+- Contenu utilisateur injecté sans échappement dans le HTML (XSS) → `echapper()` systématique.
+- Redirection ouverte possible via `?retour=` → liste blanche de pages.
+- Export CSV : protection contre l'injection de formules Excel.
+
+### Points d'attention
+- Le chiffre « 137,5 mm, record de pluie oct. 2026 » vient du cahier des charges et n'a pas été vérifié.
+- Les signalements de démo n'ont pas de photo réelle : une vignette par type les remplace.
+- Les fonctions Edge n'ont pas été déployées ni exécutées (pas de projet Supabase connecté).
 
 ---
 
@@ -44,3 +83,18 @@ Chaque modification importante sera documentee ici avec :
 - **Ce qui a change** (fichiers, fonctionnalites)
 - **Pourquoi** (contexte de la decision)
 - **Commit** associe
+
+## 2026-10-19 — Mise en service Supabase et rôles
+- **Ce qui a changé** : config.js pointe sur le projet `bezkifetuusykmmwwiad` avec la clé publiable ; supabase-js passe en 2.58.0 (2.39.3 ne connaît pas les clés `sb_publishable_`) ; migrations 002_securite, 003_performance, 004_roles ; message d'erreur d'inscription explicite (auth.js) ; logo du pied de page qui était étiré (base.css).
+- **Pourquoi** : première exécution réelle. Le conseiller Supabase exposait les fonctions de déclencheur via /rpc. Rôles réduits à `citoyen` / `autorite` à la demande de l'équipe : plus de rôle admin côté client, la promotion se fait en SQL.
+- **Commit** : non commité.
+
+## 2026-10-19 — Finitions mobiles
+- **Ce qui a changé** : bouton flottant de signalement réservé à la tablette et au-delà ; `.btn-sm` à 44 px sur écran tactile ; `preconnect` dans les 5 pages.
+- **Pourquoi** : doublon avec « Signaler » de la barre du bas, règle des cibles 44 × 44, connexions ouvertes plus tôt.
+- **Commit** : non commité.
+
+## 2026-10-19 — Navigation et connexion Google
+- **Ce qui a changé** : barre de l'app en pilule flottante, barre latérale du tableau de bord en tuiles repliables, bouton Google (`connexionGoogle` dans auth.js).
+- **Pourquoi** : références visuelles fournies par l'équipe (barre Tourera, barre latérale à tuiles). Google vérifie d'abord `/auth/v1/settings` : sans ce contrôle, un fournisseur désactivé mène à une page d'erreur JSON de Supabase.
+- **Commit** : non commité.

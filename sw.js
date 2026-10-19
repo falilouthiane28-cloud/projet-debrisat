@@ -1,125 +1,91 @@
-// Service Worker Debrisat — Cache et offline
-const CACHE_NAME = 'debrisat-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/app.html',
-  '/dashboard.html',
-  '/css/variables.css',
-  '/css/base.css',
-  '/css/components.css',
-  '/css/landing.css',
-  '/css/app.css',
-  '/css/dashboard.css',
-  '/js/config.js',
-  '/js/utils.js',
-  '/js/auth.js',
-  '/js/map.js',
-  '/js/signalement.js',
-  '/js/gamification.js',
-  '/js/realtime.js',
-  '/js/notifications.js',
-  '/js/ia-analysis.js',
-  '/js/satellite.js',
-  '/js/heatmap.js',
-  '/js/dashboard.js',
-  '/manifest.json'
+// Service worker Debrisat : coquille de l'application hors ligne, tuiles de carte mises en cache au fil de la navigation.
+const VERSION = 'debrisat-v3';
+const CACHE_COQUILLE = `${VERSION}-coquille`;
+const CACHE_CDN = `${VERSION}-cdn`;
+const CACHE_TUILES = `${VERSION}-tuiles`;
+const MAX_TUILES = 600;
+
+const COQUILLE = [
+    './', 'index.html', 'app.html', 'dashboard.html', 'auth.html', 'profil.html', 'manifest.json',
+    'css/tokens.css', 'css/reset.css', 'css/base.css', 'css/components.css',
+    'css/landing.css', 'css/app.css', 'css/dashboard.css', 'css/responsive.css',
+    'js/config.js', 'js/utils.js', 'js/demo.js', 'js/donnees.js', 'js/auth.js', 'js/router.js',
+    'js/map.js', 'js/signalement.js', 'js/heatmap.js', 'js/gamification.js', 'js/realtime.js',
+    'js/dashboard.js', 'js/notifications.js', 'js/theme.js', 'js/animations.js', 'js/ia-analysis.js',
+    'js/satellite.js', 'js/i18n.js', 'js/pwa.js',
+    'js/page-accueil.js', 'js/page-app.js', 'js/page-auth.js', 'js/page-profil.js',
+    'i18n/wo.json',
+    'img/logo.png', 'img/symbole.png', 'img/terre-afrique.jpg', 'img/satellite-faisceau.jpg', 'img/satellite-orbite.jpg',
+    'img/icons/icon-192.png', 'img/icons/icon-512.png', 'img/icons/favicon-32.png'
 ];
 
-// Installation : mise en cache des fichiers
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
-  self.skipWaiting();
+const HOTES_CDN = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
+const HOTES_TUILES = ['server.arcgisonline.com', 'tiles.maps.eox.at'];
+
+self.addEventListener('install', evenement => {
+    evenement.waitUntil(caches.open(CACHE_COQUILLE).then(cache => cache.addAll(COQUILLE)));
+    self.skipWaiting();
 });
 
-// Activation : nettoyage ancien cache
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+self.addEventListener('activate', evenement => {
+    evenement.waitUntil((async () => {
+        const cles = await caches.keys();
+        await Promise.all(cles.filter(c => !c.startsWith(VERSION)).map(c => caches.delete(c)));
+        await self.clients.claim();
+    })());
 });
 
-// Strategie : Network first, fallback cache
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+async function limiterCache(nom, maximum) {
+    const cache = await caches.open(nom);
+    const cles = await cache.keys();
+    for (let i = 0; i < cles.length - maximum; i++) await cache.delete(cles[i]);
+}
 
-  // Cache les tuiles de carte
-  if (url.hostname.includes('tile.openstreetmap.org')) {
-    event.respondWith(
-      caches.open('debrisat-tiles').then((cache) =>
-        cache.match(event.request).then((cached) => {
-          const fetched = fetch(event.request).then((response) => {
-            if (response.ok) cache.put(event.request, response.clone());
-            return response;
-          });
-          return cached || fetched;
-        })
-      )
-    );
-    return;
-  }
-
-  // Pour les API Supabase, toujours reseau
-  if (url.hostname.includes('supabase')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // App shell : network first
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
-});
-
-// File d'attente offline pour signalements
-const QUEUE_NAME = 'debrisat-offline-queue';
-
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-signalements') {
-    event.waitUntil(envoyerFileAttente());
-  }
-});
-
-async function envoyerFileAttente() {
-  try {
-    const db = await ouvrirDB();
-    const tx = db.transaction(QUEUE_NAME, 'readonly');
-    const store = tx.objectStore(QUEUE_NAME);
-    const items = await new Promise((resolve) => {
-      const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
-    });
-
-    for (const item of items) {
-      try {
-        await fetch(item.url, { method: item.method, headers: item.headers, body: item.body });
-        const delTx = db.transaction(QUEUE_NAME, 'readwrite');
-        delTx.objectStore(QUEUE_NAME).delete(item.id);
-      } catch (e) {
-        break;
-      }
+// Reseau d'abord, cache en secours : les pages restent a jour quand la connexion le permet
+async function reseauDabord(requete) {
+    const cache = await caches.open(CACHE_COQUILLE);
+    try {
+        const reponse = await fetch(requete);
+        if (reponse.ok) cache.put(requete, reponse.clone());
+        return reponse;
+    } catch {
+        const enCache = await cache.match(requete, { ignoreSearch: true });
+        if (enCache) return enCache;
+        if (requete.mode === 'navigate') return cache.match('app.html');
+        throw new Error('Hors ligne');
     }
-  } catch (e) {}
 }
 
-function ouvrirDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('debrisat-sw', 1);
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore(QUEUE_NAME, { keyPath: 'id', autoIncrement: true });
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+// Cache d'abord : les bibliotheques versionnees et les tuiles ne changent pas
+async function cacheDabord(requete, nomCache, maximum) {
+    const cache = await caches.open(nomCache);
+    const enCache = await cache.match(requete);
+    if (enCache) return enCache;
+    const reponse = await fetch(requete);
+    if (reponse.ok || reponse.type === 'opaque') {
+        cache.put(requete, reponse.clone());
+        if (maximum) limiterCache(nomCache, maximum);
+    }
+    return reponse;
 }
+
+self.addEventListener('fetch', evenement => {
+    const { request } = evenement;
+    if (request.method !== 'GET') return;
+    const url = new URL(request.url);
+
+    // Donnees, authentification et geocodage : toujours le reseau, jamais de cache
+    if (url.hostname.endsWith('supabase.co') || url.hostname.includes('nominatim')) return;
+
+    if (HOTES_TUILES.includes(url.hostname)) {
+        evenement.respondWith(cacheDabord(request, CACHE_TUILES, MAX_TUILES));
+        return;
+    }
+    if (HOTES_CDN.includes(url.hostname)) {
+        evenement.respondWith(cacheDabord(request, CACHE_CDN));
+        return;
+    }
+    if (url.origin === self.location.origin) {
+        evenement.respondWith(reseauDabord(request));
+    }
+});

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="preconnect" href="https://bezkifetuusykmmwwiad.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
+    <title>Mon profil · Debrisat</title>
+    <meta name="theme-color" content="#0A0A0A">
+    <script>try{var t=JSON.parse(localStorage.getItem('debrisat-theme'));if(t==='clair'||(t==='systeme'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="page-profil">
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+    <header class="barre-app">
+        <a class="marque" href="index.html" aria-label="Debrisat, retour à l'accueil">
+            <img src="img/symbole.png" class="symbole-img" alt="" width="32" height="28">
+            <span class="nom">Debrisat</span>
+        </a>
+        <nav class="nav-haut segmente" aria-label="Vues de l'application">
+            <a class="btn btn-sm btn-ghost" href="app.html#carte"><i class="bi bi-map" aria-hidden="true"></i>Carte</a>
+            <a class="btn btn-sm btn-ghost" href="app.html#liste"><i class="bi bi-list-ul" aria-hidden="true"></i>Liste</a>
+            <a class="btn btn-sm btn-ghost" href="app.html#classement"><i class="bi bi-trophy" aria-hidden="true"></i>Classement</a>
+        </nav>
+        <p class="flex-1" style="font-weight:600;color:var(--color-heading)">Mon profil</p>
+        <div class="actions">
+            <a class="btn-icon nu" href="dashboard.html" id="lienTableau" hidden aria-label="Espace autorités"><i class="bi bi-grid-1x2" aria-hidden="true"></i></a>
+            <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
+        </div>
+    </header>
+
+    <main class="contenu-profil" id="contenu" aria-busy="true">
+        <section class="entete-profil glass-card" aria-labelledby="nomProfil">
+            <span class="avatar lg" id="avatarProfil"><span class="skeleton skeleton-circle" style="width:100%;height:100%"></span></span>
+            <div class="pile-sm" style="align-items:center">
+                <h1 id="nomProfil"><span class="skeleton skeleton-text" style="--l:180px;display:inline-block;width:180px;height:24px"></span></h1>
+                <p class="rangee texte-secondaire texte-sm" id="metaProfil" style="justify-content:center;flex-wrap:wrap"></p>
+            </div>
+            <div class="grille-stats-profil">
+                <div class="stat-profil glass-card"><p class="label">Points</p><p class="chiffre" id="statPoints">—</p></div>
+                <div class="stat-profil glass-card"><p class="label">Signalements</p><p class="chiffre" id="statSignalements">—</p></div>
+                <div class="stat-profil glass-card"><p class="label">Vérifications</p><p class="chiffre" id="statVerifications">—</p></div>
+                <div class="stat-profil glass-card"><p class="label">Rang</p><p class="chiffre" id="statRang">—</p></div>
+            </div>
+        </section>
+
+        <section class="progression-badge glass-card" id="blocProchainBadge" aria-labelledby="titreProchain" hidden>
+            <div class="rangee-entre">
+                <div class="rangee">
+                    <span class="icone-ronde" id="iconeProchain"><i class="bi bi-award" aria-hidden="true"></i></span>
+                    <div><p class="eyebrow">Prochain badge</p><h2 id="titreProchain" style="font-size:var(--text-lg)"></h2></div>
+                </div>
+                <p class="chiffre texte-sm" id="ratioProchain"></p>
+            </div>
+            <div class="jauge" role="progressbar" aria-labelledby="titreProchain" aria-valuemin="0" id="jaugeProchain"><span></span></div>
+            <p class="texte-sm texte-secondaire" id="resteProchain"></p>
+        </section>
+
+        <section class="pile" aria-labelledby="titreBadges">
+            <h2 id="titreBadges"><i class="bi bi-award" aria-hidden="true"></i> Badges</h2>
+            <div class="grille-badges" id="grilleBadges" role="list"></div>
+        </section>
+
+        <section class="pile" aria-label="Activité">
+            <div class="onglets" role="tablist" aria-label="Activité">
+                <button type="button" class="onglet" role="tab" id="ongletSignalements" aria-controls="panneauSignalements" aria-selected="true"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Mes signalements</button>
+                <button type="button" class="onglet" role="tab" id="ongletPoints" aria-controls="panneauPoints" aria-selected="false" tabindex="-1"><i class="bi bi-star" aria-hidden="true"></i>Historique des points</button>
+            </div>
+            <div class="panneau-onglet" id="panneauSignalements" role="tabpanel" aria-labelledby="ongletSignalements">
+                <div class="liste-signalements" id="mesSignalements"></div>
+            </div>
+            <div class="panneau-onglet card" id="panneauPoints" role="tabpanel" aria-labelledby="ongletPoints" hidden style="padding:var(--space-2) var(--space-5)">
+                <ul class="historique" id="historiquePoints" role="list"></ul>
+            </div>
+        </section>
+
+        <section class="card pile" aria-labelledby="titreParametres">
+            <h2 id="titreParametres"><i class="bi bi-gear" aria-hidden="true"></i> Paramètres</h2>
+            <div>
+                <div class="ligne-parametre">
+                    <div><p class="titre">Apparence</p><p class="description">Sombre par défaut, ou selon votre téléphone</p></div>
+                    <div class="segmente" role="group" aria-label="Thème" id="choixTheme">
+                        <button type="button" data-theme-choix="sombre" aria-pressed="false"><i class="bi bi-moon" aria-hidden="true"></i><span class="sr-only">Sombre</span></button>
+                        <button type="button" data-theme-choix="clair" aria-pressed="false"><i class="bi bi-sun" aria-hidden="true"></i><span class="sr-only">Clair</span></button>
+                        <button type="button" data-theme-choix="systeme" aria-pressed="false"><i class="bi bi-circle-half" aria-hidden="true"></i><span class="sr-only">Système</span></button>
+                    </div>
+                </div>
+                <div class="ligne-parametre">
+                    <div><p class="titre"><label for="choixLangue">Langue</label></p><p class="description">Le wolof est en cours de traduction</p></div>
+                    <select class="select compact" id="choixLangue" style="width:auto"></select>
+                </div>
+                <div class="ligne-parametre">
+                    <div><p class="titre">Alertes proches de moi</p><p class="description" id="descNotifications">Notification quand un signalement apparaît à moins de 1 km</p></div>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnNotifications"><i class="bi bi-bell" aria-hidden="true"></i>Activer</button>
+                </div>
+                <div class="ligne-parametre" id="ligneInstallation" hidden>
+                    <div><p class="titre">Installer l'application</p><p class="description">Accès direct depuis l'écran d'accueil, même hors ligne</p></div>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnInstaller"><i class="bi bi-download" aria-hidden="true"></i>Installer</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="card pile" aria-labelledby="titreCompte" id="blocCompte" hidden>
+            <h2 id="titreCompte"><i class="bi bi-person-circle" aria-hidden="true"></i> Mon compte</h2>
+            <form class="pile" id="formProfil" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="champNomProfil">Nom complet</label>
+                    <input class="input" id="champNomProfil" autocomplete="name" required minlength="2">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="champCommuneProfil">Commune</label>
+                    <select class="select" id="champCommuneProfil"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="champTelProfil">Téléphone</label>
+                    <input class="input" id="champTelProfil" type="tel" autocomplete="tel" inputmode="tel" placeholder="+221 77 123 45 67" aria-describedby="aideTelProfil">
+                    <p class="form-helper" id="aideTelProfil">Utilisé pour les alertes SMS / WhatsApp et pour relier vos signalements WhatsApp à votre compte.</p>
+                </div>
+                <div class="rangee-wrap" style="justify-content:space-between">
+                    <button type="button" class="btn btn-danger" id="btnDeconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
+                    <button type="submit" class="btn btn-plein" id="btnEnregistrerProfil">Enregistrer</button>
+                </div>
+            </form>
+            <div id="blocDemo" hidden class="ligne-parametre" style="border-top:1px solid var(--glass-border);border-bottom:none">
+                <div><p class="titre">Données de démonstration</p><p class="description">Efface vos signalements et votes de démo enregistrés sur cet appareil</p></div>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnReinitDemo"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Réinitialiser</button>
+            </div>
+        </section>
+
+        <section class="card acces-refuse" id="blocDeconnecte" hidden style="min-height:auto">
+            <div class="pile" style="align-items:center;text-align:center">
+                <span class="icone-ronde lg"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
+                <h2>Connectez-vous pour suivre vos contributions</h2>
+                <p class="texte-secondaire">Points, badges et historique de vos signalements apparaissent ici une fois connecté.</p>
+                <a class="btn btn-plein" href="auth.html?retour=profil.html">Se connecter<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigation principale">
+        <a class="bottom-nav-item" href="app.html#carte"><i class="bi bi-map" aria-hidden="true"></i><span>Carte</span></a>
+        <a class="bottom-nav-item" href="app.html#liste"><i class="bi bi-list-ul" aria-hidden="true"></i><span>Liste</span></a>
+        <a class="bottom-nav-item principal" href="app.html#signaler"><i class="bi bi-plus-circle" aria-hidden="true"></i><span>Signaler</span></a>
+        <a class="bottom-nav-item" href="app.html#classement"><i class="bi bi-trophy" aria-hidden="true"></i><span>Classement</span></a>
+        <a class="bottom-nav-item" href="profil.html" aria-current="page"><i class="bi bi-person-fill" aria-hidden="true"></i><span>Profil</span></a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+    <script type="module" src="js/page-profil.js"></script>
+</body>
+</html>

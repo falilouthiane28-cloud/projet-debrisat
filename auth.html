@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="preconnect" href="https://bezkifetuusykmmwwiad.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
+    <title>Connexion · Debrisat</title>
+    <meta name="description" content="Connectez-vous à Debrisat pour signaler les obstructions de canaux et vérifier les signalements de votre quartier.">
+    <meta name="theme-color" content="#0A0A0A">
+    <script>try{var t=JSON.parse(localStorage.getItem('debrisat-theme'));if(t==='clair'||(t==='systeme'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <a class="lien-evitement" href="#formulaire">Aller au formulaire</a>
+    <div class="page-auth">
+        <aside class="auth-visuel" aria-hidden="true">
+            <div class="citation glass">
+                <p>Un canal dégagé en juillet, c'est une rue sèche en septembre.</p>
+                <p class="texte-sm" style="margin-top:var(--space-3);color:#A3A3A3">Chaque signalement aide les équipes de curage à intervenir au bon endroit avant les pluies.</p>
+            </div>
+        </aside>
+
+        <main class="auth-colonne" id="contenu">
+            <div class="haut">
+                <a class="marque" href="index.html" aria-label="Debrisat, retour à l'accueil">
+                    <img src="img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
+                </a>
+                <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
+            </div>
+
+            <div class="auth-carte">
+                <div class="pile-sm">
+                    <h1 id="titreAuth">Bon retour parmi nous</h1>
+                    <p class="texte-secondaire" id="sousTitreAuth">Connectez-vous pour signaler et vérifier les obstructions de votre quartier.</p>
+                </div>
+
+                <div class="bandeau-demo" id="bandeauDemo" hidden>
+                    <i class="bi bi-info-circle" aria-hidden="true"></i>
+                    <div class="pile-sm">
+                        <p><strong>Mode démo.</strong> Supabase n'est pas encore configuré : aucun compte réel n'est créé et les données affichées sont fictives.</p>
+                        <button type="button" class="btn btn-sm btn-primary" id="btnDemo" style="align-self:flex-start">Continuer en mode démo<i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-lg btn-block btn-google" id="btnGoogle"><i class="bi bi-google" aria-hidden="true"></i>Continuer avec Google</button>
+                <div class="separateur-ou" role="separator"><span>ou avec votre e-mail</span></div>
+
+                <div class="onglets" role="tablist" aria-label="Choisir une action">
+                    <button type="button" class="onglet" role="tab" id="ongletConnexion" aria-selected="true" aria-controls="formulaire" data-mode="connexion" style="flex:1;justify-content:center">Connexion</button>
+                    <button type="button" class="onglet" role="tab" id="ongletInscription" aria-selected="false" aria-controls="formulaire" data-mode="inscription" style="flex:1;justify-content:center" tabindex="-1">Inscription</button>
+                </div>
+
+                <form class="pile" id="formulaire" role="tabpanel" aria-labelledby="ongletConnexion" novalidate>
+                    <div class="form-group" data-champ="inscription" hidden>
+                        <label class="form-label" for="champNom">Nom complet</label>
+                        <input class="input" id="champNom" name="nom" autocomplete="name" aria-describedby="erreurNom">
+                        <p class="form-error" id="erreurNom"></p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="champEmail">Adresse e-mail</label>
+                        <input class="input" id="champEmail" name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="erreurEmail" required>
+                        <p class="form-error" id="erreurEmail"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="rangee-entre">
+                            <label class="form-label" for="champMotDePasse">Mot de passe</label>
+                            <button type="button" class="btn btn-sm btn-ghost" id="btnOubli" data-champ="connexion" style="min-height:32px;padding:4px 8px">Mot de passe oublié ?</button>
+                        </div>
+                        <div class="input-group">
+                            <i class="bi bi-lock" aria-hidden="true"></i>
+                            <input class="input" id="champMotDePasse" name="motdepasse" type="password" autocomplete="current-password" aria-describedby="aideMotDePasse erreurMotDePasse" required minlength="8">
+                            <button type="button" class="btn-icon nu suffixe" id="btnVoirMotDePasse" aria-label="Afficher le mot de passe" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                        </div>
+                        <p class="form-helper" id="aideMotDePasse" data-champ="inscription" hidden>8 caractères minimum.</p>
+                        <p class="form-error" id="erreurMotDePasse"></p>
+                    </div>
+                    <div class="form-group" data-champ="inscription" hidden>
+                        <label class="form-label" for="champCommune"><i class="bi bi-building" aria-hidden="true"></i> Commune</label>
+                        <select class="select" id="champCommune" name="commune" aria-describedby="erreurCommune">
+                            <option value="">Choisissez votre commune</option>
+                        </select>
+                        <p class="form-error" id="erreurCommune"></p>
+                    </div>
+                    <div class="form-group" data-champ="inscription" hidden>
+                        <label class="form-label" for="champTelephone"><i class="bi bi-whatsapp" aria-hidden="true"></i> Téléphone <span class="texte-muet" style="text-transform:none;letter-spacing:0">(facultatif)</span></label>
+                        <input class="input" id="champTelephone" name="telephone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+221 77 123 45 67" aria-describedby="aideTelephone erreurTelephone">
+                        <p class="form-helper" id="aideTelephone">Pour recevoir les alertes par SMS ou WhatsApp et signaler depuis WhatsApp.</p>
+                        <p class="form-error" id="erreurTelephone"></p>
+                    </div>
+                    <p class="form-error" id="erreurGenerale" role="alert"></p>
+                    <button type="submit" class="btn btn-plein btn-lg btn-block" id="btnValider">Se connecter</button>
+                </form>
+
+                <p class="texte-sm texte-secondaire texte-centre">
+                    <a href="app.html" class="rangee" style="justify-content:center;gap:6px;min-height:44px"><i class="bi bi-map" aria-hidden="true"></i>Consulter la carte sans compte</a>
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+    <script type="module" src="js/page-auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Jamais publies : comptes de test, configuration locale, code serveur, notes internes
+.claude
+.git
+supabase
+*.md

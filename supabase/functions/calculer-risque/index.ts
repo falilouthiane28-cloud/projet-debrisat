@@ -1,44 +1,22 @@
-// Edge Function: Calcul du score de risque par zone
+// Fonction Edge : recalcule le score de risque de chaque zone et les statistiques par commune.
+// A appeler par une autorite depuis le tableau de bord, ou toutes les heures par pg_cron (voir projet.md).
+import { admin, identifierAppelant, estAutorite, json, preflight } from '../_shared/commun.ts';
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+Deno.serve(async (req) => {
+  const reponsePreflight = preflight(req);
+  if (reponsePreflight) return reponsePreflight;
+  if (req.method !== 'POST') return json({ erreur: 'Méthode non autorisée' }, 405);
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-)
+  const appelant = await identifierAppelant(req);
+  if (!estAutorite(appelant)) return json({ erreur: 'Réservé aux autorités' }, 403);
 
-serve(async (req) => {
-  try {
-    const { data: zones } = await supabase.from('zones_risque').select('*')
-    if (!zones) return new Response(JSON.stringify({ message: 'Aucune zone' }))
-
-    for (const zone of zones) {
-      const { count } = await supabase
-        .from('signalements')
-        .select('*', { count: 'exact', head: true })
-        .in('statut', ['en_attente', 'verifie', 'en_cours'])
-
-      const nbActifs = count || 0
-      const historiqueScore = (zone.historique_inondations || []).length * 10
-      const score = Math.min(100, Math.round(nbActifs * 2 + historiqueScore + Math.random() * 10))
-
-      await supabase
-        .from('zones_risque')
-        .update({
-          score_risque: score,
-          nombre_signalements_actifs: nbActifs,
-          dernier_calcul: new Date().toISOString()
-        })
-        .eq('id', zone.id)
-    }
-
-    return new Response(JSON.stringify({ message: 'Scores mis a jour' }), {
-      headers: { 'Content-Type': 'application/json' }
-    })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur calcul risque' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' }
-    })
+  const { error } = await admin.rpc('calculer_scores_risque');
+  if (error) {
+    console.error('Calcul du risque', error);
+    return json({ erreur: 'Le calcul a échoué' }, 500);
   }
-})
+  const { data: zones } = await admin.from('zones_risque')
+    .select('id, nom, score_risque, nombre_signalements_actifs')
+    .order('score_risque', { ascending: false });
+  return json({ zones });
+});

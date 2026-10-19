@@ -1,89 +1,128 @@
-// PWA Registration Debrisat
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then((reg) => console.log('Service Worker enregistre:', reg.scope))
-            .catch((err) => console.log('Erreur SW:', err));
+// Application installable et file d'attente hors ligne des signalements (IndexedDB)
+import { toast, succes } from './notifications.js';
+
+let invitationInstallation = null;
+const abonnesInstallation = new Set();
+
+export function initPwa() {
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker non enregistré', err));
+        });
+    }
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        invitationInstallation = e;
+        abonnesInstallation.forEach(r => r(true));
+    });
+    window.addEventListener('appinstalled', () => {
+        invitationInstallation = null;
+        abonnesInstallation.forEach(r => r(false));
+        succes('Debrisat est installée', "Retrouvez-la sur votre écran d'accueil.");
+    });
+    surveillerConnexion();
+}
+
+export function surInstallationPossible(rappel) {
+    abonnesInstallation.add(rappel);
+    rappel(!!invitationInstallation);
+}
+
+export async function installer() {
+    if (!invitationInstallation) return false;
+    invitationInstallation.prompt();
+    const { outcome } = await invitationInstallation.userChoice;
+    invitationInstallation = null;
+    abonnesInstallation.forEach(r => r(false));
+    return outcome === 'accepted';
+}
+
+function surveillerConnexion() {
+    let bandeau = null;
+    const maj = () => {
+        if (navigator.onLine) {
+            if (bandeau) {
+                bandeau.remove();
+                bandeau = null;
+                toast({ type: 'success', icone: 'bi-wifi', titre: 'Connexion rétablie', duree: 3000 });
+            }
+            return;
+        }
+        if (bandeau) return;
+        bandeau = document.createElement('div');
+        bandeau.className = 'bandeau-hors-ligne';
+        bandeau.setAttribute('role', 'status');
+        bandeau.innerHTML = '<i class="bi bi-wifi-off" aria-hidden="true"></i>Hors ligne · vos signalements seront envoyés plus tard';
+        document.body.appendChild(bandeau);
+    };
+    window.addEventListener('online', maj);
+    window.addEventListener('offline', maj);
+    if (!navigator.onLine) maj();
+}
+
+// ============ File d'attente ============
+const NOM_BASE = 'debrisat-hors-ligne';
+const MAGASIN = 'signalements';
+
+function ouvrirBase() {
+    return new Promise((resolve, reject) => {
+        const requete = indexedDB.open(NOM_BASE, 1);
+        requete.onupgradeneeded = () => requete.result.createObjectStore(MAGASIN, { keyPath: 'cle', autoIncrement: true });
+        requete.onsuccess = () => resolve(requete.result);
+        requete.onerror = () => reject(requete.error);
     });
 }
 
-// Prompt d'installation
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
+function transaction(mode, action) {
+    return ouvrirBase().then(base => new Promise((resolve, reject) => {
+        const tx = base.transaction(MAGASIN, mode);
+        const resultat = action(tx.objectStore(MAGASIN));
+        tx.oncomplete = () => resolve(resultat?.result ?? resultat);
+        tx.onerror = () => reject(tx.error);
+    }));
+}
 
-    const installBtn = document.createElement('button');
-    installBtn.className = 'btn btn-primary btn-sm';
-    installBtn.textContent = 'Installer l\'app';
-    installBtn.style.cssText = 'position:fixed;bottom:90px;right:24px;z-index:500';
-    installBtn.onclick = async () => {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') installBtn.remove();
-        deferredPrompt = null;
-    };
-    document.body.appendChild(installBtn);
-});
+// La photo (Blob) est stockee telle quelle : IndexedDB accepte les donnees binaires
+export function mettreEnAttente(donnees, userId) {
+    return transaction('readwrite', magasin => magasin.add({ donnees, userId, cree_le: Date.now() }));
+}
 
-// File d'attente offline pour signalements
-window.debrisat.offlineQueue = {
-    DB_NAME: 'debrisat-offline',
-    STORE_NAME: 'signalements-queue',
+export function elementsEnAttente() {
+    return transaction('readonly', magasin => magasin.getAll());
+}
 
-    async ouvrirDB() {
-        return new Promise((resolve, reject) => {
-            const req = indexedDB.open(this.DB_NAME, 1);
-            req.onupgradeneeded = () => {
-                req.result.createObjectStore(this.STORE_NAME, { keyPath: 'id', autoIncrement: true });
-            };
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
-        });
-    },
+function retirer(cle) {
+    return transaction('readwrite', magasin => magasin.delete(cle));
+}
 
-    async ajouter(signalement) {
-        try {
-            const db = await this.ouvrirDB();
-            const tx = db.transaction(this.STORE_NAME, 'readwrite');
-            tx.objectStore(this.STORE_NAME).add({
-                ...signalement,
-                timestamp: Date.now()
-            });
-            window.debrisat.utils.toast('Signalement sauvegarde hors-ligne. Il sera envoye automatiquement.', 'warning');
-        } catch(e) {}
-    },
+let synchronisationEnCours = false;
 
-    async synchroniser() {
-        try {
-            const db = await this.ouvrirDB();
-            const tx = db.transaction(this.STORE_NAME, 'readonly');
-            const store = tx.objectStore(this.STORE_NAME);
-            const items = await new Promise(resolve => {
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => resolve([]);
-            });
-
-            for (const item of items) {
-                try {
-                    const { error } = await window.debrisat.supabase
-                        .from('signalements')
-                        .insert(item);
-                    if (!error) {
-                        const delTx = db.transaction(this.STORE_NAME, 'readwrite');
-                        delTx.objectStore(this.STORE_NAME).delete(item.id);
-                    }
-                } catch(e) {}
+export async function synchroniser(envoyer) {
+    if (synchronisationEnCours || !navigator.onLine) return 0;
+    synchronisationEnCours = true;
+    let envoyes = 0;
+    try {
+        const elements = await elementsEnAttente();
+        for (const element of elements) {
+            try {
+                await envoyer(element.donnees, element.userId);
+                await retirer(element.cle);
+                envoyes++;
+            } catch (err) {
+                console.warn('Envoi différé échoué, nouvel essai plus tard', err);
+                break;
             }
-
-            if (items.length > 0) {
-                window.debrisat.utils.toast(`${items.length} signalement(s) synchronise(s)`, 'success');
-            }
-        } catch(e) {}
+        }
+    } catch {
+        // IndexedDB indisponible (navigation privee) : rien a synchroniser
+    } finally {
+        synchronisationEnCours = false;
     }
-};
+    if (envoyes) succes(`${envoyes} signalement${envoyes > 1 ? 's' : ''} envoyé${envoyes > 1 ? 's' : ''}`, 'Vos signalements enregistrés hors ligne ont été transmis.');
+    return envoyes;
+}
 
-window.addEventListener('online', () => {
-    window.debrisat.offlineQueue.synchroniser();
-});
+export function synchroniserAuRetour(envoyer) {
+    window.addEventListener('online', () => synchroniser(envoyer));
+    synchroniser(envoyer);
+}

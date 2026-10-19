@@ -1,52 +1,26 @@
-// Realtime subscriptions Debrisat
-window.debrisat.realtime = {
-    positionUtilisateur: null,
+import { ecouterSignalements, demarrerSimulation, MODE_DEMO } from './donnees.js';
+import { TYPES_OBSTRUCTION, RAYON_PROXIMITE_KM } from './config.js';
+import { distanceKm, lieuSignalement } from './utils.js';
+import { toast, notificationSysteme } from './notifications.js';
 
-    init() {
-        this.obtenirPositionUtilisateur();
+// Abonnement aux changements de la table signalements (Supabase Realtime, ou flux simule en demo)
+export function suivreSignalements({ surNouveau, surMiseAJour, simulation = true }) {
+    const arreter = ecouterSignalements(({ type, nouveau }) => {
+        if (!nouveau) return;
+        if (type === 'INSERT') surNouveau?.(nouveau);
+        if (type === 'UPDATE') surMiseAJour?.(nouveau);
+    });
+    if (MODE_DEMO && simulation) demarrerSimulation();
+    return arreter;
+}
 
-        window.debrisat.supabase
-            .channel('signalements-realtime')
-            .on('postgres_changes', {
-                event: '*', schema: 'public', table: 'signalements'
-            }, (payload) => {
-                if (payload.eventType === 'INSERT') {
-                    window.debrisat.carte.ajouterMarqueur(payload.new);
-                    this.notifierSiProche(payload.new);
-                }
-                if (payload.eventType === 'UPDATE') {
-                    window.debrisat.carte.mettreAJourMarqueur(payload.new);
-                }
-            })
-            .subscribe();
-    },
-
-    async obtenirPositionUtilisateur() {
-        try {
-            this.positionUtilisateur = await window.debrisat.utils.obtenirPosition();
-        } catch(e) {}
-    },
-
-    notifierSiProche(signalement) {
-        if (!this.positionUtilisateur || !signalement.localisation) return;
-        let lat, lng;
-        if (typeof signalement.localisation === 'string') {
-            const m = signalement.localisation.match(/POINT\(([^ ]+) ([^)]+)\)/);
-            if (m) { lng = parseFloat(m[1]); lat = parseFloat(m[2]); }
-        } else if (signalement.localisation.coordinates) {
-            [lng, lat] = signalement.localisation.coordinates;
-        }
-        if (!lat || !lng) return;
-
-        const dist = window.debrisat.utils.distance(
-            this.positionUtilisateur.lat, this.positionUtilisateur.lng, lat, lng
-        );
-        if (dist < 1) {
-            const typeInfo = window.debrisat.TYPES_OBSTRUCTION[signalement.type_obstruction] || {};
-            window.debrisat.utils.toast(
-                `${typeInfo.icone || '📍'} Nouveau signalement a ${Math.round(dist * 1000)}m de vous`,
-                'info', 5000
-            );
-        }
-    }
-};
+export function signalerSiProche(s, position, auteurCourantId) {
+    if (!position || s.lat == null || s.user_id === auteurCourantId) return false;
+    const km = distanceKm(position.lat, position.lng, s.lat, s.lng);
+    if (km > RAYON_PROXIMITE_KM) return false;
+    const type = TYPES_OBSTRUCTION[s.type_obstruction] || TYPES_OBSTRUCTION.autre;
+    const distance = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace('.', ',')} km`;
+    toast({ type: 'warning', icone: 'bi-geo-alt', titre: `Nouveau signalement à ${distance}`, message: `${type.libelle} · ${lieuSignalement(s)}`, duree: 7000 });
+    notificationSysteme('Debrisat — signalement proche', `${type.libelle} à ${distance} de vous`);
+    return true;
+}

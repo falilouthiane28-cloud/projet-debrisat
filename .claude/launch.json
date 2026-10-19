@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "debrisat",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [".claude/serveur-dev.py", "5501"],
+      "port": 5501
+    },
+    {
+      "name": "debrisat-recette",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [".claude/serveur-dev.py", "5503"],
+      "port": 5503,
+      "autoPort": false
+    }
+  ]
+}

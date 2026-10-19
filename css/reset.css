@@ -1,0 +1,36 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+* { margin: 0; padding: 0; }
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    hanging-punctuation: first last;
+}
+
+body { min-height: 100vh; min-height: 100svh; }
+
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+
+input, button, textarea, select { font: inherit; color: inherit; }
+
+button { background: none; border: none; cursor: pointer; }
+
+a { color: inherit; text-decoration: none; }
+
+ul[role="list"], ol[role="list"] { list-style: none; }
+
+p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+
+h1, h2, h3, h4 { text-wrap: balance; }
+
+p { text-wrap: pretty; }
+
+table { border-collapse: collapse; border-spacing: 0; }
+
+fieldset { border: none; }
+
+[hidden] { display: none !important; }
+
+:target { scroll-margin-block: 80px; }

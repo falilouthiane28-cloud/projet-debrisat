@@ -2,277 +2,255 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Debrisat — Prevenir les inondations a Dakar en detectant les obstructions de canaux. Signalez, verifiez, agissez.">
-    <title>Debrisat — Prevention des inondations a Dakar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="preconnect" href="https://bezkifetuusykmmwwiad.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
+    <title>Debrisat · Prévenir les inondations à Dakar</title>
+    <meta name="description" content="Debrisat détecte les canaux bouchés à Dakar grâce aux signalements citoyens, à l'imagerie satellite Sentinel-2 et à l'intelligence artificielle, pour intervenir avant les inondations.">
+    <meta name="theme-color" content="#0A0A0A">
+    <meta property="og:title" content="Debrisat · Prévenir les inondations à Dakar">
+    <meta property="og:description" content="Signalement citoyen et détection satellite des obstructions de canaux.">
+    <meta property="og:image" content="img/logo.png">
+    <script>try{var t=JSON.parse(localStorage.getItem('debrisat-theme'));if(t==='clair'||(t==='systeme'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.setAttribute('data-theme','light')}catch(e){}document.documentElement.classList.add('js')</script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1B4D3E">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <noscript><style>[data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar" aria-label="Navigation principale">
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+    <header class="entete-site" id="entete">
         <div class="container">
-            <a href="index.html" class="navbar-brand">
-                <span>Debrisat</span>
+            <a class="marque" href="index.html" aria-label="Debrisat, accueil">
+                <img src="img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
             </a>
-            <div class="navbar-links" id="navLinks">
-                <a href="#comment-ca-marche">Comment ca marche</a>
-                <a href="#carte">Carte</a>
-                <a href="app.html">Application</a>
-                <a href="dashboard.html">Espace Autorites</a>
-                <button class="theme-toggle" id="themeToggle" aria-label="Changer le theme">🌙</button>
+            <nav class="nav-liens" aria-label="Navigation principale">
+                <a href="#fonctionnement" data-i18n="accueil.nav.fonctionnement">Fonctionnement</a>
+                <a href="#direct" data-i18n="accueil.nav.direct">En direct</a>
+                <a href="#chiffres" data-i18n="accueil.nav.chiffres">Chiffres</a>
+                <a href="#technologies" data-i18n="accueil.nav.technologies">Technologies</a>
+            </nav>
+            <div class="nav-actions">
+                <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
+                <a class="btn btn-sm btn-secondary btn-app" href="dashboard.html"><i class="bi bi-grid-1x2" aria-hidden="true"></i>Autorités</a>
+                <a class="btn btn-sm btn-plein btn-app" href="app.html">Ouvrir l'application</a>
+                <button type="button" class="btn-icon nu btn-menu" id="btnMenu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="menuMobile"><i class="bi bi-list" aria-hidden="true"></i></button>
             </div>
-            <button class="navbar-toggle" id="navToggle" aria-label="Ouvrir le menu">☰</button>
         </div>
+    </header>
+
+    <nav class="menu-mobile" id="menuMobile" aria-label="Menu">
+        <a href="#fonctionnement"><i class="bi bi-info-circle" aria-hidden="true"></i>Fonctionnement</a>
+        <a href="#direct"><i class="bi bi-map" aria-hidden="true"></i>En direct</a>
+        <a href="#chiffres"><i class="bi bi-bar-chart-line" aria-hidden="true"></i>Chiffres</a>
+        <a href="#technologies"><i class="bi bi-broadcast" aria-hidden="true"></i>Technologies</a>
+        <hr class="separateur">
+        <a href="app.html"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Signaler une obstruction</a>
+        <a href="dashboard.html"><i class="bi bi-grid-1x2" aria-hidden="true"></i>Espace autorités</a>
     </nav>
 
-    <!-- Hero -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content fade-in">
-                <h1>Protegeons <span>Dakar</span> des inondations</h1>
-                <p class="hero-tagline">Prevenir les inondations, un signalement a la fois. Detectez et signalez les obstructions de canaux avant qu'il ne soit trop tard.</p>
-                <div class="hero-actions">
-                    <a href="app.html" class="btn btn-accent btn-lg">Signaler maintenant</a>
-                    <a href="dashboard.html" class="btn btn-outline btn-lg" style="border-color:#fff;color:#fff">Espace Autorites</a>
+    <main id="contenu">
+        <!-- Hero -->
+        <section class="hero" aria-labelledby="titreHero">
+            <div class="hero-fond" aria-hidden="true"></div>
+            <div class="hero-terre" aria-hidden="true"></div>
+            <div class="container">
+                <p class="hero-eyebrow" data-reveal="fade-up"><span class="point-direct" aria-hidden="true"></span><span id="eyebrowDirect">Signalements en direct à Dakar</span></p>
+                <h1 id="titreHero" data-reveal="fade-up" data-delay="80">Prévenir les inondations. <span>Protéger Dakar.</span></h1>
+                <p class="hero-sous-titre" data-reveal="fade-up" data-delay="160">Détection intelligente des obstructions par satellite et signalement citoyen en temps réel.</p>
+                <div class="hero-cta" data-reveal="fade-up" data-delay="240">
+                    <a class="btn btn-primary btn-lg" href="app.html#signaler"><span data-i18n="accueil.cta.signaler">Signaler maintenant</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    <a class="btn btn-secondary btn-lg" href="dashboard.html"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span data-i18n="accueil.cta.autorites">Espace Autorités</span></a>
                 </div>
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <div class="stat-value">104M $</div>
-                        <div class="stat-label">Degats estimes en 2024</div>
+                <div class="hero-stats" data-stagger>
+                    <div class="hero-stat" data-reveal="fade-up">
+                        <span class="icone-ronde"><i class="bi bi-people" aria-hidden="true"></i></span>
+                        <div><p class="chiffre">360 000</p><p class="libelle">Personnes touchées en 2009</p></div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value">360K</div>
-                        <div class="stat-label">Personnes affectees</div>
+                    <div class="hero-stat" data-reveal="fade-up">
+                        <span class="icone-ronde"><i class="bi bi-currency-dollar" aria-hidden="true"></i></span>
+                        <div><p class="chiffre">104 M$</p><p class="libelle">De dégâts en une saison</p></div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value">137.5mm</div>
-                        <div class="stat-label">Record de pluie en 24h</div>
+                    <div class="hero-stat" data-reveal="fade-up">
+                        <span class="icone-ronde"><i class="bi bi-cloud-rain-heavy" aria-hidden="true"></i></span>
+                        <div><p class="chiffre">137,5 mm</p><p class="libelle">Record de pluie, oct. 2026</p></div>
+                    </div>
+                </div>
+                <a class="indicateur-defilement" href="#fonctionnement" aria-label="Découvrir le fonctionnement"><i class="bi bi-chevron-down" aria-hidden="true"></i></a>
+            </div>
+        </section>
+
+        <!-- Fonctionnement -->
+        <section class="section" id="fonctionnement" aria-labelledby="titreFonctionnement">
+            <div class="container">
+                <div class="entete-section centre" data-reveal="fade-up">
+                    <p class="eyebrow">Fonctionnement</p>
+                    <h2 id="titreFonctionnement">Comment ça marche</h2>
+                    <p>Trois étapes entre un canal bouché et l'arrivée d'une équipe de curage.</p>
+                </div>
+                <ol class="etapes" role="list" data-stagger>
+                    <li class="etape glass-card" data-reveal="fade-up">
+                        <span class="numero">01</span>
+                        <span class="icone-etape"><i class="bi bi-camera" aria-hidden="true"></i></span>
+                        <div><h3>Signaler</h3><p>Prenez une photo de l'obstruction et partagez votre localisation, depuis l'application ou par WhatsApp.</p></div>
+                    </li>
+                    <li class="etape glass-card" data-reveal="fade-up">
+                        <span class="numero">02</span>
+                        <span class="icone-etape"><i class="bi bi-broadcast" aria-hidden="true"></i></span>
+                        <div><h3>Vérifier</h3><p>Notre IA et les images satellite confirment le signalement, complétées par trois confirmations de voisins.</p></div>
+                    </li>
+                    <li class="etape glass-card" data-reveal="fade-up">
+                        <span class="numero">03</span>
+                        <span class="icone-etape"><i class="bi bi-bell" aria-hidden="true"></i></span>
+                        <div><h3>Alerter</h3><p>Les autorités compétentes sont notifiées et priorisent les interventions dans les zones les plus exposées.</p></div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Carte en direct -->
+        <section class="section" id="direct" aria-labelledby="titreDirect">
+            <div class="container">
+                <div class="entete-section" data-reveal="fade-up">
+                    <p class="eyebrow">En direct</p>
+                    <h2 id="titreDirect">Signalements en direct</h2>
+                    <p>Chaque point est une obstruction signalée par un habitant ou détectée par satellite. Sa taille et sa couleur indiquent la gravité.</p>
+                </div>
+                <div class="carte-direct" data-reveal="scale">
+                    <div id="carteApercu" role="img" aria-label="Carte des signalements actifs dans la région de Dakar"></div>
+                    <div class="voile-carte" aria-hidden="true"></div>
+                    <div class="panneau-direct glass">
+                        <div class="rangee-entre">
+                            <p class="eyebrow rangee" style="gap:8px"><span class="point-direct" aria-hidden="true"></span>Actualisé en continu</p>
+                            <a class="btn btn-sm btn-ghost" href="app.html" aria-label="Ouvrir la carte complète">Carte complète<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                        </div>
+                        <div aria-live="polite">
+                            <p class="chiffre valeur" id="nbActifs">—</p>
+                            <p class="texte-secondaire texte-sm">signalements actifs à traiter</p>
+                        </div>
+                        <div class="legende-severite" aria-label="Légende de sévérité">
+                            <span><i style="background:var(--severity-1)"></i>Mineure</span>
+                            <span><i style="background:var(--severity-3)"></i>Modérée</span>
+                            <span><i style="background:var(--severity-5)"></i>Critique</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Compteur live -->
-    <section class="section">
-        <div class="container">
-            <div class="live-counter fade-in">
-                <span class="counter-value" id="liveCounter">--</span>
-                <span class="counter-label">Signalements enregistres sur la plateforme</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Comment ca marche -->
-    <section class="section" id="comment-ca-marche">
-        <div class="container">
-            <div class="section-title">
-                <h2>Comment ca marche ?</h2>
-                <p>Trois etapes simples pour contribuer a la prevention des inondations dans votre quartier.</p>
-            </div>
-            <div class="steps">
-                <div class="step card fade-in">
-                    <div class="step-icon">📸</div>
-                    <span class="step-number">1</span>
-                    <h3>Signalez</h3>
-                    <p>Prenez une photo de l'obstruction (dechets, sable, gravats) et partagez sa localisation. Depuis l'app ou WhatsApp.</p>
+        <!-- Chiffres cles -->
+        <section class="section" id="chiffres" aria-labelledby="titreChiffres">
+            <div class="container">
+                <div class="entete-section centre" data-reveal="fade-up">
+                    <p class="eyebrow">Impact</p>
+                    <h2 id="titreChiffres">Chiffres clés</h2>
+                    <p>L'activité de la plateforme, mise à jour à chaque visite.</p>
                 </div>
-                <div class="step card fade-in">
-                    <div class="step-icon">✅</div>
-                    <span class="step-number">2</span>
-                    <h3>Verifiez</h3>
-                    <p>La communaute confirme les signalements. L'IA analyse les photos pour evaluer la gravite automatiquement.</p>
-                </div>
-                <div class="step card fade-in">
-                    <div class="step-icon">🚛</div>
-                    <span class="step-number">3</span>
-                    <h3>Agissez</h3>
-                    <p>Les autorites sont alertees en temps reel. Les equipes interviennent en priorite sur les zones critiques.</p>
+                <div class="grille-chiffres" data-stagger>
+                    <div class="chiffre-cle glass-card" data-reveal="fade-up">
+                        <span class="icone-ronde"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+                        <p class="chiffre" id="chiffreTotal">—</p>
+                        <p class="libelle">Signalements au total</p>
+                    </div>
+                    <div class="chiffre-cle glass-card" data-reveal="fade-up">
+                        <span class="icone-ronde succes"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+                        <p class="chiffre" id="chiffreResolus">—</p>
+                        <p class="libelle">Signalements résolus</p>
+                    </div>
+                    <div class="chiffre-cle glass-card" data-reveal="fade-up">
+                        <span class="icone-ronde"><i class="bi bi-people" aria-hidden="true"></i></span>
+                        <p class="chiffre" id="chiffreCitoyens">—</p>
+                        <p class="libelle">Citoyens actifs</p>
+                    </div>
+                    <div class="chiffre-cle glass-card" data-reveal="fade-up">
+                        <span class="icone-ronde"><i class="bi bi-building" aria-hidden="true"></i></span>
+                        <p class="chiffre" id="chiffreCommunes">—</p>
+                        <p class="libelle">Communes couvertes</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Apercu carte -->
-    <section class="section map-preview-section" id="carte">
-        <div class="container">
-            <div class="section-title">
-                <h2>Zones a risque en temps reel</h2>
-                <p>Visualisez les signalements actifs et les zones d'inondation sur la carte interactive.</p>
-            </div>
-            <div class="map-preview-wrapper">
-                <div id="mapPreview"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-        <div class="container">
-            <h2>Rejoignez le mouvement</h2>
-            <p>Chaque signalement compte. Ensemble, protegeons nos quartiers des inondations.</p>
-            <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-                <a href="app.html" class="btn btn-accent btn-lg">Ouvrir l'application</a>
-                <a href="dashboard.html" class="btn btn-outline btn-lg" style="border-color:#fff;color:#fff">Tableau de bord</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>Debrisat</h4>
-                    <p style="color:var(--text-secondary);font-size:0.9375rem">Plateforme citoyenne de prevention des inondations a Dakar, Senegal.</p>
+        <!-- Technologies -->
+        <section class="section" id="technologies" aria-labelledby="titreTechnologies">
+            <div class="container">
+                <div class="entete-section centre" data-reveal="fade-up">
+                    <p class="eyebrow">Sous le capot</p>
+                    <h2 id="titreTechnologies">Technologies</h2>
                 </div>
-                <div class="footer-col">
-                    <h4>Liens</h4>
+                <ul class="bande-techno" role="list" aria-label="Technologies utilisées" data-stagger>
+                    <li class="techno" data-reveal="fade-up"><i class="bi bi-database" aria-hidden="true"></i>Supabase</li>
+                    <li class="techno" data-reveal="fade-up"><i class="bi bi-map" aria-hidden="true"></i>Leaflet</li>
+                    <li class="techno" data-reveal="fade-up"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i>Sentinel-2</li>
+                    <li class="techno" data-reveal="fade-up"><i class="bi bi-whatsapp" aria-hidden="true"></i>Twilio</li>
+                    <li class="techno" data-reveal="fade-up"><i class="bi bi-cpu" aria-hidden="true"></i>Claude Vision</li>
+                </ul>
+                <article class="carte-satellite glass-card" data-reveal="fade-up">
+                    <div class="visuel" role="img" aria-label="Satellite d'observation émettant un faisceau vers la Terre"></div>
+                    <div class="contenu">
+                        <p class="eyebrow">Observation de la Terre</p>
+                        <h3>Propulsé par l'imagerie satellite Sentinel-2 et l'intelligence artificielle</h3>
+                        <p>Les images du programme européen Copernicus couvrent Dakar tous les cinq jours. Croisées avec les photos des habitants, elles révèlent les canaux qui s'ensablent avant la saison des pluies.</p>
+                        <ul class="liste-points" role="list">
+                            <li><i class="bi bi-broadcast" aria-hidden="true"></i><span>Mosaïque Sentinel-2 à 10 m de résolution, consultable sur la carte</span></li>
+                            <li><i class="bi bi-cpu" aria-hidden="true"></i><span>Analyse automatique de chaque photo : type, volume, sévérité estimée</span></li>
+                            <li><i class="bi bi-whatsapp" aria-hidden="true"></i><span>Signalement par WhatsApp pour ceux qui n'installent pas d'application</span></li>
+                            <li><i class="bi bi-wifi-off" aria-hidden="true"></i><span>Fonctionne hors ligne : les signalements partent au retour du réseau</span></li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pied">
+        <div class="container pile" style="gap:var(--space-7)">
+            <div class="pied-grille">
+                <div class="pile-sm">
+                    <img src="img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
+                    <p class="texte-sm texte-secondaire">Une plateforme de l'équipe Saturn (Satur Studio) pour la prévention des inondations à Dakar.</p>
+                </div>
+                <nav class="pied-liens" aria-label="Liens du pied de page">
+                    <a href="#fonctionnement">À propos</a>
                     <a href="app.html">Application</a>
-                    <a href="dashboard.html">Tableau de bord</a>
-                    <a href="#comment-ca-marche">Comment ca marche</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Contact</h4>
-                    <a href="#">WhatsApp : +221 XX XXX XX XX</a>
-                    <a href="#">contact@debrisat.sn</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Equipe</h4>
-                    <p style="color:var(--text-secondary);font-size:0.9375rem">Projet Saturn — Satur Studio<br>Hackathon 2026</p>
-                </div>
+                    <a href="dashboard.html">Espace autorités</a>
+                    <button type="button" id="btnMentions">Mentions légales</button>
+                </nav>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Debrisat — Equipe Saturn. Tous droits reserves.</p>
+            <div class="pied-bas">
+                <p>&copy; <span id="annee">2026</span> Équipe Saturn · Données cartographiques &copy; contributeurs OpenStreetMap, Esri, Copernicus</p>
+                <p class="rangee" style="gap:6px"><i class="bi bi-geo-alt" aria-hidden="true"></i>Fait avec détermination à Dakar</p>
             </div>
         </div>
     </footer>
 
-    <div class="toast-container" id="toastContainer"></div>
+    <section class="feuille" id="feuilleMentions" data-desktop="modale" aria-labelledby="titreMentions">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
+        <header class="modal-header">
+            <h2 id="titreMentions">Mentions légales</h2>
+            <button type="button" class="btn-icon nu" data-fermer aria-label="Fermer"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </header>
+        <div class="modal-body pile">
+            <p><strong>Éditeur.</strong> Debrisat est un projet de l'équipe Saturn (Satur Studio), développé dans le cadre d'un hackathon à Dakar.</p>
+            <p><strong>Données collectées.</strong> Pour chaque signalement : la photo, la position GPS, le type et la gravité de l'obstruction. Votre compte conserve votre nom, votre commune et, si vous le fournissez, votre numéro de téléphone pour recevoir les alertes.</p>
+            <p><strong>Usage.</strong> Les signalements sont publics afin que les habitants puissent les vérifier et que les autorités puissent intervenir. Votre nom n'apparaît que dans le classement.</p>
+            <p><strong>Hébergement.</strong> Base de données et fichiers hébergés par Supabase. Fonds de carte Esri et OpenStreetMap, imagerie Copernicus Sentinel-2 via EOX.</p>
+        </div>
+    </section>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="js/config.js"></script>
-    <script>
-    // Navigation scroll
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 50);
-    });
-
-    // Menu mobile
-    document.getElementById('navToggle').addEventListener('click', () => {
-        document.getElementById('navLinks').classList.toggle('open');
-    });
-
-    // Theme toggle
-    const themeToggle = document.getElementById('themeToggle');
-    function setTheme(dark) {
-        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-        themeToggle.textContent = dark ? '☀️' : '🌙';
-        try { localStorage.setItem('debrisat-theme', dark ? 'dark' : 'light'); } catch(e) {}
-    }
-    themeToggle.addEventListener('click', () => {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        setTheme(!isDark);
-    });
-    try {
-        const saved = localStorage.getItem('debrisat-theme');
-        if (saved) setTheme(saved === 'dark');
-    } catch(e) {}
-
-    // Compteur live
-    async function chargerCompteur() {
-        try {
-            const { count, error } = await window.debrisat.supabase
-                .from('signalements')
-                .select('*', { count: 'exact', head: true });
-            if (!error && count !== null) {
-                animerCompteur(count);
-            } else {
-                document.getElementById('liveCounter').textContent = '0';
-            }
-        } catch(e) {
-            document.getElementById('liveCounter').textContent = '0';
-        }
-    }
-    function animerCompteur(cible) {
-        const el = document.getElementById('liveCounter');
-        let val = 0;
-        const duree = 1500;
-        const pas = Math.ceil(cible / (duree / 16));
-        function step() {
-            val = Math.min(val + pas, cible);
-            el.textContent = val.toLocaleString('fr-FR');
-            if (val < cible) requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-    }
-    chargerCompteur();
-
-    // Realtime compteur
-    window.debrisat.supabase
-        .channel('compteur-landing')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'signalements' }, () => {
-            chargerCompteur();
-        })
-        .subscribe();
-
-    // Carte preview
-    const mapPreview = L.map('mapPreview', { scrollWheelZoom: false, zoomControl: false }).setView([14.6928, -17.4467], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(mapPreview);
-
-    async function chargerZonesPreview() {
-        try {
-            const { data } = await window.debrisat.supabase.from('zones_risque').select('*');
-            if (data) {
-                data.forEach(zone => {
-                    try {
-                        const coords = zone.zone;
-                        if (coords) {
-                            const couleur = zone.score_risque > 85 ? '#E53935' :
-                                           zone.score_risque > 70 ? '#FF6B35' : '#FFC107';
-                            L.circle([
-                                (14.75 + 14.80) / 2,
-                                (-17.39 + -17.37) / 2
-                            ], {
-                                radius: 1500,
-                                color: couleur,
-                                fillColor: couleur,
-                                fillOpacity: 0.2
-                            }).addTo(mapPreview).bindPopup(
-                                `<b>${zone.nom}</b><br>Risque: ${zone.score_risque}/100`
-                            );
-                        }
-                    } catch(e) {}
-                });
-            }
-        } catch(e) {}
-    }
-    chargerZonesPreview();
-
-    // Animations scroll
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.animationPlayState = 'running';
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-in').forEach(el => {
-        el.style.animationPlayState = 'paused';
-        observer.observe(el);
-    });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+    <script type="module" src="js/page-accueil.js"></script>
 </body>
 </html>

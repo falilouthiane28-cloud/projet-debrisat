@@ -1,154 +1,171 @@
-// Authentification Debrisat
-window.debrisat.auth = {
-    utilisateur: null,
-    profil: null,
+import { MODE_DEMO, supabase, ROLES_AUTORITE, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { obtenirProfil, profilDemo } from './donnees.js';
+import { lireStockage, ecrireStockage } from './utils.js';
+import { ID_DEMO } from './demo.js';
 
-    async init() {
-        const { data: { session } } = await window.debrisat.supabase.auth.getSession();
-        if (session) {
-            this.utilisateur = session.user;
-            await this.chargerProfil();
+const CLE_DECONNEXION_DEMO = 'debrisat-demo-deconnecte';
+const abonnes = new Set();
+let utilisateur = null;
+let profil = null;
+let pret = null;
+
+export function initAuth() {
+    if (pret) return pret;
+    pret = (async () => {
+        if (MODE_DEMO) {
+            if (!lireStockage(CLE_DECONNEXION_DEMO, false)) definirDemo();
+            return;
         }
-        window.debrisat.supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session) {
-                this.utilisateur = session.user;
-                await this.chargerProfil();
-            } else {
-                this.utilisateur = null;
-                this.profil = null;
-            }
-            this.mettreAJourUI();
+        const { data: { session } } = await supabase.auth.getSession();
+        await definirSession(session);
+        supabase.auth.onAuthStateChange(async (_evenement, nouvelleSession) => {
+            await definirSession(nouvelleSession);
+            notifier();
         });
-        this.mettreAJourUI();
-    },
+    })();
+    return pret;
+}
 
-    async chargerProfil() {
-        if (!this.utilisateur) return;
-        const { data } = await window.debrisat.supabase
-            .from('profils')
-            .select('*')
-            .eq('id', this.utilisateur.id)
-            .single();
-        this.profil = data;
-    },
+function definirDemo() {
+    utilisateur = { id: ID_DEMO, email: 'demo@debrisat.local' };
+    profil = profilDemo();
+}
 
-    async inscription(email, motDePasse, nomComplet, commune, telephone) {
-        const { data, error } = await window.debrisat.supabase.auth.signUp({
-            email, password: motDePasse
-        });
-        if (error) throw error;
-
-        if (data.user) {
-            const { error: errProfil } = await window.debrisat.supabase
-                .from('profils')
-                .insert({
-                    id: data.user.id,
-                    nom_complet: nomComplet,
-                    commune: commune,
-                    telephone: telephone
-                });
-            if (errProfil) throw errProfil;
+async function definirSession(session) {
+    utilisateur = session?.user || null;
+    profil = null;
+    if (utilisateur) {
+        try {
+            profil = await obtenirProfil(utilisateur.id);
+        } catch {
+            profil = null;
         }
-        return data;
-    },
-
-    async connexion(email, motDePasse) {
-        const { data, error } = await window.debrisat.supabase.auth.signInWithPassword({
-            email, password: motDePasse
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    async deconnexion() {
-        await window.debrisat.supabase.auth.signOut();
-        this.utilisateur = null;
-        this.profil = null;
-        this.mettreAJourUI();
-    },
-
-    estConnecte() {
-        return !!this.utilisateur;
-    },
-
-    estAutorite() {
-        return this.profil && ['agent_municipal', 'autorite', 'admin'].includes(this.profil.role);
-    },
-
-    mettreAJourUI() {
-        document.querySelectorAll('[data-auth="connecte"]').forEach(el => {
-            el.style.display = this.estConnecte() ? '' : 'none';
-        });
-        document.querySelectorAll('[data-auth="deconnecte"]').forEach(el => {
-            el.style.display = this.estConnecte() ? 'none' : '';
-        });
-        document.querySelectorAll('[data-auth="autorite"]').forEach(el => {
-            el.style.display = this.estAutorite() ? '' : 'none';
-        });
-        const nomEl = document.getElementById('userNom');
-        if (nomEl && this.profil) {
-            nomEl.textContent = this.profil.nom_complet;
-        }
-        const avatarEl = document.getElementById('userAvatar');
-        if (avatarEl && this.profil) {
-            avatarEl.textContent = this.profil.nom_complet.charAt(0).toUpperCase();
-        }
-    }
-};
-
-// Modal d'authentification
-function afficherModalAuth(mode = 'connexion') {
-    const modal = document.getElementById('authModal');
-    if (!modal) return;
-    const overlay = modal.closest('.modal-overlay') || modal.parentElement;
-    overlay.classList.add('active');
-
-    const titre = modal.querySelector('.modal-header h3');
-    const form = document.getElementById('authForm');
-    const champsInscription = document.querySelectorAll('[data-mode="inscription"]');
-
-    if (mode === 'connexion') {
-        titre.textContent = 'Connexion';
-        champsInscription.forEach(el => el.style.display = 'none');
-        form.dataset.mode = 'connexion';
-    } else {
-        titre.textContent = 'Inscription';
-        champsInscription.forEach(el => el.style.display = '');
-        form.dataset.mode = 'inscription';
     }
 }
 
-function fermerModalAuth() {
-    const overlay = document.querySelector('#authModal')?.closest('.modal-overlay');
-    if (overlay) overlay.classList.remove('active');
+function notifier() {
+    for (const rappel of abonnes) rappel({ utilisateur, profil });
 }
 
-async function soumettreAuth(e) {
-    e.preventDefault();
-    const form = e.target;
-    const mode = form.dataset.mode;
-    const email = form.querySelector('[name="email"]').value;
-    const mdp = form.querySelector('[name="motdepasse"]').value;
-    const btn = form.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = 'Chargement...';
+export function surChangementAuth(rappel) {
+    abonnes.add(rappel);
+    return () => abonnes.delete(rappel);
+}
 
+export const utilisateurCourant = () => utilisateur;
+export const profilCourant = () => profil;
+export const estConnecte = () => !!utilisateur;
+export const estAutorite = () => !!profil && ROLES_AUTORITE.includes(profil.role);
+
+export async function rafraichirProfil() {
+    if (!utilisateur) return null;
+    profil = MODE_DEMO ? profilDemo() : await obtenirProfil(utilisateur.id);
+    notifier();
+    return profil;
+}
+
+export async function connexion(email, motDePasse) {
+    if (MODE_DEMO) {
+        entrerEnDemo();
+        return;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse });
+    if (error) {
+        if (/Invalid login credentials/i.test(error.message)) throw new Error('Adresse e-mail ou mot de passe incorrect.');
+        if (/Email not confirmed/i.test(error.message)) throw new Error("Confirmez d'abord votre adresse e-mail grâce au lien reçu.");
+        throw new Error('Connexion impossible pour le moment. Réessayez dans un instant.');
+    }
+}
+
+export async function inscription({ email, motDePasse, nomComplet, commune, telephone }) {
+    if (MODE_DEMO) {
+        entrerEnDemo();
+        return { confirmationRequise: false };
+    }
+    // Le profil est cree par un declencheur SQL a partir de ces metadonnees,
+    // ce qui fonctionne meme quand la confirmation par e-mail retarde la session.
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password: motDePasse,
+        options: {
+            data: { nom_complet: nomComplet, commune, telephone: telephone || null },
+            emailRedirectTo: new URL('app.html', location.href).href
+        }
+    });
+    if (error) {
+        if (/already registered/i.test(error.message)) throw new Error('Un compte existe déjà avec cette adresse e-mail.');
+        if (error.code === 'email_address_invalid') throw new Error("Cette adresse e-mail n'est pas valide. Vérifiez-la et réessayez.");
+        if (error.code === 'over_email_send_rate_limit') throw new Error("Trop d'inscriptions en peu de temps. Réessayez dans quelques minutes.");
+        if (/Password/i.test(error.message)) throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
+        throw new Error("L'inscription a échoué. Réessayez dans un instant.");
+    }
+    return { confirmationRequise: !data.session };
+}
+
+// Google renvoie vers l'application ; le profil est cree par le meme declencheur SQL qu'une inscription par e-mail
+export async function connexionGoogle() {
+    if (MODE_DEMO) {
+        entrerEnDemo();
+        return;
+    }
+    // Sans ce controle, un fournisseur desactive mene a une page d'erreur brute de Supabase
+    let active = true;
     try {
-        if (mode === 'inscription') {
-            const nom = form.querySelector('[name="nom"]').value;
-            const commune = form.querySelector('[name="commune"]').value;
-            const tel = form.querySelector('[name="telephone"]').value;
-            await window.debrisat.auth.inscription(email, mdp, nom, commune, tel);
-            window.debrisat.utils.toast('Inscription reussie ! Verifiez votre email.', 'success');
-        } else {
-            await window.debrisat.auth.connexion(email, mdp);
-            window.debrisat.utils.toast('Connexion reussie !', 'success');
-        }
-        fermerModalAuth();
-    } catch (err) {
-        window.debrisat.utils.toast(err.message || 'Erreur d\'authentification', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = mode === 'inscription' ? 'S\'inscrire' : 'Se connecter';
+        const reponse = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON_KEY } });
+        active = (await reponse.json())?.external?.google === true;
+    } catch { /* en cas de doute, on tente la redirection */ }
+    if (!active) throw new Error("La connexion Google n'est pas encore activée. Utilisez votre e-mail pour le moment.");
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: new URL('app.html', location.href).href }
+    });
+    if (error) {
+        if (/provider is not enabled|Unsupported provider/i.test(error.message)) throw new Error("La connexion Google n'est pas encore activée. Utilisez votre e-mail pour le moment.");
+        throw new Error('Connexion Google impossible pour le moment. Réessayez dans un instant.');
     }
+}
+
+export async function reinitialiserMotDePasse(email) {
+    if (MODE_DEMO) return;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: new URL('auth.html#nouveau-mot-de-passe', location.href).href
+    });
+    if (error) throw new Error("L'envoi du lien a échoué. Vérifiez l'adresse saisie.");
+}
+
+// Le lien de reinitialisation ouvre une session de recuperation : on propose alors un nouveau mot de passe
+export function surRecuperationMotDePasse(rappel) {
+    if (MODE_DEMO) return;
+    supabase.auth.onAuthStateChange(evenement => {
+        if (evenement === 'PASSWORD_RECOVERY') rappel();
+    });
+}
+
+export async function changerMotDePasse(motDePasse) {
+    const { error } = await supabase.auth.updateUser({ password: motDePasse });
+    if (error) throw new Error("Le nouveau mot de passe n'a pas pu être enregistré. Le lien a peut-être expiré.");
+}
+
+export async function deconnexion() {
+    if (MODE_DEMO) {
+        ecrireStockage(CLE_DECONNEXION_DEMO, true);
+        utilisateur = null;
+        profil = null;
+        notifier();
+        return;
+    }
+    await supabase.auth.signOut();
+}
+
+export function entrerEnDemo() {
+    ecrireStockage(CLE_DECONNEXION_DEMO, false);
+    definirDemo();
+    notifier();
+}
+
+// Redirige vers la page de connexion en memorisant la page de retour
+export function exigerConnexion(retour = location.pathname.split('/').pop() + location.hash) {
+    if (estConnecte()) return true;
+    location.href = `auth.html?retour=${encodeURIComponent(retour)}`;
+    return false;
 }

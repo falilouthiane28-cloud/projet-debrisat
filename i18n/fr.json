@@ -1,0 +1,14 @@
+{
+  "_statut": "Reference : le francais est ecrit directement dans le HTML. Ce fichier liste les cles traduisibles.",
+  "nav.carte": "Carte",
+  "nav.liste": "Liste",
+  "nav.signaler": "Signaler",
+  "nav.classement": "Classement",
+  "nav.profil": "Profil",
+  "accueil.nav.fonctionnement": "Fonctionnement",
+  "accueil.nav.direct": "En direct",
+  "accueil.nav.chiffres": "Chiffres",
+  "accueil.nav.technologies": "Technologies",
+  "accueil.cta.signaler": "Signaler maintenant",
+  "accueil.cta.autorites": "Espace Autorités"
+}

@@ -1,0 +1,207 @@
+/* Design system « Obsidian Glass » — jetons */
+:root {
+    color-scheme: dark;
+
+    --color-black: #000000;
+    --color-white: #FFFFFF;
+    --color-pure-dark: #0A0A0A;
+    --color-void: #111111;
+    --color-surface: #1A1A1A;
+    --color-elevated: #222222;
+    --color-subtle: #2A2A2A;
+    --color-border: #333333;
+    --color-border-light: #404040;
+    --color-muted: #8A8A8A;
+    --color-secondary-text: #A3A3A3;
+    --color-primary-text: #E5E5E5;
+    --color-heading: #F5F5F5;
+    --color-bright: #FAFAFA;
+    --color-contrast: #FFFFFF;
+    --color-on-contrast: #000000;
+
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-bg-hover: rgba(255, 255, 255, 0.07);
+    --glass-bg-active: rgba(255, 255, 255, 0.10);
+    --glass-bg-heavy: rgba(14, 14, 14, 0.72);
+    --glass-bg-sheet: rgba(22, 22, 22, 0.86);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(255, 255, 255, 0.14);
+    --glass-edge: rgba(255, 255, 255, 0.10);
+    --glass-blur: 20px;
+    --glass-blur-heavy: 40px;
+    --glass-saturate: 160%;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --scrim: rgba(0, 0, 0, 0.6);
+
+    --accent-danger: #FF453A;
+    --accent-danger-bg: rgba(255, 69, 58, 0.14);
+    --accent-warning: #FF9F0A;
+    --accent-warning-bg: rgba(255, 159, 10, 0.14);
+    --accent-success: #30D158;
+    --accent-success-bg: rgba(48, 209, 88, 0.14);
+    --accent-info: #5E9FFF;
+    --accent-info-bg: rgba(94, 159, 255, 0.14);
+
+    --severity-1: #4ADE80;
+    --severity-2: #A3E635;
+    --severity-3: #FACC15;
+    --severity-4: #FB923C;
+    --severity-5: #EF4444;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+    --space-8: 40px;
+    --space-9: 48px;
+    --space-10: 64px;
+    --space-11: 80px;
+    --space-12: 96px;
+    --space-13: 128px;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+
+    --text-xs: 0.6875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-md: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;
+    --text-3xl: 2.25rem;
+    --text-4xl: 3rem;
+    --text-5xl: 3.75rem;
+    --text-hero: clamp(2.5rem, 6vw, 5rem);
+
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.7;
+
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0em;
+    --tracking-wide: 0.05em;
+    --tracking-wider: 0.1em;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    --duration-slower: 600ms;
+
+    --z-base: 0;
+    --z-map-ui: 50;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-overlay: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+    --z-tooltip: 600;
+
+    --topbar-h: 56px;
+    --bottomnav-h: 64px;
+    --sidebar-w: 240px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --focus-ring: 0 0 0 2px var(--color-pure-dark), 0 0 0 4px var(--color-bright);
+}
+
+[data-theme="light"] {
+    color-scheme: light;
+
+    --color-pure-dark: #FFFFFF;
+    --color-void: #F8F8F8;
+    --color-surface: #F0F0F0;
+    --color-elevated: #FFFFFF;
+    --color-subtle: #E8E8E8;
+    --color-border: #D4D4D4;
+    --color-border-light: #E0E0E0;
+    --color-muted: #6E6E6E;
+    --color-secondary-text: #555555;
+    --color-primary-text: #1A1A1A;
+    --color-heading: #0A0A0A;
+    --color-bright: #000000;
+    --color-contrast: #000000;
+    --color-on-contrast: #FFFFFF;
+
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-bg-hover: rgba(255, 255, 255, 0.80);
+    --glass-bg-active: rgba(0, 0, 0, 0.06);
+    --glass-bg-heavy: rgba(250, 250, 250, 0.78);
+    --glass-bg-sheet: rgba(255, 255, 255, 0.90);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-border-hover: rgba(0, 0, 0, 0.14);
+    --glass-edge: rgba(255, 255, 255, 0.9);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.12);
+    --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --scrim: rgba(0, 0, 0, 0.32);
+
+    /* Teintes assombries : les accents iOS clairs n'atteignent pas 4,5:1 sur blanc */
+    --accent-danger: #D70015;
+    --accent-danger-bg: rgba(215, 0, 21, 0.10);
+    --accent-warning: #A85200;
+    --accent-warning-bg: rgba(255, 149, 0, 0.14);
+    --accent-success: #1A7F37;
+    --accent-success-bg: rgba(48, 209, 88, 0.14);
+    --accent-info: #0A5FD6;
+    --accent-info-bg: rgba(10, 95, 214, 0.10);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    :root {
+        --glass-bg: #161616;
+        --glass-bg-hover: #1E1E1E;
+        --glass-bg-heavy: #111111;
+        --glass-bg-sheet: #161616;
+        --glass-blur: 0px;
+        --glass-blur-heavy: 0px;
+    }
+    [data-theme="light"] {
+        --glass-bg: #FFFFFF;
+        --glass-bg-hover: #F4F4F4;
+        --glass-bg-heavy: #FAFAFA;
+        --glass-bg-sheet: #FFFFFF;
+    }
+}
+
+@media (prefers-contrast: more) {
+    :root {
+        --glass-bg: #141414;
+        --glass-bg-heavy: #0E0E0E;
+        --glass-bg-sheet: #141414;
+        --glass-border: rgba(255, 255, 255, 0.45);
+        --glass-border-hover: rgba(255, 255, 255, 0.7);
+        --color-secondary-text: #D0D0D0;
+        --color-muted: #B0B0B0;
+    }
+    [data-theme="light"] {
+        --glass-bg: #FFFFFF;
+        --glass-bg-heavy: #FFFFFF;
+        --glass-bg-sheet: #FFFFFF;
+        --glass-border: rgba(0, 0, 0, 0.6);
+        --glass-border-hover: rgba(0, 0, 0, 0.85);
+        --color-secondary-text: #2A2A2A;
+        --color-muted: #3D3D3D;
+    }
+}
