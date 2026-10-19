@@ -1,0 +1,5 @@
+# Comptes de test et secrets locaux : jamais versionnes
+.claude/comptes-test.md
+.env
+.env.*
+.vercel
