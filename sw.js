@@ -1,125 +1,127 @@
-// Service Worker Debrisat — Cache et offline
-const CACHE_NAME = 'debrisat-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/app.html',
-  '/dashboard.html',
-  '/css/variables.css',
-  '/css/base.css',
-  '/css/components.css',
-  '/css/landing.css',
-  '/css/app.css',
-  '/css/dashboard.css',
-  '/js/config.js',
-  '/js/utils.js',
-  '/js/auth.js',
-  '/js/map.js',
-  '/js/signalement.js',
-  '/js/gamification.js',
-  '/js/realtime.js',
-  '/js/notifications.js',
-  '/js/ia-analysis.js',
-  '/js/satellite.js',
-  '/js/heatmap.js',
-  '/js/dashboard.js',
-  '/manifest.json'
+// Service Worker Debrisat : coquille applicative hors-ligne + cache des tuiles
+const VERSION = 'debrisat-v2';
+const CACHE_COQUILLE = `${VERSION}-coquille`;
+const CACHE_CDN = `${VERSION}-cdn`;
+const CACHE_TUILES = 'debrisat-tuiles';
+const MAX_TUILES = 600;
+
+const COQUILLE = [
+    './',
+    'index.html',
+    'app.html',
+    'dashboard.html',
+    'auth.html',
+    'profil.html',
+    'manifest.json',
+    'css/tokens.css',
+    'css/reset.css',
+    'css/base.css',
+    'css/components.css',
+    'css/landing.css',
+    'css/app.css',
+    'css/dashboard.css',
+    'css/responsive.css',
+    'js/theme.js',
+    'js/config.js',
+    'js/utils.js',
+    'js/donnees.js',
+    'js/notifications.js',
+    'js/i18n.js',
+    'js/animations.js',
+    'js/auth.js',
+    'js/router.js',
+    'js/map.js',
+    'js/heatmap.js',
+    'js/satellite.js',
+    'js/gamification.js',
+    'js/ia-analysis.js',
+    'js/signalement.js',
+    'js/realtime.js',
+    'js/pwa.js',
+    'js/landing.js',
+    'js/app.js',
+    'js/dashboard.js',
+    'js/profil.js',
+    'img/logo.png',
+    'img/logo-mark.png',
+    'img/icon-192.png',
+    'img/icon-512.png'
 ];
 
-// Installation : mise en cache des fichiers
+const HOTES_CDN = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
+const HOTES_TUILES = ['basemaps.cartocdn.com', 'tiles.maps.eox.at'];
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
-  self.skipWaiting();
+    event.waitUntil(caches.open(CACHE_COQUILLE).then((cache) => cache.addAll(COQUILLE)));
+    self.skipWaiting();
 });
 
-// Activation : nettoyage ancien cache
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
-// Strategie : Network first, fallback cache
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Cache les tuiles de carte
-  if (url.hostname.includes('tile.openstreetmap.org')) {
-    event.respondWith(
-      caches.open('debrisat-tiles').then((cache) =>
-        cache.match(event.request).then((cached) => {
-          const fetched = fetch(event.request).then((response) => {
-            if (response.ok) cache.put(event.request, response.clone());
-            return response;
-          });
-          return cached || fetched;
-        })
-      )
+    event.waitUntil(
+        caches.keys().then((cles) => Promise.all(
+            cles.filter((c) => c !== CACHE_TUILES && !c.startsWith(VERSION)).map((c) => caches.delete(c))
+        ))
     );
-    return;
-  }
-
-  // Pour les API Supabase, toujours reseau
-  if (url.hostname.includes('supabase')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // App shell : network first
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+    self.clients.claim();
 });
 
-// File d'attente offline pour signalements
-const QUEUE_NAME = 'debrisat-offline-queue';
+async function limiterCache(nom, max) {
+    const cache = await caches.open(nom);
+    const cles = await cache.keys();
+    if (cles.length > max) await Promise.all(cles.slice(0, cles.length - max).map((c) => cache.delete(c)));
+}
 
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-signalements') {
-    event.waitUntil(envoyerFileAttente());
-  }
-});
-
-async function envoyerFileAttente() {
-  try {
-    const db = await ouvrirDB();
-    const tx = db.transaction(QUEUE_NAME, 'readonly');
-    const store = tx.objectStore(QUEUE_NAME);
-    const items = await new Promise((resolve) => {
-      const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
-    });
-
-    for (const item of items) {
-      try {
-        await fetch(item.url, { method: item.method, headers: item.headers, body: item.body });
-        const delTx = db.transaction(QUEUE_NAME, 'readwrite');
-        delTx.objectStore(QUEUE_NAME).delete(item.id);
-      } catch (e) {
-        break;
-      }
+// Les fichiers CDN ont une version figee dans l'URL : le cache suffit
+async function cacheDabord(requete, nomCache) {
+    const enCache = await caches.match(requete);
+    if (enCache) return enCache;
+    const reponse = await fetch(requete);
+    if (reponse.ok || reponse.type === 'opaque') {
+        const cache = await caches.open(nomCache);
+        cache.put(requete, reponse.clone());
     }
-  } catch (e) {}
+    return reponse;
 }
 
-function ouvrirDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('debrisat-sw', 1);
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore(QUEUE_NAME, { keyPath: 'id', autoIncrement: true });
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+async function reseauDabord(requete) {
+    try {
+        const reponse = await fetch(requete);
+        if (reponse.ok) {
+            const cache = await caches.open(CACHE_COQUILLE);
+            cache.put(requete, reponse.clone());
+        }
+        return reponse;
+    } catch (e) {
+        const enCache = await caches.match(requete, { ignoreSearch: true });
+        if (enCache) return enCache;
+        if (requete.mode === 'navigate') return caches.match('app.html');
+        throw e;
+    }
 }
+
+self.addEventListener('fetch', (event) => {
+    const { request } = event;
+    if (request.method !== 'GET') return;
+    const url = new URL(request.url);
+
+    if (url.hostname.includes('supabase') || url.hostname.includes('nominatim')) return;
+
+    if (HOTES_TUILES.some((h) => url.hostname.endsWith(h))) {
+        event.respondWith(
+            cacheDabord(request, CACHE_TUILES).then((r) => {
+                limiterCache(CACHE_TUILES, MAX_TUILES);
+                return r;
+            }).catch(() => new Response('', { status: 504 }))
+        );
+        return;
+    }
+
+    if (HOTES_CDN.includes(url.hostname)) {
+        event.respondWith(cacheDabord(request, CACHE_CDN));
+        return;
+    }
+
+    if (url.origin === self.location.origin) {
+        event.respondWith(reseauDabord(request));
+    }
+});

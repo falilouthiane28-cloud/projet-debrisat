@@ -1,0 +1,180 @@
+/* Debrisat — Design tokens "Obsidian Glass" */
+:root {
+    color-scheme: dark;
+
+    /* === PALETTE DE BASE === */
+    --color-black: #000000;
+    --color-white: #FFFFFF;
+    --color-pure-dark: #0A0A0A;
+    --color-void: #111111;
+    --color-surface: #1A1A1A;
+    --color-elevated: #222222;
+    --color-subtle: #2A2A2A;
+    --color-border: #333333;
+    --color-border-light: #404040;
+    --color-muted: #8A8A8A;
+    --color-secondary-text: #A3A3A3;
+    --color-primary-text: #E5E5E5;
+    --color-heading: #F5F5F5;
+    --color-bright: #FAFAFA;
+
+    /* === SYSTEME VERRE === */
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-bg-hover: rgba(255, 255, 255, 0.07);
+    --glass-bg-active: rgba(255, 255, 255, 0.10);
+    --glass-bg-strong: rgba(22, 22, 22, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(255, 255, 255, 0.14);
+    --glass-blur: 20px;
+    --glass-blur-heavy: 40px;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    /* === ACCENTS SEMANTIQUES === */
+    --accent-danger: #FF3B30;
+    --accent-danger-bg: rgba(255, 59, 48, 0.12);
+    --accent-warning: #FF9500;
+    --accent-warning-bg: rgba(255, 149, 0, 0.12);
+    --accent-success: #30D158;
+    --accent-success-bg: rgba(48, 209, 88, 0.12);
+    --accent-info: #5E9FFF;
+    --accent-info-bg: rgba(94, 159, 255, 0.12);
+
+    /* === ECHELLE DE SEVERITE === */
+    --severity-1: #4ADE80;
+    --severity-2: #A3E635;
+    --severity-3: #FACC15;
+    --severity-4: #FB923C;
+    --severity-5: #EF4444;
+
+    /* === SERIES GRAPHIQUES (palette categorielle validee, mode sombre) === */
+    --serie-1: #3987E5;
+    --serie-2: #D95926;
+    --serie-3: #199E70;
+    --serie-4: #C98500;
+    --serie-5: #D55181;
+    --serie-autre: #6B6B6B;
+
+    /* === ESPACEMENTS (base 8px) === */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+    --space-8: 40px;
+    --space-9: 48px;
+    --space-10: 64px;
+    --space-11: 80px;
+    --space-12: 96px;
+    --space-13: 128px;
+
+    /* === TYPOGRAPHIE === */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, Menlo, Consolas, monospace;
+
+    --text-xs: 0.6875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-md: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;
+    --text-3xl: 2.25rem;
+    --text-4xl: 3rem;
+    --text-5xl: 3.75rem;
+    --text-hero: clamp(2.5rem, 6vw, 5rem);
+
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.7;
+
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0em;
+    --tracking-wide: 0.05em;
+    --tracking-wider: 0.1em;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    /* === RAYONS === */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    /* === TRANSITIONS === */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    --duration-slower: 600ms;
+
+    /* === COUCHES === */
+    --z-base: 0;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-overlay: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+    --z-tooltip: 600;
+
+    /* === DIMENSIONS APP === */
+    --hauteur-navbar: 56px;
+    --hauteur-bottom-nav: 64px;
+    --largeur-sidebar: 240px;
+    --anneau-focus: 0 0 0 3px rgba(255, 255, 255, 0.12);
+    --contour-focus: var(--color-bright);
+    --logo-filtre: none;
+}
+
+/* === MODE CLAIR === */
+[data-theme="light"] {
+    color-scheme: light;
+
+    --color-pure-dark: #FFFFFF;
+    --color-void: #F8F8F8;
+    --color-surface: #F0F0F0;
+    --color-elevated: #FFFFFF;
+    --color-subtle: #E8E8E8;
+    --color-border: #D4D4D4;
+    --color-border-light: #E0E0E0;
+    --color-muted: #6E6E6E;
+    --color-secondary-text: #555555;
+    --color-primary-text: #1A1A1A;
+    --color-heading: #0A0A0A;
+    --color-bright: #000000;
+
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-bg-hover: rgba(255, 255, 255, 0.80);
+    --glass-bg-active: rgba(255, 255, 255, 0.90);
+    --glass-bg-strong: rgba(255, 255, 255, 0.82);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-border-hover: rgba(0, 0, 0, 0.14);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.12);
+    --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+    --accent-danger: #D70015;
+    --accent-warning: #B25000;
+    --accent-success: #1E7D34;
+    --accent-info: #0058D1;
+
+    --serie-1: #2A78D6;
+    --serie-2: #EB6834;
+    --serie-3: #1BAF7A;
+    --serie-4: #EDA100;
+    --serie-5: #E87BA4;
+    --serie-autre: #A3A3A3;
+
+    --anneau-focus: 0 0 0 3px rgba(0, 0, 0, 0.10);
+    --logo-filtre: invert(1);
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mon profil — Debrisat</title>
+    <meta name="description" content="Vos points, badges et signalements Debrisat.">
+    <meta name="theme-color" content="#0A0A0A">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="img/icon-192.png">
+
+    <script src="js/theme.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="page-profil">
+    <a href="#contenu" class="lien-evitement">Aller au contenu principal</a>
+
+    <header class="navbar" role="banner">
+        <a href="app.html" class="btn btn-icon" aria-label="Retour à la carte">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </a>
+        <a href="index.html" class="logo" aria-label="Debrisat, accueil">
+            <img src="img/logo-mark.png" alt="" width="32" height="32">
+            <span class="logo-texte">Debrisat</span>
+        </a>
+        <div class="app-actions">
+            <span class="indicateur-demo" data-si-demo hidden><i class="bi bi-info-circle" aria-hidden="true"></i>Démo</span>
+            <button type="button" class="btn btn-icon" data-action="basculer-theme" aria-label="Passer en mode clair">
+                <i class="bi bi-sun" aria-hidden="true"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="contenu" class="conteneur profil-principal" role="main">
+        <!-- Non connecte -->
+        <section class="card etat-vide" data-auth="deconnecte" hidden>
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            <h1 class="card-titre">Vous n'êtes pas connecté</h1>
+            <p>Connectez-vous pour suivre vos signalements, vos points et vos badges.</p>
+            <a href="auth.html?retour=profil.html" class="btn btn-plein">Se connecter</a>
+        </section>
+
+        <div class="pile gap-6" data-auth="connecte" hidden>
+            <section class="card profil-entete" aria-labelledby="nomProfil">
+                <span class="avatar avatar-lg" data-profil="initiale" aria-hidden="true">?</span>
+                <div>
+                    <h1 id="nomProfil" data-profil="nom_complet">—</h1>
+                    <p class="texte-secondaire texte-sm"><i class="bi bi-building" aria-hidden="true"></i> <span data-profil="commune">—</span> · Membre depuis <span id="membreDepuis">—</span></p>
+                </div>
+                <span class="badge badge-neutral" id="nomNiveau"><i class="bi bi-award" aria-hidden="true"></i>—</span>
+                <div class="profil-niveau">
+                    <div class="rangee entre">
+                        <span class="texte-secondaire">Niveau <span class="chiffre" id="numeroNiveau">1</span></span>
+                        <span class="texte-muet texte-xs" id="restantNiveau"></span>
+                    </div>
+                    <div class="jauge" role="progressbar" id="jaugeNiveau" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progression vers le niveau suivant">
+                        <div class="jauge-remplissage" style="width:0%"></div>
+                    </div>
+                </div>
+            </section>
+
+            <ul class="profil-stats" aria-label="Mes chiffres">
+                <li class="card card-stat">
+                    <span class="stat-icone"><i class="bi bi-star" aria-hidden="true"></i></span>
+                    <span class="stat-valeur" data-profil="points_total">0</span>
+                    <span class="stat-label">Points</span>
+                </li>
+                <li class="card card-stat">
+                    <span class="stat-icone"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+                    <span class="stat-valeur" data-profil="nombre_signalements">0</span>
+                    <span class="stat-label">Signalements</span>
+                </li>
+                <li class="card card-stat">
+                    <span class="stat-icone"><i class="bi bi-trophy" aria-hidden="true"></i></span>
+                    <span class="stat-valeur" id="rangProfil">—</span>
+                    <span class="stat-label">Classement</span>
+                </li>
+            </ul>
+
+            <section aria-labelledby="titreBadges">
+                <div class="card-entete">
+                    <h2 class="card-titre" id="titreBadges">Badges</h2>
+                    <span class="texte-sm texte-secondaire" id="compteBadges"></span>
+                </div>
+                <ul class="grille-badges" id="grilleBadges"></ul>
+            </section>
+
+            <section class="card" aria-labelledby="titreMesSignalements">
+                <div class="card-entete">
+                    <h2 class="card-titre" id="titreMesSignalements">Mes signalements</h2>
+                    <a href="app.html#signaler" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg" aria-hidden="true"></i>Signaler</a>
+                </div>
+                <div class="liste-signalements pile gap-2" id="mesSignalements" aria-busy="true"></div>
+            </section>
+
+            <section class="card" aria-labelledby="titreHistorique">
+                <div class="card-entete">
+                    <h2 class="card-titre" id="titreHistorique">Historique des points</h2>
+                    <i class="bi bi-clock" aria-hidden="true"></i>
+                </div>
+                <ul class="historique-points" id="historiquePoints" aria-busy="true"></ul>
+            </section>
+
+            <section class="card" aria-labelledby="titreReglages">
+                <h2 class="card-titre" id="titreReglages">Paramètres</h2>
+                <ul class="reglages mt-4">
+                    <li><label class="interrupteur"><span><i class="bi bi-sun" aria-hidden="true"></i>Mode clair</span><input type="checkbox" data-reglage="theme"></label></li>
+                    <li>
+                        <div class="reglage-ligne">
+                            <i class="bi bi-translate" aria-hidden="true"></i>
+                            <label for="langueProfil">Langue</label>
+                            <div class="select-enveloppe">
+                                <select id="langueProfil" class="select" data-action="changer-langue">
+                                    <option value="fr">Français</option>
+                                    <option value="wo">Wolof</option>
+                                </select>
+                            </div>
+                        </div>
+                    </li>
+                    <li><button type="button" class="reglage-ligne btn-lien" data-action="notifications"><i class="bi bi-bell" aria-hidden="true"></i>Alertes près de chez moi</button></li>
+                    <li><button type="button" class="reglage-ligne btn-lien" data-action="deconnexion" style="color:var(--accent-danger)"><i class="bi bi-box-arrow-right" aria-hidden="true" style="color:inherit"></i>Se déconnecter</button></li>
+                </ul>
+            </section>
+        </div>
+    </main>
+
+    <nav class="bottom-nav" role="navigation" aria-label="Navigation principale">
+        <a href="app.html#carte" class="bottom-nav-item"><i class="bi bi-map" aria-hidden="true"></i><span data-i18n="nav.carte">Carte</span></a>
+        <a href="app.html#liste" class="bottom-nav-item"><i class="bi bi-list-ul" aria-hidden="true"></i><span data-i18n="nav.liste">Liste</span></a>
+        <a href="app.html#signaler" class="bottom-nav-item signaler"><i class="bi bi-plus-circle" aria-hidden="true"></i><span data-i18n="nav.signaler">Signaler</span></a>
+        <a href="app.html#classement" class="bottom-nav-item"><i class="bi bi-trophy" aria-hidden="true"></i><span data-i18n="nav.classement">Classement</span></a>
+        <a href="profil.html" class="bottom-nav-item" aria-current="page"><i class="bi bi-person" aria-hidden="true"></i><span data-i18n="nav.profil">Profil</span></a>
+    </nav>
+
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/donnees.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/gamification.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/profil.js"></script>
+</body>
+</html>

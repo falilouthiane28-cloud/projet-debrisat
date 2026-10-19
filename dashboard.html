@@ -1,275 +1,416 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debrisat — Tableau de bord</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Espace Autorités — Debrisat</title>
+    <meta name="description" content="Tableau de bord des autorités : suivi des signalements, zones à risque, alertes et statistiques.">
+    <meta name="theme-color" content="#0A0A0A">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1B4D3E">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="icon" type="image/png" href="img/icon-192.png">
+
+    <script src="js/theme.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
 </head>
-<body>
-    <div class="dash-layout">
-        <!-- Sidebar -->
-        <aside class="dash-sidebar" id="dashSidebar">
-            <div class="dash-sidebar-brand">Debrisat</div>
-            <ul class="dash-nav">
-                <li><a href="#" class="active" onclick="switchSection('apercu')"><span class="nav-icon">📊</span> Apercu</a></li>
-                <li><a href="#" onclick="switchSection('signalements')"><span class="nav-icon">📋</span> Signalements</a></li>
-                <li><a href="#" onclick="switchSection('carte')"><span class="nav-icon">🗺️</span> Carte</a></li>
-                <li><a href="#" onclick="switchSection('alertes')"><span class="nav-icon">🔔</span> Alertes</a></li>
-                <li><a href="app.html"><span class="nav-icon">📱</span> Application</a></li>
-                <li><a href="index.html"><span class="nav-icon">🏠</span> Accueil</a></li>
-            </ul>
-        </aside>
+<body class="page-dashboard">
+    <a href="#contenu" class="lien-evitement">Aller au contenu principal</a>
 
-        <!-- Main -->
-        <main class="dash-main">
-            <div class="dash-header">
-                <div>
-                    <button class="btn btn-ghost" id="menuToggle" onclick="document.getElementById('dashSidebar').classList.toggle('open')" style="display:none">☰</button>
-                    <h1>Tableau de bord</h1>
+    <!-- Barre laterale -->
+    <aside class="sidebar" id="sidebar" aria-label="Menu de l'espace autorités">
+        <div class="sidebar-entete">
+            <a href="index.html" class="logo" aria-label="Debrisat, accueil">
+                <img src="img/logo-mark.png" alt="" width="48" height="48" class="sidebar-logo">
+                <span class="pile">
+                    <span class="logo-texte">Debrisat</span>
+                    <span class="texte-xs texte-muet" style="letter-spacing:0">Espace Autorités</span>
+                </span>
+            </a>
+            <button type="button" class="btn btn-icon sidebar-fermer" data-action="fermer-sidebar" aria-label="Fermer le menu">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav" role="navigation" aria-label="Sections du tableau de bord">
+            <a href="#apercu" class="sidebar-item" data-route="apercu"><i class="bi bi-grid-1x2" aria-hidden="true"></i>Vue d'ensemble</a>
+            <a href="#signalements" class="sidebar-item" data-route="signalements"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Signalements<span class="sidebar-compteur" id="compteurAttente" hidden></span></a>
+            <a href="#carte" class="sidebar-item" data-route="carte"><i class="bi bi-map" aria-hidden="true"></i>Carte</a>
+            <a href="#zones" class="sidebar-item" data-route="zones"><i class="bi bi-shield-exclamation" aria-hidden="true"></i>Zones à risque</a>
+            <a href="#alertes" class="sidebar-item" data-route="alertes"><i class="bi bi-bell" aria-hidden="true"></i>Alertes</a>
+            <a href="#statistiques" class="sidebar-item" data-route="statistiques"><i class="bi bi-bar-chart-line" aria-hidden="true"></i>Statistiques</a>
+            <a href="#parametres" class="sidebar-item" data-route="parametres"><i class="bi bi-gear" aria-hidden="true"></i>Paramètres</a>
+        </nav>
+
+        <div class="sidebar-pied">
+            <a href="app.html" class="sidebar-item"><i class="bi bi-phone" aria-hidden="true"></i>Application citoyenne</a>
+            <div class="carte-utilisateur">
+                <span class="avatar" data-profil="initiale" aria-hidden="true">?</span>
+                <div class="flex-1">
+                    <p class="carte-utilisateur-nom" data-profil="nom_complet">—</p>
+                    <span class="badge badge-info" id="badgeRole">Agent municipal</span>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                    <span id="dashUserNom" style="font-size:0.875rem;color:var(--text-secondary)"></span>
-                    <button class="btn btn-ghost btn-sm" onclick="window.debrisat.auth.deconnexion();window.location='index.html'">Deconnexion</button>
-                </div>
+                <button type="button" class="btn btn-icon" data-action="deconnexion" aria-label="Se déconnecter" title="Se déconnecter">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                </button>
             </div>
+        </div>
+    </aside>
+    <div class="voile" id="voileSidebar" data-action="fermer-sidebar"></div>
 
-            <!-- Apercu -->
-            <div class="dash-section active" id="sectionApercu">
-                <div class="stats-grid">
-                    <div class="stat-card-dash">
-                        <div class="stat-icon blue">📊</div>
-                        <div class="stat-value" id="statTotal">0</div>
-                        <div class="stat-label">Total signalements</div>
-                    </div>
-                    <div class="stat-card-dash">
-                        <div class="stat-icon orange">⏳</div>
-                        <div class="stat-value" id="statEnAttente">0</div>
-                        <div class="stat-label">En attente</div>
-                    </div>
-                    <div class="stat-card-dash">
-                        <div class="stat-icon blue">🔄</div>
-                        <div class="stat-value" id="statEnCours">0</div>
-                        <div class="stat-label">En cours</div>
-                    </div>
-                    <div class="stat-card-dash">
-                        <div class="stat-icon green">✅</div>
-                        <div class="stat-value" id="statResolus">0</div>
-                        <div class="stat-label">Resolus</div>
-                    </div>
-                    <div class="stat-card-dash">
-                        <div class="stat-icon red">📈</div>
-                        <div class="stat-value" id="statTaux">0%</div>
-                        <div class="stat-label">Taux de resolution</div>
-                    </div>
-                </div>
+    <div class="dash-principal">
+        <header class="dash-entete" role="banner">
+            <button type="button" class="btn btn-icon dash-hamburger" data-action="ouvrir-sidebar" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+            <nav aria-label="Fil d'Ariane" class="fil-ariane">
+                <ol>
+                    <li class="masque-mobile-dash">Autorités</li>
+                    <li aria-current="page" id="filAriane">Vue d'ensemble</li>
+                </ol>
+            </nav>
 
-                <div class="chart-grid">
-                    <div class="chart-card">
-                        <h3>Evolution des signalements (30 jours)</h3>
-                        <canvas id="chartEvolution"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Par type d'obstruction</h3>
-                        <canvas id="chartType"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Par commune (Top 10)</h3>
-                        <canvas id="chartCommune"></canvas>
-                    </div>
+            <div class="dash-filtres">
+                <span class="indicateur-demo" data-si-demo hidden title="Les données affichées sont fictives"><i class="bi bi-info-circle" aria-hidden="true"></i>Démo<span class="texte-long">&nbsp;— données fictives</span></span>
+                <div class="select-enveloppe select-compact">
+                    <label for="filtrePeriode" class="sr-only">Période</label>
+                    <select id="filtrePeriode" class="select">
+                        <option value="7">7 derniers jours</option>
+                        <option value="30" selected>30 derniers jours</option>
+                        <option value="90">90 derniers jours</option>
+                        <option value="0">Toute la période</option>
+                    </select>
                 </div>
+                <div class="select-enveloppe select-compact masque-mobile-dash">
+                    <label for="filtreCommuneDash" class="sr-only">Commune</label>
+                    <select id="filtreCommuneDash" class="select">
+                        <option value="">Toutes les communes</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm masque-mobile-dash" data-action="exporter">
+                    <i class="bi bi-download" aria-hidden="true"></i>Exporter
+                </button>
+                <button type="button" class="btn btn-icon" data-action="basculer-theme" aria-label="Passer en mode clair">
+                    <i class="bi bi-sun" aria-hidden="true"></i>
+                </button>
             </div>
+        </header>
 
-            <!-- Signalements -->
-            <div class="dash-section" id="sectionSignalements">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3>Liste des signalements</h3>
-                        <div class="table-actions">
-                            <input class="table-search" type="search" placeholder="Rechercher..."
-                                   oninput="window.debrisat.dashboard.rechercher(this.value)">
-                            <select class="form-select" style="width:auto;font-size:0.875rem;padding:8px"
-                                    onchange="window.debrisat.dashboard.filtrerParStatut(this.value)">
-                                <option value="">Tous les statuts</option>
-                                <option value="en_attente">En attente</option>
-                                <option value="verifie">Verifie</option>
-                                <option value="en_cours">En cours</option>
-                                <option value="resolu">Resolu</option>
-                                <option value="rejete">Rejete</option>
-                            </select>
-                            <button class="btn btn-primary btn-sm" onclick="window.debrisat.dashboard.exporterCSV()">Exporter CSV</button>
-                        </div>
-                    </div>
-                    <div style="overflow-x:auto">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Type</th>
-                                    <th>Commune</th>
-                                    <th>Severite</th>
-                                    <th>Statut</th>
-                                    <th>Confirmations</th>
-                                    <th>Date</th>
-                                    <th>Auteur</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="table-pagination">
-                        <span id="paginationInfo">-</span>
-                        <div class="pagination-btns">
-                            <button class="btn btn-ghost btn-sm" id="btnPagePrec"
-                                    onclick="window.debrisat.dashboard.pagePrecedente()">← Prec.</button>
-                            <button class="btn btn-ghost btn-sm" id="btnPageSuiv"
-                                    onclick="window.debrisat.dashboard.pageSuivante()">Suiv. →</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <main id="contenu" class="dash-contenu" role="main" tabindex="-1">
+            <!-- Acces refuse -->
+            <section class="etat-vide card acces-refuse" id="accesRefuse" hidden>
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                <h1 class="card-titre">Accès réservé</h1>
+                <p>Cet espace est réservé aux agents municipaux et aux autorités. Contactez un administrateur pour obtenir les droits.</p>
+                <a href="app.html" class="btn btn-primary">Retour à l'application</a>
+            </section>
 
-            <!-- Carte -->
-            <div class="dash-section" id="sectionCarte">
-                <div style="height:calc(100vh - 120px);border-radius:var(--radius);overflow:hidden">
-                    <div id="dashMap" style="width:100%;height:100%"></div>
-                </div>
-            </div>
+            <!-- Vue d'ensemble -->
+            <section data-vue="apercu signalements carte alertes" aria-labelledby="titreApercu" class="dash-section">
+                <h1 class="sr-only" id="titreApercu">Vue d'ensemble</h1>
 
-            <!-- Alertes -->
-            <div class="dash-section" id="sectionAlertes">
-                <div class="card" style="margin-bottom:24px">
-                    <h3 style="margin-bottom:16px">Creer une alerte</h3>
-                    <form id="alerteForm" onsubmit="creerAlerte(event)">
-                        <div class="form-group">
-                            <label class="form-label">Titre</label>
-                            <input class="form-input" name="titre" required placeholder="Titre de l'alerte">
+                <ul class="grille-stats" aria-label="Indicateurs clés">
+                    <li class="card card-stat">
+                        <div class="rangee entre"><span class="stat-icone"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span><span class="tendance" data-tendance="total"></span></div>
+                        <span class="stat-valeur" data-stat="total"><span class="skeleton skeleton-text" style="width:80px;height:36px;margin:0"></span></span>
+                        <span class="stat-label">Total signalements</span>
+                    </li>
+                    <li class="card card-stat">
+                        <div class="rangee entre"><span class="stat-icone attente"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span><span class="tendance" data-tendance="en_attente"></span></div>
+                        <span class="stat-valeur" data-stat="en_attente"><span class="skeleton skeleton-text" style="width:64px;height:36px;margin:0"></span></span>
+                        <span class="stat-label">En attente</span>
+                    </li>
+                    <li class="card card-stat">
+                        <div class="rangee entre"><span class="stat-icone cours"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span><span class="tendance" data-tendance="en_cours"></span></div>
+                        <span class="stat-valeur" data-stat="en_cours"><span class="skeleton skeleton-text" style="width:64px;height:36px;margin:0"></span></span>
+                        <span class="stat-label">En cours</span>
+                    </li>
+                    <li class="card card-stat">
+                        <div class="rangee entre"><span class="stat-icone resolu"><i class="bi bi-check-lg" aria-hidden="true"></i></span><span class="tendance" data-tendance="resolu"></span></div>
+                        <span class="stat-valeur" data-stat="resolu"><span class="skeleton skeleton-text" style="width:64px;height:36px;margin:0"></span></span>
+                        <span class="stat-label">Résolus</span>
+                    </li>
+                </ul>
+
+                <div class="card bloc-onglets">
+                    <div class="bloc-onglets-entete">
+                        <div class="onglets" role="tablist" aria-label="Affichage des signalements">
+                            <button type="button" class="onglet" role="tab" id="ongletCarte" aria-controls="panneauCarte" data-onglet="carte"><i class="bi bi-map" aria-hidden="true"></i>Carte</button>
+                            <button type="button" class="onglet" role="tab" id="ongletTableau" aria-controls="panneauTableau" data-onglet="signalements"><i class="bi bi-list-ul" aria-hidden="true"></i>Tableau</button>
+                            <button type="button" class="onglet" role="tab" id="ongletAlertes" aria-controls="panneauAlertes" data-onglet="alertes"><i class="bi bi-bell" aria-hidden="true"></i>Alertes</button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Message</label>
-                            <textarea class="form-textarea" name="message" required placeholder="Message detaille..."></textarea>
-                        </div>
-                        <div style="display:flex;gap:12px">
-                            <div class="form-group" style="flex:1">
-                                <label class="form-label">Type</label>
-                                <select class="form-select" name="type">
-                                    <option value="info">Information</option>
-                                    <option value="attention">Attention</option>
-                                    <option value="danger">Danger</option>
-                                    <option value="critique">Critique</option>
-                                </select>
+                        <p class="texte-sm texte-secondaire" aria-live="polite"><span class="chiffre" id="compteFiltre">0</span> signalements sur la période</p>
+                    </div>
+
+                    <!-- Panneau carte -->
+                    <div class="panneau-onglet" role="tabpanel" id="panneauCarte" aria-labelledby="ongletCarte">
+                        <div class="dash-carte-enveloppe">
+                            <div id="dashCarte" class="dash-carte" role="region" aria-label="Carte des signalements, cliquez sur un marqueur pour changer son statut"></div>
+                            <div class="controles-carte dash-controles">
+                                <button type="button" class="btn btn-icon" data-action="chaleur" aria-pressed="false" aria-label="Carte de chaleur" title="Carte de chaleur"><i class="bi bi-fire" aria-hidden="true"></i></button>
+                                <button type="button" class="btn btn-icon" data-action="zones-carte" aria-pressed="true" aria-label="Zones à risque" title="Zones à risque"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></button>
+                                <button type="button" class="btn btn-icon" data-action="satellite" aria-pressed="false" aria-label="Vue satellite" title="Vue satellite"><i class="bi bi-broadcast" aria-hidden="true"></i></button>
                             </div>
-                            <div class="form-group" style="flex:1">
-                                <label class="form-label">Canal</label>
-                                <select class="form-select" name="canal">
-                                    <option value="webapp">Application</option>
-                                    <option value="sms">SMS</option>
-                                    <option value="whatsapp">WhatsApp</option>
-                                    <option value="tous">Tous les canaux</option>
+                        </div>
+                    </div>
+
+                    <!-- Panneau tableau -->
+                    <div class="panneau-onglet" role="tabpanel" id="panneauTableau" aria-labelledby="ongletTableau" hidden>
+                        <div class="barre-outils">
+                            <div class="input-group flex-1">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                                <label for="rechercheTableau" class="sr-only">Rechercher dans les signalements</label>
+                                <input type="search" id="rechercheTableau" class="input" placeholder="Adresse, commune, référence…">
+                            </div>
+                            <div class="select-enveloppe select-compact">
+                                <label for="filtreStatutTableau" class="sr-only">Filtrer par statut</label>
+                                <select id="filtreStatutTableau" class="select">
+                                    <option value="">Tous les statuts</option>
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-accent">Envoyer l'alerte</button>
-                    </form>
+
+                        <div class="barre-groupee" id="barreGroupee" hidden>
+                            <span class="texte-sm"><span class="chiffre" id="compteSelection">0</span> sélectionné(s)</span>
+                            <div class="select-enveloppe select-compact">
+                                <label for="actionGroupee" class="sr-only">Marquer comme</label>
+                                <select id="actionGroupee" class="select">
+                                    <option value="">Marquer comme…</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm" data-action="appliquer-groupe">Appliquer</button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table" id="tableSignalements">
+                                <caption class="sr-only">Liste des signalements, triable par colonne</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="col-fixe">
+                                            <label class="checkbox"><input type="checkbox" id="toutSelectionner" aria-label="Tout sélectionner sur cette page"></label>
+                                        </th>
+                                        <th scope="col" class="col-fixe col-fixe-2">Réf.</th>
+                                        <th scope="col">Photo</th>
+                                        <th scope="col" aria-sort="none" data-tri="type_obstruction"><button type="button">Type<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col" aria-sort="none" data-tri="severite"><button type="button">Sévérité<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col" aria-sort="none" data-tri="commune"><button type="button">Commune<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col" aria-sort="descending" data-tri="created_at"><button type="button">Date<i class="bi bi-sort-down" aria-hidden="true"></i></button></th>
+                                        <th scope="col" aria-sort="none" data-tri="statut"><button type="button">Statut<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpsTableau" aria-live="polite" aria-busy="true"></tbody>
+                            </table>
+                        </div>
+
+                        <nav class="pagination" aria-label="Pagination du tableau">
+                            <button type="button" class="btn btn-secondary btn-sm" data-action="page-precedente" aria-label="Page précédente"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                            <span class="texte-sm" id="infoPagination" aria-live="polite">Page 1 sur 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-action="page-suivante" aria-label="Page suivante"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        </nav>
+                    </div>
+
+                    <!-- Panneau alertes -->
+                    <div class="panneau-onglet" role="tabpanel" id="panneauAlertes" aria-labelledby="ongletAlertes" hidden>
+                        <div class="grille-alertes">
+                            <form class="card form-alerte" id="formAlerte" novalidate>
+                                <h2 class="card-titre"><i class="bi bi-megaphone" aria-hidden="true"></i> Nouvelle alerte</h2>
+                                <div class="form-group mt-4">
+                                    <label for="alerteTitre" class="form-label">Titre</label>
+                                    <input type="text" id="alerteTitre" class="input" maxlength="80" required aria-describedby="erreur-alerteTitre" placeholder="Ex. : Fortes pluies attendues jeudi">
+                                    <p class="form-error" id="erreur-alerteTitre" hidden></p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="alerteMessage" class="form-label">Message</label>
+                                    <textarea id="alerteMessage" class="textarea" maxlength="320" required aria-describedby="aide-alerteMessage erreur-alerteMessage" placeholder="Consignes claires pour les habitants concernés."></textarea>
+                                    <p class="form-helper" id="aide-alerteMessage">320 caractères maximum (limite SMS : 160 par message).</p>
+                                    <p class="form-error" id="erreur-alerteMessage" hidden></p>
+                                </div>
+                                <div class="grille-2">
+                                    <div class="form-group">
+                                        <label for="alerteNiveau" class="form-label">Niveau</label>
+                                        <div class="select-enveloppe">
+                                            <select id="alerteNiveau" class="select">
+                                                <option value="info">Information</option>
+                                                <option value="attention">Attention</option>
+                                                <option value="danger">Danger</option>
+                                                <option value="critique">Critique</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="alerteZone" class="form-label">Zone</label>
+                                        <div class="select-enveloppe">
+                                            <select id="alerteZone" class="select">
+                                                <option value="">Toute la région de Dakar</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <fieldset class="form-group">
+                                    <legend class="form-label">Canal de diffusion</legend>
+                                    <div class="chips">
+                                        <label class="radio"><input type="radio" name="canal" value="webapp" checked>Application</label>
+                                        <label class="radio"><input type="radio" name="canal" value="sms">SMS</label>
+                                        <label class="radio"><input type="radio" name="canal" value="whatsapp">WhatsApp</label>
+                                        <label class="radio"><input type="radio" name="canal" value="tous">Tous</label>
+                                    </div>
+                                </fieldset>
+                                <button type="submit" class="btn btn-plein btn-block" id="btnEnvoyerAlerte">
+                                    <i class="bi bi-send" aria-hidden="true"></i>Diffuser l'alerte
+                                </button>
+                            </form>
+
+                            <div>
+                                <h2 class="label" style="margin-bottom:var(--space-3)">Historique</h2>
+                                <ul class="liste-alertes-dash" id="historiqueAlertes" aria-busy="true"></ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <h3 style="margin-bottom:16px">Alertes recentes</h3>
-                <div id="listeAlertes"></div>
-            </div>
+                <div class="grille-graphiques">
+                    <figure class="card carte-graphique">
+                        <figcaption class="card-entete">
+                            <div>
+                                <h2 class="card-titre">Signalements par jour</h2>
+                                <p class="texte-sm texte-secondaire" id="sousTitreEvolution">30 derniers jours</p>
+                            </div>
+                            <span class="chiffre texte-sm" id="moyenneJour"></span>
+                        </figcaption>
+                        <div class="zone-graphique"><canvas id="graphiqueEvolution" role="img" aria-label="Courbe du nombre de signalements par jour"></canvas></div>
+                    </figure>
+                    <figure class="card carte-graphique">
+                        <figcaption class="card-entete">
+                            <div>
+                                <h2 class="card-titre">Répartition par type</h2>
+                                <p class="texte-sm texte-secondaire">Cinq types principaux</p>
+                            </div>
+                        </figcaption>
+                        <div class="graphique-donut">
+                            <div class="zone-graphique zone-donut"><canvas id="graphiqueTypes" role="img" aria-label="Répartition des signalements par type d'obstruction"></canvas></div>
+                            <ul class="legende-graphique" id="legendeTypes"></ul>
+                        </div>
+                    </figure>
+                </div>
+            </section>
+
+            <!-- Zones a risque -->
+            <section data-vue="zones" class="dash-section" aria-labelledby="titreZones" hidden>
+                <header class="section-dash-entete">
+                    <div>
+                        <h1 id="titreZones">Zones à risque</h1>
+                        <p class="texte-secondaire">Score calculé à partir de l'historique des inondations, de la topographie et des signalements actifs.</p>
+                    </div>
+                </header>
+                <ul class="grille-zones" id="grilleZones" aria-busy="true"></ul>
+            </section>
+
+            <!-- Statistiques -->
+            <section data-vue="statistiques" class="dash-section" aria-labelledby="titreStats" hidden>
+                <header class="section-dash-entete">
+                    <div>
+                        <h1 id="titreStats">Statistiques</h1>
+                        <p class="texte-secondaire" id="sousTitreStats">Sur la période sélectionnée</p>
+                    </div>
+                </header>
+                <ul class="grille-stats" id="tuilesStats" aria-label="Indicateurs de performance"></ul>
+                <div class="grille-graphiques">
+                    <figure class="card carte-graphique">
+                        <figcaption class="card-entete">
+                            <div>
+                                <h2 class="card-titre">Signalements par commune</h2>
+                                <p class="texte-sm texte-secondaire">Dix communes les plus touchées</p>
+                            </div>
+                        </figcaption>
+                        <div class="zone-graphique zone-haute"><canvas id="graphiqueCommunes" role="img" aria-label="Nombre de signalements par commune"></canvas></div>
+                    </figure>
+                    <figure class="card carte-graphique">
+                        <figcaption class="card-entete">
+                            <div>
+                                <h2 class="card-titre">Répartition par sévérité</h2>
+                                <p class="texte-sm texte-secondaire">Du niveau 1 (mineure) au niveau 5 (critique)</p>
+                            </div>
+                        </figcaption>
+                        <div class="zone-graphique zone-haute"><canvas id="graphiqueSeverite" role="img" aria-label="Nombre de signalements par niveau de sévérité"></canvas></div>
+                    </figure>
+                </div>
+            </section>
+
+            <!-- Parametres -->
+            <section data-vue="parametres" class="dash-section" aria-labelledby="titreParametres" hidden>
+                <header class="section-dash-entete">
+                    <div>
+                        <h1 id="titreParametres">Paramètres</h1>
+                        <p class="texte-secondaire">Préférences de l'espace autorités sur cet appareil.</p>
+                    </div>
+                </header>
+                <div class="grille-parametres">
+                    <div class="card">
+                        <h2 class="card-titre">Affichage</h2>
+                        <ul class="reglages mt-4">
+                            <li><label class="interrupteur"><span><i class="bi bi-sun" aria-hidden="true"></i>Mode clair</span><input type="checkbox" data-reglage="theme"></label></li>
+                            <li>
+                                <div class="reglage-ligne">
+                                    <i class="bi bi-translate" aria-hidden="true"></i>
+                                    <label for="langueDash">Langue</label>
+                                    <div class="select-enveloppe">
+                                        <select id="langueDash" class="select" data-action="changer-langue">
+                                            <option value="fr">Français</option>
+                                            <option value="wo">Wolof</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-titre">Notifications</h2>
+                        <ul class="reglages mt-4">
+                            <li><label class="interrupteur"><span><i class="bi bi-bell" aria-hidden="true"></i>Nouveaux signalements critiques</span><input type="checkbox" data-preference="notif-critiques" checked></label></li>
+                            <li><label class="interrupteur"><span><i class="bi bi-volume-up" aria-hidden="true"></i>Son des notifications</span><input type="checkbox" data-preference="notif-son"></label></li>
+                            <li><button type="button" class="reglage-ligne btn-lien" data-action="permission-notifications"><i class="bi bi-app-indicator" aria-hidden="true"></i>Autoriser les notifications du navigateur</button></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-titre">Données</h2>
+                        <ul class="reglages mt-4">
+                            <li><button type="button" class="reglage-ligne btn-lien" data-action="exporter"><i class="bi bi-download" aria-hidden="true"></i>Exporter les signalements filtrés (CSV)</button></li>
+                            <li><button type="button" class="reglage-ligne btn-lien" data-action="reinitialiser-demo" data-si-demo hidden><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Réinitialiser les données de démonstration</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/donnees.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/gamification.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/heatmap.js"></script>
+    <script src="js/satellite.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/pwa.js"></script>
     <script src="js/dashboard.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        window.debrisat.dashboard.init();
-
-        // Responsive sidebar
-        if (window.innerWidth <= 1024) {
-            document.getElementById('menuToggle').style.display = '';
-        }
-
-        try {
-            const saved = localStorage.getItem('debrisat-theme');
-            if (saved) document.documentElement.setAttribute('data-theme', saved);
-        } catch(e) {}
-    });
-
-    function switchSection(id) {
-        document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
-        document.getElementById('section' + id.charAt(0).toUpperCase() + id.slice(1))?.classList.add('active');
-        document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
-        event.target.closest('a')?.classList.add('active');
-
-        if (id === 'carte') {
-            setTimeout(() => window.debrisat.dashboard.carte?.invalidateSize(), 200);
-        }
-
-        if (window.innerWidth <= 1024) {
-            document.getElementById('dashSidebar').classList.remove('open');
-        }
-    }
-
-    async function creerAlerte(e) {
-        e.preventDefault();
-        const form = e.target;
-        try {
-            const { error } = await window.debrisat.supabase.from('alertes').insert({
-                titre: form.titre.value,
-                message: form.message.value,
-                type_alerte: form.type.value,
-                canal: form.canal.value
-            });
-            if (error) throw error;
-            window.debrisat.utils.toast('Alerte creee avec succes', 'success');
-            form.reset();
-            chargerAlertes();
-        } catch(err) {
-            window.debrisat.utils.toast('Erreur: ' + err.message, 'error');
-        }
-    }
-
-    async function chargerAlertes() {
-        try {
-            const { data } = await window.debrisat.supabase
-                .from('alertes')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(20);
-            const container = document.getElementById('listeAlertes');
-            if (!data || !container) return;
-            container.innerHTML = data.map(a => `
-                <div class="alert-card ${a.type_alerte}">
-                    <div style="flex:1">
-                        <h4 style="font-size:0.9375rem;margin-bottom:4px">${a.titre}</h4>
-                        <p style="font-size:0.8125rem;color:var(--text-secondary)">${a.message}</p>
-                        <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px">
-                            ${window.debrisat.utils.formatDate(a.created_at)} · ${a.canal}
-                        </p>
-                    </div>
-                    <span class="badge badge-${a.type_alerte === 'critique' ? 'danger' : a.type_alerte === 'danger' ? 'warning' : 'info'}">${a.type_alerte}</span>
-                </div>
-            `).join('');
-        } catch(e) {}
-    }
-    chargerAlertes();
-    </script>
 </body>
 </html>

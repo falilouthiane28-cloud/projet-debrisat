@@ -1,24 +1,24 @@
-// Analyse IA des images Debrisat
+// Analyse IA des photos (Edge Function analyser-image : Claude Vision)
 window.debrisat.iaAnalyse = {
-    async analyserImage(signalementId, photoUrl) {
+    async analyserSignalement(signalement) {
+        const D = window.debrisat;
+        if (D.modeDemo || !signalement?.photo_url) return null;
         try {
-            const { data, error } = await window.debrisat.supabase.functions.invoke('analyser-image', {
-                body: { signalement_id: signalementId, photo_url: photoUrl }
+            const { data, error } = await D.supabase.functions.invoke('analyser-image', {
+                body: { signalement_id: signalement.id, photo_url: signalement.photo_url }
             });
             if (error) throw error;
+            const analyse = data?.analyse;
+            if (!analyse || analyse.type_detecte === 'non_analyse') return null;
 
-            if (data?.analyse) {
-                await window.debrisat.supabase
-                    .from('signalements')
-                    .update({
-                        photo_analyse: data.analyse,
-                        severite: data.analyse.severite_suggeree || undefined
-                    })
-                    .eq('id', signalementId);
-            }
-            return data;
-        } catch(e) {
-            console.error('Erreur analyse IA:', e);
+            const type = D.TYPES_OBSTRUCTION[analyse.type_detecte]?.label || analyse.type_detecte;
+            D.notifications.toast(
+                `Type détecté : ${type}. Sévérité estimée : ${analyse.severite_suggeree}/5.`,
+                'info', 6000, 'Analyse IA terminée'
+            );
+            return analyse;
+        } catch (e) {
+            console.warn('Analyse IA indisponible :', e);
             return null;
         }
     }

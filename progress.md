@@ -2,7 +2,7 @@
 
 Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 
-**Derniere mise a jour** : 2026-10-18
+**Derniere mise a jour** : 2026-10-19
 
 ---
 
@@ -16,7 +16,7 @@ Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 - [ ] Configuration Supabase (cles API)
 - [ ] Deploiement du schema en production
 - [ ] Bucket Storage "photos" cree
-- [ ] Icones PWA (192x192, 512x512)
+- [x] Icones PWA (192x192, 512x512)
 
 ### Landing page (`index.html`)
 - [x] Hero avec stats dramatiques
@@ -74,14 +74,23 @@ Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 - [x] Prompt d'installation
 - [x] Manifest avec theme color
 
+### Design « Obsidian Glass »
+- [x] Design system (tokens, verre, sombre par defaut + clair)
+- [x] Zero emoji, Bootstrap Icons partout
+- [x] Page `auth.html` (connexion / inscription / mot de passe oublie)
+- [x] Page `profil.html` (niveau, badges, historique, parametres)
+- [x] Mode demonstration sans Supabase
+- [x] Accessibilite : lien d'evitement, focus visible, piege de focus des modales, aria-label, mouvement reduit
+- [x] Responsive verifie a 375 / 768 / 1024 / 1440 px
+
 ### Non commence
-- [ ] Traduction Wolof (i18n)
+- [ ] Traduction Wolof complete (base partielle dans `js/i18n.js`)
 - [ ] Integration Sentinel-2 WMS reelle
 - [ ] Route optimization pour equipes de nettoyage
 - [ ] Editeur de zones a risque (draw polygons)
 - [ ] Tests automatises
 - [ ] CI/CD
-- [ ] Logo definitif
+- [x] Logo definitif (`img/logo.png`)
 
 ---
 
@@ -90,3 +99,4 @@ Suivi de l'avancement du projet. Mis a jour a chaque etape importante.
 | Date | Action | Commit |
 |------|--------|--------|
 | 2026-10-18 | Initialisation complete (29 fichiers, 4000 lignes) | `b4fc3b6` |
+| 2026-10-19 | Refonte complete « Obsidian Glass » (5 pages, 8 CSS, 21 JS) | — |

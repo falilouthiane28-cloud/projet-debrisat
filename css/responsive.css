@@ -1,0 +1,395 @@
+/* Points de rupture : mobile d'abord (375px), puis 768px, 1024px, 1440px */
+
+/* ================= TABLETTE ================= */
+@media (min-width: 768px) {
+    .conteneur {
+        padding-inline: var(--space-7);
+    }
+
+    .toast-container {
+        left: auto;
+        right: var(--space-6);
+        top: calc(var(--hauteur-navbar) + var(--space-4));
+        transform: none;
+        width: 400px;
+    }
+
+    .toast {
+        animation-name: glisser-droite;
+    }
+
+    .modal-overlay {
+        align-items: center;
+        padding: var(--space-6);
+    }
+
+    .modal {
+        border-radius: var(--radius-2xl);
+        transform: translateY(24px) scale(0.98);
+        opacity: 0;
+        transition: transform 300ms var(--ease-in-out), opacity 300ms var(--ease-in-out);
+    }
+
+    .modal-overlay.active .modal {
+        transform: none;
+        opacity: 1;
+        transition: transform 400ms var(--ease-out), opacity 300ms var(--ease-out);
+    }
+
+    .modal .bottom-sheet-handle {
+        display: none;
+    }
+
+    .modal-header {
+        padding-top: var(--space-5);
+    }
+
+    #piedSucces {
+        flex-direction: row;
+    }
+
+    #piedSucces .btn {
+        width: auto;
+        flex: 1;
+    }
+
+    /* Accueil */
+    .hero-cta {
+        flex-direction: row;
+        width: auto;
+    }
+
+    .hero-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grille-chiffres {
+        gap: var(--space-4);
+    }
+
+    .chiffre-cle {
+        padding: var(--space-7) var(--space-6);
+    }
+
+    .chiffre-cle-valeur {
+        font-size: var(--text-4xl);
+    }
+
+    .carte-apercu-panneau {
+        left: var(--space-6);
+        right: auto;
+        bottom: var(--space-6);
+        width: 320px;
+    }
+
+    .section-titre {
+        font-size: var(--text-4xl);
+    }
+
+    .pied-interieur {
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+    }
+
+    .pied-bas {
+        grid-column: 1 / -1;
+    }
+
+    /* App citoyenne */
+    .bottom-nav {
+        display: none;
+    }
+
+    .app-principal {
+        bottom: 0;
+    }
+
+    .masque-mobile,
+    .app-btn-signaler {
+        display: inline-flex;
+    }
+
+    .btn-recherche-mobile {
+        display: none;
+    }
+
+    .app-recherche,
+    .app-recherche.ouverte {
+        position: static;
+        display: block;
+        flex: 1;
+        max-width: 360px;
+        margin-left: auto;
+        padding: 0;
+        background: none;
+        border: 0;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        animation: none;
+    }
+
+    .app-actions {
+        margin-left: var(--space-2);
+    }
+
+    .panneau-filtres {
+        position: absolute;
+        top: calc(var(--space-4) + 44px + var(--space-3));
+        left: var(--space-4);
+        right: auto;
+        bottom: var(--space-4);
+        width: 300px;
+        max-height: none;
+        border-radius: var(--radius-xl);
+        transform: translateX(calc(-100% - var(--space-6)));
+        z-index: 465;
+    }
+
+    .panneau-filtres.ouvert {
+        transform: translateX(0);
+        box-shadow: var(--glass-shadow-elevated);
+    }
+
+    .liste-types {
+        grid-template-columns: 1fr;
+    }
+
+    .panneau-filtres .bottom-sheet-handle {
+        display: none;
+    }
+
+    .panneau-vue {
+        inset: var(--space-4) var(--space-4) var(--space-4) auto;
+        width: 400px;
+        border-radius: var(--radius-xl);
+        border-width: 1px;
+        background: var(--glass-bg-strong);
+        animation-name: glisser-droite;
+    }
+
+    .vue-ouverte .controles-droite {
+        right: calc(400px + var(--space-4) * 2);
+    }
+
+    .vue-ouverte .app-fab,
+    .vue-ouverte .controles-bas {
+        right: calc(400px + var(--space-4) * 2);
+    }
+
+    .btn-installer {
+        bottom: var(--space-6);
+        left: auto;
+        right: calc(56px + var(--space-4) * 2);
+        transform: none;
+    }
+
+    .grille-badges {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .page-profil {
+        padding-bottom: var(--space-10);
+    }
+
+    /* Dashboard */
+    .masque-mobile-dash {
+        display: inline-flex;
+    }
+
+    .dash-filtres .indicateur-demo .texte-long {
+        display: inline;
+    }
+
+    .dash-contenu {
+        padding: var(--space-6) var(--space-6) var(--space-10);
+        gap: var(--space-6);
+    }
+
+    .grille-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .grille-zones,
+    .grille-parametres {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .graphique-donut {
+        grid-template-columns: 200px 1fr;
+    }
+
+    .dash-carte {
+        height: 480px;
+    }
+}
+
+/* ================= ORDINATEUR ================= */
+@media (min-width: 1024px) {
+    .entete-menu,
+    .entete-cta-mobile {
+        display: none;
+    }
+
+    .entete-cta {
+        display: inline-flex;
+    }
+
+    .entete-liens {
+        position: static;
+        flex-direction: row;
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .entete-liens .nav-lien {
+        min-height: 40px;
+        font-size: var(--text-sm);
+    }
+
+    .hero-contenu {
+        align-items: center;
+        text-align: center;
+    }
+
+    .hero-logo {
+        display: block;
+    }
+
+    .hero-titre {
+        max-width: 16ch;
+    }
+
+    .hero-stats {
+        max-width: 960px;
+        margin-top: var(--space-9);
+    }
+
+    .etapes {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .etapes::before {
+        left: 10%;
+        right: 10%;
+        top: 108px;
+        bottom: auto;
+        width: auto;
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--color-border) 15%, var(--color-border) 85%, transparent);
+    }
+
+    .grille-chiffres {
+        max-width: 880px;
+        margin-inline: auto;
+    }
+
+    .techno-carte {
+        grid-template-columns: 1.2fr 1fr;
+    }
+
+    .techno-texte {
+        padding: var(--space-10) var(--space-9);
+    }
+
+    .techno-image::after {
+        background: linear-gradient(to right, var(--color-pure-dark), transparent 45%);
+    }
+
+    .carte-apercu-map {
+        height: 600px;
+    }
+
+    .nav-liens {
+        display: flex;
+        margin-left: var(--space-6);
+    }
+
+    .app-recherche,
+    .app-recherche.ouverte {
+        max-width: 420px;
+    }
+
+    .page-auth {
+        grid-template-columns: 1.1fr minmax(0, 1fr);
+    }
+
+    .auth-visuel {
+        display: block;
+    }
+
+    .auth-panneau {
+        padding: var(--space-7) var(--space-10);
+    }
+
+    /* Dashboard */
+    .page-dashboard .sidebar {
+        transform: none;
+        width: var(--largeur-sidebar);
+        box-shadow: none;
+        z-index: var(--z-sticky);
+    }
+
+    .sidebar-fermer,
+    .dash-hamburger,
+    .page-dashboard .voile {
+        display: none;
+    }
+
+    .dash-principal {
+        margin-left: var(--largeur-sidebar);
+    }
+
+    .grille-stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .grille-stats .stat-valeur {
+        font-size: var(--text-3xl);
+    }
+
+    .grille-graphiques {
+        grid-template-columns: 1.4fr 1fr;
+    }
+
+    .graphique-donut {
+        grid-template-columns: 1fr;
+    }
+
+    .grille-alertes {
+        grid-template-columns: minmax(320px, 420px) 1fr;
+    }
+
+    .grille-parametres {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grille-zones {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ================= GRAND ECRAN ================= */
+@media (min-width: 1440px) {
+    .conteneur {
+        max-width: 1320px;
+    }
+
+    .section {
+        padding: var(--space-13) 0;
+    }
+
+    .dash-contenu {
+        padding-inline: var(--space-8);
+    }
+
+    .graphique-donut {
+        grid-template-columns: 220px 1fr;
+    }
+}

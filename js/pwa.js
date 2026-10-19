@@ -1,89 +1,110 @@
-// PWA Registration Debrisat
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then((reg) => console.log('Service Worker enregistre:', reg.scope))
-            .catch((err) => console.log('Erreur SW:', err));
+// PWA : Service Worker, installation, file d'attente hors-ligne
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', async () => {
+        try {
+            await navigator.serviceWorker.register('sw.js');
+        } catch (e) {
+            console.warn('Service Worker non enregistré :', e);
+        }
     });
 }
 
-// Prompt d'installation
-let deferredPrompt;
+window.debrisat.pwa = {
+    invitation: null,
+
+    afficherBoutonInstallation() {
+        if (document.getElementById('btnInstaller')) return;
+        const bouton = document.createElement('button');
+        bouton.id = 'btnInstaller';
+        bouton.type = 'button';
+        bouton.className = 'btn btn-primary btn-sm btn-installer no-print';
+        bouton.innerHTML = '<i class="bi bi-download" aria-hidden="true"></i>Installer l\'application';
+        bouton.addEventListener('click', async () => {
+            if (!this.invitation) return;
+            this.invitation.prompt();
+            const { outcome } = await this.invitation.userChoice;
+            if (outcome === 'accepted') bouton.remove();
+            this.invitation = null;
+        });
+        document.body.appendChild(bouton);
+    }
+};
+
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    deferredPrompt = e;
-
-    const installBtn = document.createElement('button');
-    installBtn.className = 'btn btn-primary btn-sm';
-    installBtn.textContent = 'Installer l\'app';
-    installBtn.style.cssText = 'position:fixed;bottom:90px;right:24px;z-index:500';
-    installBtn.onclick = async () => {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') installBtn.remove();
-        deferredPrompt = null;
-    };
-    document.body.appendChild(installBtn);
+    window.debrisat.pwa.invitation = e;
+    window.debrisat.pwa.afficherBoutonInstallation();
 });
 
-// File d'attente offline pour signalements
-window.debrisat.offlineQueue = {
-    DB_NAME: 'debrisat-offline',
-    STORE_NAME: 'signalements-queue',
+window.addEventListener('appinstalled', () => document.getElementById('btnInstaller')?.remove());
 
-    async ouvrirDB() {
+// File d'attente des signalements crees hors-ligne (IndexedDB)
+window.debrisat.fileHorsLigne = {
+    BASE: 'debrisat-hors-ligne',
+    MAGASIN: 'signalements',
+
+    ouvrir() {
         return new Promise((resolve, reject) => {
-            const req = indexedDB.open(this.DB_NAME, 1);
-            req.onupgradeneeded = () => {
-                req.result.createObjectStore(this.STORE_NAME, { keyPath: 'id', autoIncrement: true });
+            const requete = indexedDB.open(this.BASE, 1);
+            requete.onupgradeneeded = () => {
+                requete.result.createObjectStore(this.MAGASIN, { keyPath: 'idLocal', autoIncrement: true });
             };
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
+            requete.onsuccess = () => resolve(requete.result);
+            requete.onerror = () => reject(requete.error);
         });
     },
 
     async ajouter(signalement) {
-        try {
-            const db = await this.ouvrirDB();
-            const tx = db.transaction(this.STORE_NAME, 'readwrite');
-            tx.objectStore(this.STORE_NAME).add({
-                ...signalement,
-                timestamp: Date.now()
-            });
-            window.debrisat.utils.toast('Signalement sauvegarde hors-ligne. Il sera envoye automatiquement.', 'warning');
-        } catch(e) {}
+        const base = await this.ouvrir();
+        await new Promise((resolve, reject) => {
+            const tx = base.transaction(this.MAGASIN, 'readwrite');
+            tx.objectStore(this.MAGASIN).add({ ...signalement, horodatage: Date.now() });
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+        window.debrisat.utils.toast('Vous êtes hors-ligne. Le signalement sera envoyé dès le retour du réseau.', 'warning', 6000);
+    },
+
+    async lister() {
+        const base = await this.ouvrir();
+        return new Promise((resolve) => {
+            const requete = base.transaction(this.MAGASIN, 'readonly').objectStore(this.MAGASIN).getAll();
+            requete.onsuccess = () => resolve(requete.result || []);
+            requete.onerror = () => resolve([]);
+        });
+    },
+
+    async supprimer(idLocal) {
+        const base = await this.ouvrir();
+        base.transaction(this.MAGASIN, 'readwrite').objectStore(this.MAGASIN).delete(idLocal);
     },
 
     async synchroniser() {
         try {
-            const db = await this.ouvrirDB();
-            const tx = db.transaction(this.STORE_NAME, 'readonly');
-            const store = tx.objectStore(this.STORE_NAME);
-            const items = await new Promise(resolve => {
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => resolve([]);
-            });
-
-            for (const item of items) {
+            const elements = await this.lister();
+            let envoyes = 0;
+            for (const element of elements) {
                 try {
-                    const { error } = await window.debrisat.supabase
-                        .from('signalements')
-                        .insert(item);
-                    if (!error) {
-                        const delTx = db.transaction(this.STORE_NAME, 'readwrite');
-                        delTx.objectStore(this.STORE_NAME).delete(item.id);
-                    }
-                } catch(e) {}
+                    const { idLocal, horodatage, ...donnees } = element;
+                    await window.debrisat.donnees.creerSignalement(donnees);
+                    await this.supprimer(idLocal);
+                    envoyes++;
+                } catch (e) {
+                    break;
+                }
             }
-
-            if (items.length > 0) {
-                window.debrisat.utils.toast(`${items.length} signalement(s) synchronise(s)`, 'success');
-            }
-        } catch(e) {}
+            if (envoyes) window.debrisat.utils.toast(`${envoyes} signalement(s) hors-ligne envoyé(s).`, 'success');
+        } catch (e) {
+            console.warn('Synchronisation hors-ligne impossible :', e);
+        }
     }
 };
 
 window.addEventListener('online', () => {
-    window.debrisat.offlineQueue.synchroniser();
+    window.debrisat.utils.toast('Connexion rétablie.', 'success', 3000);
+    window.debrisat.fileHorsLigne.synchroniser();
+});
+
+window.addEventListener('offline', () => {
+    window.debrisat.utils.toast('Vous êtes hors-ligne. La carte affiche les données en cache.', 'warning', 5000);
 });

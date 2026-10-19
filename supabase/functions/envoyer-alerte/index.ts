@@ -67,7 +67,7 @@ serve(async (req) => {
       .select('telephone')
       .not('telephone', 'is', null)
 
-    const message = `⚠️ DEBRISAT ALERTE\n${alerte.titre}\n${alerte.message}`
+    const message = `DEBRISAT ALERTE\n${alerte.titre}\n${alerte.message}`
     let envoyes = 0
 
     if (profils) {

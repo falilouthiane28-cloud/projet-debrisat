@@ -20,6 +20,8 @@ Plateforme citoyenne pour prevenir les inondations a Dakar en detectant et signa
 | `index.html` | Landing page avec hero, stats, carte preview |
 | `app.html` | Interface citoyen : carte Leaflet, signalements, gamification |
 | `dashboard.html` | Interface autorites : stats, graphiques, gestion, alertes |
+| `auth.html` | Connexion, inscription, mot de passe oublie |
+| `profil.html` | Profil citoyen : niveau, badges, signalements, historique |
 
 ### Backend (Supabase)
 | Table | Usage |

@@ -76,7 +76,7 @@ CREATE TABLE public.badges (
     id TEXT PRIMARY KEY,
     nom TEXT NOT NULL,
     description TEXT NOT NULL,
-    icone TEXT NOT NULL,
+    icone TEXT NOT NULL, -- classe Bootstrap Icons (ex. bi-flag)
     condition_points INTEGER,
     condition_signalements INTEGER
 );
@@ -183,12 +183,12 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Donnees de base: badges
 INSERT INTO public.badges (id, nom, description, icone, condition_signalements) VALUES
-('premier_signalement', 'Premier Pas', 'Premier signalement effectue', '🌱', 1),
-('sentinelle_5', 'Sentinelle', '5 signalements valides', '👀', 5),
-('gardien_10', 'Gardien du Quartier', '10 signalements valides', '🛡️', 10),
-('protecteur_25', 'Protecteur de Dakar', '25 signalements valides', '🏆', 25),
-('champion_50', 'Champion Anti-Inondation', '50 signalements valides', '⭐', 50),
-('verificateur_10', 'Verificateur', '10 verifications effectuees', '✅', NULL);
+('premier_signalement', 'Premier Pas', 'Premier signalement effectue', 'bi-flag', 1),
+('sentinelle_5', 'Sentinelle', '5 signalements valides', 'bi-eye', 5),
+('gardien_10', 'Gardien du Quartier', '10 signalements valides', 'bi-shield-check', 10),
+('protecteur_25', 'Protecteur de Dakar', '25 signalements valides', 'bi-trophy', 25),
+('champion_50', 'Champion Anti-Inondation', '50 signalements valides', 'bi-star', 50),
+('verificateur_10', 'Verificateur', '10 verifications effectuees', 'bi-patch-check', NULL);
 
 -- Donnees de base: zones a risque
 INSERT INTO public.zones_risque (nom, commune, zone, score_risque, historique_inondations) VALUES

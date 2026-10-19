@@ -70,7 +70,7 @@ serve(async (req) => {
             .getPublicUrl(nomFichier)
 
           sessions.set(from, { etape: 'localisation', photoUrl: publicUrl })
-          reponse = 'Photo recue ! Maintenant, partagez votre localisation (bouton 📎 > Localisation dans WhatsApp).'
+          reponse = 'Photo recue ! Maintenant, partagez votre localisation (trombone > Localisation dans WhatsApp).'
         }
       } else {
         reponse = `Bienvenue sur Debrisat ! Pour signaler une obstruction de canal, envoyez une photo.`
@@ -82,7 +82,7 @@ serve(async (req) => {
         session.etape = 'type'
         reponse = `Localisation recue ! ${TYPES_MENU}\n\nRepondez avec le numero.`
       } else {
-        reponse = 'Veuillez partager votre localisation GPS (bouton 📎 > Localisation).'
+        reponse = 'Veuillez partager votre localisation GPS (trombone > Localisation).'
       }
     } else if (session.etape === 'type') {
       const typeChoisi = TYPE_MAP[body]

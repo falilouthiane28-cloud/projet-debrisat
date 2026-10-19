@@ -1,254 +1,391 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debrisat — Carte des signalements</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Carte des signalements — Debrisat</title>
+    <meta name="description" content="Carte en temps réel des obstructions de canaux à Dakar. Signalez un canal bouché en quatre étapes.">
+    <meta name="theme-color" content="#0A0A0A">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1B4D3E">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="icon" type="image/png" href="img/icon-192.png">
+    <link rel="apple-touch-icon" href="img/icon-192.png">
+
+    <script src="js/theme.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
-    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/app.css">
-    <style>
-        .marker-cluster { text-align: center; }
-        .cluster-small, .cluster-medium, .cluster-large {
-            width: 100%; height: 100%; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-weight: 700; font-size: 0.875rem;
-        }
-        .cluster-small { background: rgba(76,175,80,0.8); }
-        .cluster-medium { background: rgba(255,107,53,0.8); }
-        .cluster-large { background: rgba(229,57,53,0.8); }
-    </style>
+    <link rel="stylesheet" href="css/responsive.css">
 </head>
-<body>
-    <!-- Header -->
-    <header class="app-header">
-        <a href="index.html" class="logo">Debrisat</a>
-        <div class="app-header-actions">
-            <button class="btn btn-ghost btn-sm" id="btnFiltres" onclick="toggleSidebar()" aria-label="Filtres">☰ Filtres</button>
-            <div data-auth="deconnecte">
-                <button class="btn btn-primary btn-sm" onclick="afficherModalAuth('connexion')">Connexion</button>
+<body class="page-app">
+    <a href="#carte" class="lien-evitement">Aller à la carte</a>
+
+    <!-- Barre superieure -->
+    <header class="navbar app-navbar" role="banner">
+        <a href="index.html" class="logo" aria-label="Debrisat, retour à l'accueil">
+            <img src="img/logo-mark.png" alt="" width="32" height="32">
+            <span class="logo-texte">Debrisat</span>
+        </a>
+
+        <nav class="nav-liens" role="navigation" aria-label="Vues de l'application">
+            <a href="#carte" class="nav-lien" data-route="carte"><i class="bi bi-map" aria-hidden="true"></i><span data-i18n="nav.carte">Carte</span></a>
+            <a href="#liste" class="nav-lien" data-route="liste"><i class="bi bi-list-ul" aria-hidden="true"></i><span data-i18n="nav.liste">Liste</span></a>
+            <a href="#classement" class="nav-lien" data-route="classement"><i class="bi bi-trophy" aria-hidden="true"></i><span data-i18n="nav.classement">Classement</span></a>
+        </nav>
+
+        <form class="app-recherche" role="search" id="formRecherche">
+            <div class="input-group">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <label for="champRecherche" class="sr-only">Rechercher une adresse, un quartier ou une commune</label>
+                <input type="search" id="champRecherche" class="input" placeholder="Rechercher un quartier, une rue…" autocomplete="off">
             </div>
-            <div data-auth="connecte" style="display:none;display:flex;align-items:center;gap:8px">
-                <button class="btn btn-ghost btn-sm" onclick="toggleProfil()">
-                    <span class="avatar" id="userAvatar" style="width:32px;height:32px;font-size:0.8rem">?</span>
-                    <span id="userNom" style="font-size:0.875rem"></span>
-                </button>
-                <button class="btn btn-ghost btn-sm" onclick="window.debrisat.auth.deconnexion()">Deconnexion</button>
-            </div>
+        </form>
+
+        <div class="app-actions">
+            <span class="indicateur-demo" data-si-demo hidden title="Les données affichées sont fictives">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>Démo
+            </span>
+            <button type="button" class="btn btn-icon btn-recherche-mobile" id="btnRechercheMobile" aria-label="Rechercher" aria-expanded="false" aria-controls="formRecherche">
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-icon masque-mobile" data-action="basculer-theme" aria-label="Passer en mode clair">
+                <i class="bi bi-sun" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-icon cloche" data-action="ouvrir-modale" data-cible="modaleAlertes" aria-label="Alertes, nouvelles alertes disponibles">
+                <i class="bi bi-bell" aria-hidden="true"></i>
+                <span class="point-rouge" id="pointAlertes" aria-hidden="true"></span>
+            </button>
+            <a href="profil.html" class="btn btn-icon masque-mobile" aria-label="Mon profil">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
+            </a>
+            <button type="button" class="btn btn-plein btn-sm app-btn-signaler" data-action="signaler">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i><span data-i18n="nav.signaler">Signaler</span>
+            </button>
         </div>
     </header>
 
-    <!-- Sidebar filtres -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>Filtres</h2>
-            <button class="btn-close" onclick="toggleSidebar()">&times;</button>
+    <main id="contenu" class="app-principal" role="main">
+        <div id="carte" class="app-carte" tabindex="-1" role="region" aria-label="Carte interactive des signalements à Dakar"></div>
+
+        <!-- Controles gauche -->
+        <div class="controles-carte controles-gauche">
+            <button type="button" class="btn btn-icon btn-filtres" id="btnFiltres" aria-label="Afficher les filtres" aria-expanded="false" aria-controls="panneauFiltres">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                <span class="compteur-filtres" id="compteurFiltres" hidden></span>
+            </button>
         </div>
 
-        <div class="sidebar-section">
-            <h4>Type d'obstruction</h4>
-            <div class="filter-chips" id="filtreType"></div>
-        </div>
-
-        <div class="sidebar-section">
-            <h4>Statut</h4>
-            <div class="filter-chips" id="filtreStatut"></div>
-        </div>
-
-        <div class="sidebar-section">
-            <h4>Severite minimum</h4>
-            <input type="range" min="1" max="5" value="1" class="severity-slider"
-                   id="filtreSeverite" oninput="appliquerFiltres()">
-            <div class="severity-labels"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-        </div>
-
-        <div class="sidebar-section">
-            <h4>Commune</h4>
-            <select class="form-select" id="filtreCommune" onchange="appliquerFiltres()">
-                <option value="">Toutes les communes</option>
-            </select>
-        </div>
-
-        <div class="sidebar-section">
-            <button class="btn btn-ghost btn-sm" onclick="reinitialiserFiltres()" style="width:100%">Reinitialiser les filtres</button>
-        </div>
-
-        <div class="sidebar-section">
-            <h4>Signalements recents</h4>
-            <div class="signalement-list" id="listeSignalements"></div>
-        </div>
-    </aside>
-
-    <!-- Carte -->
-    <div class="map-container">
-        <div id="map"></div>
-
-        <div class="map-controls">
-            <button class="map-control-btn" onclick="window.debrisat.carte.centrerSurUtilisateur()" title="Ma position" aria-label="Centrer sur ma position">📍</button>
-            <button class="map-control-btn" id="btnHeatmap" onclick="toggleHeatmap()" title="Heatmap" aria-label="Afficher la heatmap">🔥</button>
-            <button class="map-control-btn active" id="btnZones" onclick="toggleZones()" title="Zones a risque" aria-label="Zones a risque">⚠️</button>
-            <button class="map-control-btn" id="btnSatellite" onclick="toggleSatellite()" title="Satellite" aria-label="Vue satellite">🛰️</button>
-        </div>
-    </div>
-
-    <!-- FAB Signaler -->
-    <button class="fab" onclick="window.debrisat.signalement.ouvrir()" aria-label="Nouveau signalement">+</button>
-
-    <!-- Modal signalement -->
-    <div class="modal-overlay" id="signalementOverlay">
-        <div class="modal" id="signalementModal">
-            <div class="modal-header">
-                <h3>Nouveau signalement</h3>
-                <button class="btn-close" onclick="window.debrisat.signalement.fermer()">&times;</button>
+        <!-- Controles droite -->
+        <div class="controles-carte controles-droite">
+            <div class="groupe-zoom" role="group" aria-label="Zoom">
+                <button type="button" data-action="zoom-plus" aria-label="Zoomer"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                <button type="button" data-action="zoom-moins" aria-label="Dézoomer"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
             </div>
-            <div class="modal-body">
-                <div class="step-indicator">
-                    <div class="step-dot active"></div>
-                    <div class="step-dot"></div>
-                    <div class="step-dot"></div>
-                    <div class="step-dot"></div>
-                    <div class="step-dot"></div>
+            <button type="button" class="btn btn-icon" data-action="chaleur" aria-pressed="false" aria-label="Carte de chaleur" title="Carte de chaleur">
+                <i class="bi bi-fire" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-icon" data-action="zones" aria-pressed="false" aria-label="Zones à risque" title="Zones à risque">
+                <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-icon" data-action="satellite" aria-pressed="false" aria-label="Vue satellite Sentinel-2" title="Vue satellite">
+                <i class="bi bi-broadcast" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="controles-carte controles-bas">
+            <button type="button" class="btn btn-icon" data-action="localiser" aria-label="Centrer sur ma position" title="Ma position">
+                <i class="bi bi-crosshair" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <!-- Legende -->
+        <div class="legende-carte glass-lourd" aria-hidden="true">
+            <span>Sévérité</span>
+            <span class="severity-bar"></span>
+            <span class="legende-bornes"><span>1</span><span>5</span></span>
+        </div>
+
+        <!-- Panneau de filtres -->
+        <aside class="panneau-filtres glass-lourd" id="panneauFiltres" role="complementary" aria-labelledby="titreFiltres" hidden>
+            <span class="bottom-sheet-handle" aria-hidden="true"></span>
+            <div class="panneau-entete">
+                <h2 id="titreFiltres"><i class="bi bi-funnel" aria-hidden="true"></i>Filtres</h2>
+                <button type="button" class="btn btn-icon" data-action="fermer-filtres" aria-label="Fermer les filtres">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <form class="panneau-corps" id="formFiltres">
+                <fieldset class="groupe-filtre">
+                    <legend class="form-label">Type d'obstruction</legend>
+                    <div class="liste-types" id="filtreTypes"></div>
+                </fieldset>
+
+                <div class="groupe-filtre">
+                    <label for="filtreSeverite" class="form-label">Sévérité minimale</label>
+                    <div class="rangee entre">
+                        <span class="texte-sm" id="valeurSeveriteFiltre">1 — Mineure</span>
+                    </div>
+                    <input type="range" id="filtreSeverite" class="slider" min="1" max="5" step="1" value="1" aria-describedby="valeurSeveriteFiltre">
+                    <div class="graduations" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
                 </div>
 
-                <!-- Etape 1: Photo -->
-                <div class="step-content active" data-step="1">
-                    <h4 style="margin-bottom:16px">Prenez une photo</h4>
-                    <label class="photo-upload" for="photoInput">
-                        <div class="photo-upload-icon">📸</div>
-                        <p>Cliquez pour prendre une photo ou choisir un fichier</p>
-                        <div id="photoPreview"></div>
+                <fieldset class="groupe-filtre">
+                    <legend class="form-label">Statut</legend>
+                    <div class="chips" id="filtreStatuts">
+                        <button type="button" class="chip" data-statut="en_attente" aria-pressed="true"><i class="bi bi-hourglass-split" aria-hidden="true"></i>En attente</button>
+                        <button type="button" class="chip" data-statut="verifie" aria-pressed="true"><i class="bi bi-check-circle" aria-hidden="true"></i>Vérifié</button>
+                        <button type="button" class="chip" data-statut="en_cours" aria-pressed="true"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>En cours</button>
+                        <button type="button" class="chip" data-statut="resolu" aria-pressed="false"><i class="bi bi-check-lg" aria-hidden="true"></i>Résolu</button>
+                    </div>
+                </fieldset>
+
+                <div class="groupe-filtre">
+                    <label for="filtreCommune" class="form-label">Commune</label>
+                    <div class="select-enveloppe">
+                        <select id="filtreCommune" class="select">
+                            <option value="">Toutes les communes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <fieldset class="groupe-filtre">
+                    <legend class="form-label">Période</legend>
+                    <div class="grille-dates">
+                        <div>
+                            <label for="filtreDebut" class="form-helper" style="margin:0 0 4px">Du</label>
+                            <input type="date" id="filtreDebut" class="input">
+                        </div>
+                        <div>
+                            <label for="filtreFin" class="form-helper" style="margin:0 0 4px">Au</label>
+                            <input type="date" id="filtreFin" class="input">
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+            <div class="panneau-pied">
+                <p class="texte-sm texte-secondaire" aria-live="polite"><span class="chiffre" id="compteResultats">0</span> signalements affichés</p>
+                <button type="button" class="btn btn-ghost btn-sm" data-action="reinitialiser-filtres">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Réinitialiser
+                </button>
+            </div>
+        </aside>
+
+        <!-- Vue liste -->
+        <section class="panneau-vue glass-lourd" data-vue="liste" aria-labelledby="titreListe" hidden>
+            <div class="panneau-entete">
+                <div>
+                    <h2 id="titreListe">Signalements</h2>
+                    <p class="texte-sm texte-secondaire"><span id="compteListe">0</span> résultats selon vos filtres</p>
+                </div>
+                <div class="segmente" role="group" aria-label="Trier la liste">
+                    <button type="button" data-tri="recent" aria-pressed="true"><i class="bi bi-clock" aria-hidden="true"></i>Récents</button>
+                    <button type="button" data-tri="severite" aria-pressed="false"><i class="bi bi-reception-4" aria-hidden="true"></i>Sévérité</button>
+                </div>
+            </div>
+            <div class="panneau-corps liste-signalements" id="listeSignalements" aria-live="polite" aria-busy="true"></div>
+        </section>
+
+        <!-- Vue classement -->
+        <section class="panneau-vue glass-lourd" data-vue="classement" aria-labelledby="titreClassement" hidden>
+            <div class="panneau-entete">
+                <div>
+                    <h2 id="titreClassement">Classement</h2>
+                    <p class="texte-sm texte-secondaire">Citoyens les plus actifs ce mois-ci</p>
+                </div>
+                <i class="bi bi-trophy entete-icone" aria-hidden="true"></i>
+            </div>
+            <div class="panneau-corps">
+                <div class="ma-position card" id="maPosition"></div>
+                <ol class="classement" id="listeClassement" aria-busy="true"></ol>
+                <div class="bareme card">
+                    <h3 class="label">Barème des points</h3>
+                    <ul>
+                        <li><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Signalement envoyé<span class="chiffre">+10</span></li>
+                        <li><i class="bi bi-check-circle" aria-hidden="true"></i>Confirmation d'un signalement<span class="chiffre">+3</span></li>
+                        <li><i class="bi bi-patch-check" aria-hidden="true"></i>Votre signalement vérifié<span class="chiffre">+5</span></li>
+                        <li><i class="bi bi-check-lg" aria-hidden="true"></i>Votre signalement résolu<span class="chiffre">+20</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <button type="button" class="btn btn-fab app-fab" data-action="signaler" aria-label="Nouveau signalement">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        </button>
+    </main>
+
+    <!-- Navigation mobile -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navigation principale">
+        <a href="#carte" class="bottom-nav-item" data-route="carte"><i class="bi bi-map" aria-hidden="true"></i><span data-i18n="nav.carte">Carte</span></a>
+        <a href="#liste" class="bottom-nav-item" data-route="liste"><i class="bi bi-list-ul" aria-hidden="true"></i><span data-i18n="nav.liste">Liste</span></a>
+        <button type="button" class="bottom-nav-item signaler" data-action="signaler"><i class="bi bi-plus-circle" aria-hidden="true"></i><span data-i18n="nav.signaler">Signaler</span></button>
+        <a href="#classement" class="bottom-nav-item" data-route="classement"><i class="bi bi-trophy" aria-hidden="true"></i><span data-i18n="nav.classement">Classement</span></a>
+        <a href="profil.html" class="bottom-nav-item"><i class="bi bi-person" aria-hidden="true"></i><span data-i18n="nav.profil">Profil</span></a>
+    </nav>
+
+    <!-- Assistant de signalement -->
+    <div class="modal-overlay" id="modaleSignalement" data-modale>
+        <div class="modal bottom-sheet modal-signalement" role="dialog" aria-modal="true" aria-labelledby="titreSignalement" aria-describedby="etapeTexte">
+            <span class="bottom-sheet-handle" aria-hidden="true"></span>
+            <div class="modal-header">
+                <div>
+                    <h2 id="titreSignalement">Nouveau signalement</h2>
+                    <p class="texte-xs texte-secondaire" id="etapeTexte" aria-live="polite">Étape 1 sur 4 — Photo</p>
+                </div>
+                <button type="button" class="btn btn-icon" data-action="fermer-modale" aria-label="Fermer l'assistant">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <ol class="progression" aria-hidden="true">
+                <li class="progression-point" data-point="1"><span></span>Photo</li>
+                <li class="progression-point" data-point="2"><span></span>Type</li>
+                <li class="progression-point" data-point="3"><span></span>Sévérité</li>
+                <li class="progression-point" data-point="4"><span></span>Lieu</li>
+            </ol>
+
+            <div class="modal-body">
+                <!-- Etape 1 : photo -->
+                <section class="etape-assistant" data-etape="1" aria-labelledby="titreEtape1">
+                    <h3 id="titreEtape1" class="etape-titre">Photographiez l'obstruction</h3>
+                    <p class="texte-sm texte-secondaire">Une photo nette aide l'IA et les équipes à évaluer la situation.</p>
+
+                    <label class="zone-photo" id="zonePhoto" for="champPhoto">
+                        <span class="zone-photo-vide">
+                            <span class="zone-photo-icone"><i class="bi bi-camera" aria-hidden="true"></i></span>
+                            <span class="zone-photo-titre">Prendre une photo</span>
+                            <span class="texte-xs texte-muet">JPG ou PNG, 10 Mo maximum</span>
+                        </span>
+                        <img id="apercuPhoto" alt="Aperçu de la photo sélectionnée" hidden>
                     </label>
-                    <input type="file" id="photoInput" accept="image/*" capture="environment"
-                           style="display:none" onchange="window.debrisat.signalement.gererPhoto(this)">
-                </div>
+                    <input type="file" id="champPhoto" accept="image/*" capture="environment" class="sr-only" aria-describedby="erreurEtape1">
 
-                <!-- Etape 2: Type -->
-                <div class="step-content" data-step="2">
-                    <h4 style="margin-bottom:16px">Type d'obstruction</h4>
-                    <div class="type-grid" id="typeGrid"></div>
-                </div>
-
-                <!-- Etape 3: Severite -->
-                <div class="step-content" data-step="3">
-                    <h4 style="margin-bottom:16px">Niveau de gravite</h4>
-                    <input type="range" min="1" max="5" value="3" class="severity-slider"
-                           id="severiteSlider" oninput="window.debrisat.signalement.mettreAJourSeverite(this.value)">
-                    <div class="severity-labels">
-                        <span>Mineur</span><span>Faible</span><span>Moyen</span><span>Grave</span><span>Critique</span>
+                    <div class="rangee gap-2 mt-4">
+                        <label for="champGalerie" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-cloud-upload" aria-hidden="true"></i>Choisir dans la galerie
+                        </label>
+                        <input type="file" id="champGalerie" accept="image/*" class="sr-only">
+                        <button type="button" class="btn btn-ghost btn-sm" data-action="retirer-photo" id="btnRetirerPhoto" hidden>
+                            <i class="bi bi-x-circle" aria-hidden="true"></i>Retirer
+                        </button>
                     </div>
-                    <p id="severiteLabel" style="text-align:center;margin-top:12px;font-weight:600;font-size:1.25rem">3/5 — Moyen</p>
-                </div>
+                    <p class="analyse-ia texte-sm" id="analyseIa" aria-live="polite" hidden></p>
+                    <p class="form-error" id="erreurEtape1" role="alert" hidden></p>
+                </section>
 
-                <!-- Etape 4: Localisation -->
-                <div class="step-content" data-step="4">
-                    <h4 style="margin-bottom:16px">Localisation</h4>
-                    <div id="miniMap" style="height:250px;border-radius:var(--radius-sm);margin-bottom:12px"></div>
-                    <p id="adresseTexte" style="font-size:0.875rem;color:var(--text-secondary)">Cliquez sur la carte ou activez le GPS</p>
-                    <button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%" onclick="window.debrisat.signalement.initEtapeLocalisation()">Utiliser ma position GPS</button>
-                </div>
+                <!-- Etape 2 : type -->
+                <section class="etape-assistant" data-etape="2" aria-labelledby="titreEtape2" hidden>
+                    <h3 id="titreEtape2" class="etape-titre">Quel type d'obstruction ?</h3>
+                    <div class="grille-types" id="grilleTypes" role="radiogroup" aria-labelledby="titreEtape2" aria-describedby="erreurEtape2"></div>
+                    <p class="form-error" id="erreurEtape2" role="alert" hidden></p>
+                </section>
 
-                <!-- Etape 5: Description -->
-                <div class="step-content" data-step="5">
-                    <h4 style="margin-bottom:16px">Description (optionnel)</h4>
-                    <textarea class="form-textarea" id="descriptionInput"
-                              placeholder="Decrivez la situation en quelques mots..." rows="4"></textarea>
-                    <div class="card" style="margin-top:16px;padding:16px">
-                        <h4 style="font-size:0.875rem;margin-bottom:8px">Resume du signalement</h4>
-                        <p style="font-size:0.8125rem;color:var(--text-secondary)" id="resumeSignalement"></p>
+                <!-- Etape 3 : severite -->
+                <section class="etape-assistant" data-etape="3" aria-labelledby="titreEtape3" hidden>
+                    <h3 id="titreEtape3" class="etape-titre">Quelle est la gravité ?</h3>
+                    <div class="apercu-severite card" id="apercuSeverite" aria-live="polite">
+                        <span class="apercu-severite-niveau chiffre" id="niveauSeverite">3</span>
+                        <div>
+                            <p class="apercu-severite-label" id="labelSeverite">Modérée</p>
+                            <p class="texte-sm texte-secondaire" id="descriptionSeverite">Obstruction partielle, risque en cas de forte pluie.</p>
+                        </div>
                     </div>
-                </div>
+                    <label for="champSeverite" class="form-label mt-6">Niveau de sévérité</label>
+                    <input type="range" id="champSeverite" class="slider slider-severite" min="1" max="5" step="1" value="3" aria-valuetext="3 sur 5, Modérée">
+                    <div class="graduations graduations-severite" aria-hidden="true">
+                        <span>Mineure</span><span>Faible</span><span>Modérée</span><span>Grave</span><span>Critique</span>
+                    </div>
+                </section>
+
+                <!-- Etape 4 : localisation -->
+                <section class="etape-assistant" data-etape="4" aria-labelledby="titreEtape4" hidden>
+                    <h3 id="titreEtape4" class="etape-titre">Où se trouve-t-elle ?</h3>
+                    <p class="texte-sm texte-secondaire">Touchez la carte ou déplacez l'épingle pour ajuster.</p>
+                    <div class="mini-carte" id="miniCarte" role="application" aria-label="Carte de sélection de la position"></div>
+                    <div class="rangee gap-3 adresse-ligne">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                        <p class="flex-1 texte-sm" id="adresseSelection" aria-live="polite">Aucune position sélectionnée</p>
+                        <button type="button" class="btn btn-secondary btn-sm" data-action="ma-position">
+                            <i class="bi bi-crosshair" aria-hidden="true"></i>Détecter
+                        </button>
+                    </div>
+                    <p class="form-error" id="erreurEtape4" role="alert" hidden></p>
+
+                    <div class="form-group mt-4">
+                        <label for="champDescription" class="form-label">Description <span class="texte-muet">(facultatif)</span></label>
+                        <textarea id="champDescription" class="textarea" maxlength="500" rows="3" placeholder="Ex. : canal bouché devant le marché, l'eau déborde sur la route." aria-describedby="aideDescription"></textarea>
+                        <p class="form-helper" id="aideDescription">500 caractères maximum.</p>
+                    </div>
+                </section>
+
+                <!-- Succes -->
+                <section class="etape-assistant etape-succes" data-etape="succes" hidden aria-live="polite">
+                    <svg class="coche-animee" viewBox="0 0 72 72" aria-hidden="true">
+                        <circle cx="36" cy="36" r="33" />
+                        <path d="M22 37 l9 9 l19 -20" />
+                    </svg>
+                    <h3>Signalement envoyé</h3>
+                    <p class="texte-secondaire texte-sm">Merci. Les citoyens proches vont pouvoir le confirmer, puis il sera transmis aux services de la commune.</p>
+                    <p class="gain-points chiffre"><i class="bi bi-star" aria-hidden="true"></i>+10 points</p>
+                </section>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" id="btnPrecedent" style="display:none"
-                        onclick="window.debrisat.signalement.precedent()">Precedent</button>
-                <button class="btn btn-primary" id="btnSuivant"
-                        onclick="window.debrisat.signalement.suivant()">Suivant</button>
+
+            <div class="modal-footer" id="piedAssistant">
+                <button type="button" class="btn btn-ghost" id="btnPrecedent" data-action="precedent">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i><span data-i18n="action.precedent">Précédent</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btnSuivant" data-action="suivant">
+                    <span data-i18n="action.suivant">Suivant</span><i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-footer" id="piedSucces" hidden>
+                <button type="button" class="btn btn-secondary" data-action="nouveau-signalement">Nouveau signalement</button>
+                <button type="button" class="btn btn-plein" data-action="voir-mon-signalement">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>Voir sur la carte
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal auth -->
-    <div class="modal-overlay">
-        <div class="modal" id="authModal">
+    <!-- Detail d'un signalement -->
+    <div class="modal-overlay" id="modaleDetail" data-modale>
+        <div class="modal bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="titreDetail">
+            <span class="bottom-sheet-handle" aria-hidden="true"></span>
             <div class="modal-header">
-                <h3>Connexion</h3>
-                <button class="btn-close" onclick="fermerModalAuth()">&times;</button>
+                <h2 id="titreDetail">Détail du signalement</h2>
+                <button type="button" class="btn btn-icon" data-action="fermer-modale" aria-label="Fermer"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>
+            <div class="modal-body" id="contenuDetail"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-action="partager" id="btnPartager"><i class="bi bi-share" aria-hidden="true"></i>Partager</button>
+                <button type="button" class="btn btn-primary" data-action="confirmer" id="btnConfirmerDetail"><i class="bi bi-check-circle" aria-hidden="true"></i>Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="modal-overlay" id="modaleAlertes" data-modale>
+        <div class="modal bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="titreAlertes">
+            <span class="bottom-sheet-handle" aria-hidden="true"></span>
+            <div class="modal-header">
+                <h2 id="titreAlertes"><i class="bi bi-bell" aria-hidden="true"></i> Alertes</h2>
+                <button type="button" class="btn btn-icon" data-action="fermer-modale" aria-label="Fermer"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </div>
             <div class="modal-body">
-                <form id="authForm" onsubmit="soumettreAuth(event)">
-                    <div class="form-group" data-mode="inscription">
-                        <label class="form-label">Nom complet</label>
-                        <input class="form-input" name="nom" placeholder="Votre nom complet">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input class="form-input" name="email" type="email" placeholder="votre@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mot de passe</label>
-                        <input class="form-input" name="motdepasse" type="password" placeholder="Mot de passe" required minlength="6">
-                    </div>
-                    <div class="form-group" data-mode="inscription">
-                        <label class="form-label">Commune</label>
-                        <select class="form-select" name="commune" id="communeSelect"></select>
-                    </div>
-                    <div class="form-group" data-mode="inscription">
-                        <label class="form-label">Telephone (optionnel)</label>
-                        <input class="form-input" name="telephone" placeholder="+221 XX XXX XX XX">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px">Se connecter</button>
-                </form>
-                <p style="text-align:center;margin-top:16px;font-size:0.875rem">
-                    <a href="#" onclick="afficherModalAuth('inscription');return false" data-toggle="inscription">Pas de compte ? Inscrivez-vous</a>
-                    <a href="#" onclick="afficherModalAuth('connexion');return false" data-toggle="connexion" style="display:none">Deja un compte ? Connectez-vous</a>
-                </p>
+                <ul class="liste-alertes" id="listeAlertes"></ul>
             </div>
         </div>
     </div>
 
-    <!-- Panneau profil -->
-    <div class="profile-panel" id="profilPanel">
-        <div class="profile-panel-header">
-            <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;margin:0 auto 12px" id="profilAvatar">?</div>
-            <h3 id="profilNom">-</h3>
-            <p style="color:var(--text-secondary);font-size:0.875rem" id="profilCommune">-</p>
-        </div>
-        <div class="profile-stats">
-            <div class="profile-stat">
-                <div class="stat-val" id="profilPoints">0</div>
-                <div class="stat-lbl">Points</div>
-            </div>
-            <div class="profile-stat">
-                <div class="stat-val" id="profilSignalements">0</div>
-                <div class="stat-lbl">Signalements</div>
-            </div>
-            <div class="profile-stat">
-                <div class="stat-val" id="profilRang">-</div>
-                <div class="stat-lbl">Rang</div>
-            </div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab active" onclick="switchProfilTab('badges')">Badges</button>
-            <button class="tab" onclick="switchProfilTab('classement')">Classement</button>
-        </div>
-
-        <div id="tabBadges">
-            <div class="badges-grid" id="badgesGrid"></div>
-        </div>
-        <div id="tabClassement" style="display:none">
-            <div id="classementList"></div>
-        </div>
-    </div>
-
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
@@ -256,170 +393,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/map.js"></script>
-    <script src="js/signalement.js"></script>
-    <script src="js/gamification.js"></script>
-    <script src="js/realtime.js"></script>
+    <script src="js/donnees.js"></script>
     <script src="js/notifications.js"></script>
-    <script src="js/ia-analysis.js"></script>
-    <script src="js/satellite.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/map.js"></script>
     <script src="js/heatmap.js"></script>
-    <script>
-    // Init app
-    document.addEventListener('DOMContentLoaded', async () => {
-        await window.debrisat.auth.init();
-        window.debrisat.carte.init();
-        window.debrisat.realtime.init();
-        window.debrisat.notifications.init();
-        initFiltres();
-        chargerListeRecente();
-
-        // Theme
-        try {
-            const saved = localStorage.getItem('debrisat-theme');
-            if (saved) document.documentElement.setAttribute('data-theme', saved);
-        } catch(e) {}
-    });
-
-    // Filtres
-    function initFiltres() {
-        const typeContainer = document.getElementById('filtreType');
-        Object.entries(window.debrisat.TYPES_OBSTRUCTION).forEach(([key, val]) => {
-            const chip = document.createElement('button');
-            chip.className = 'filter-chip';
-            chip.dataset.type = key;
-            chip.textContent = `${val.icone} ${val.label}`;
-            chip.onclick = () => { chip.classList.toggle('active'); appliquerFiltres(); };
-            typeContainer.appendChild(chip);
-        });
-
-        const statutContainer = document.getElementById('filtreStatut');
-        Object.entries(window.debrisat.STATUTS).forEach(([key, val]) => {
-            const chip = document.createElement('button');
-            chip.className = 'filter-chip';
-            chip.dataset.statut = key;
-            chip.textContent = val.label;
-            chip.onclick = () => { chip.classList.toggle('active'); appliquerFiltres(); };
-            statutContainer.appendChild(chip);
-        });
-
-        const communeSelect = document.getElementById('filtreCommune');
-        const communeAuth = document.getElementById('communeSelect');
-        window.debrisat.COMMUNES.forEach(c => {
-            communeSelect.add(new Option(c, c));
-            if (communeAuth) communeAuth.add(new Option(c, c));
-        });
-
-        // Type grid dans modal signalement
-        const typeGrid = document.getElementById('typeGrid');
-        Object.entries(window.debrisat.TYPES_OBSTRUCTION).forEach(([key, val]) => {
-            const opt = document.createElement('div');
-            opt.className = 'type-option';
-            opt.dataset.type = key;
-            opt.innerHTML = `<span class="type-icon">${val.icone}</span>${val.label}`;
-            opt.onclick = () => window.debrisat.signalement.selectionnerType(key);
-            typeGrid.appendChild(opt);
-        });
-    }
-
-    function appliquerFiltres() {
-        const typeActif = document.querySelector('#filtreType .filter-chip.active');
-        const statutActif = document.querySelector('#filtreStatut .filter-chip.active');
-        const severiteMin = parseInt(document.getElementById('filtreSeverite').value);
-        const commune = document.getElementById('filtreCommune').value;
-
-        window.debrisat.carte.filtrer({
-            type: typeActif?.dataset.type || null,
-            statut: statutActif?.dataset.statut || null,
-            severiteMin: severiteMin > 1 ? severiteMin : null,
-            commune: commune || null
-        });
-    }
-
-    function reinitialiserFiltres() {
-        document.querySelectorAll('.filter-chip.active').forEach(c => c.classList.remove('active'));
-        document.getElementById('filtreSeverite').value = 1;
-        document.getElementById('filtreCommune').value = '';
-        window.debrisat.carte.filtrer({});
-    }
-
-    async function chargerListeRecente() {
-        try {
-            const { data } = await window.debrisat.supabase
-                .from('signalements')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(20);
-            const container = document.getElementById('listeSignalements');
-            if (!data || !container) return;
-            container.innerHTML = data.map(s => {
-                const type = window.debrisat.TYPES_OBSTRUCTION[s.type_obstruction] || {};
-                return `
-                    <div class="signalement-item" onclick="voirDetails('${s.id}')">
-                        ${s.photo_url ? `<img src="${s.photo_url}" alt="" loading="lazy">` : '<div style="width:60px;height:60px;background:var(--border);border-radius:var(--radius-sm)"></div>'}
-                        <div class="signalement-item-info">
-                            <h4>${type.icone || ''} ${type.label || s.type_obstruction}</h4>
-                            <p>${s.commune || s.adresse || 'Localisation inconnue'}</p>
-                            <p>${window.debrisat.utils.formatDate(s.created_at)}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } catch(e) {}
-    }
-
-    // Toggles
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
-    }
-
-    function toggleProfil() {
-        const panel = document.getElementById('profilPanel');
-        panel.classList.toggle('open');
-        if (panel.classList.contains('open')) chargerProfil();
-    }
-
-    async function chargerProfil() {
-        const profil = window.debrisat.auth.profil;
-        if (!profil) return;
-        document.getElementById('profilAvatar').textContent = profil.nom_complet.charAt(0);
-        document.getElementById('profilNom').textContent = profil.nom_complet;
-        document.getElementById('profilCommune').textContent = profil.commune || '';
-        document.getElementById('profilPoints').textContent = profil.points_total || 0;
-        document.getElementById('profilSignalements').textContent = profil.nombre_signalements || 0;
-
-        window.debrisat.gamification.afficherBadges(
-            document.getElementById('badgesGrid'), profil.badges || []
-        );
-
-        const classement = await window.debrisat.gamification.chargerClassement();
-        window.debrisat.gamification.afficherClassement(
-            document.getElementById('classementList'), classement
-        );
-        const rang = classement.findIndex(u => u.id === profil.id) + 1;
-        document.getElementById('profilRang').textContent = rang > 0 ? `#${rang}` : '-';
-    }
-
-    function switchProfilTab(tab) {
-        document.querySelectorAll('.profile-panel .tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById('tabBadges').style.display = tab === 'badges' ? '' : 'none';
-        document.getElementById('tabClassement').style.display = tab === 'classement' ? '' : 'none';
-    }
-
-    function toggleHeatmap() {
-        window.debrisat.carte.toggleHeatmap();
-        document.getElementById('btnHeatmap').classList.toggle('active');
-    }
-    function toggleZones() {
-        window.debrisat.carte.toggleZones();
-        document.getElementById('btnZones').classList.toggle('active');
-    }
-    function toggleSatellite() {
-        window.debrisat.satellite.toggle(window.debrisat.carte.map);
-        document.getElementById('btnSatellite').classList.toggle('active');
-    }
-    </script>
+    <script src="js/satellite.js"></script>
+    <script src="js/gamification.js"></script>
+    <script src="js/ia-analysis.js"></script>
+    <script src="js/signalement.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

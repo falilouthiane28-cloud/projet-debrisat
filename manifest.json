@@ -1,23 +1,49 @@
 {
-  "name": "Debrisat",
+  "name": "Debrisat — Prévention des inondations à Dakar",
   "short_name": "Debrisat",
-  "description": "Prevenir les inondations a Dakar, un signalement a la fois",
-  "start_url": "/app.html",
+  "description": "Signalez les canaux bouchés et suivez les obstructions à Dakar, en temps réel.",
+  "id": "./app.html",
+  "start_url": "./app.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#F5F7FA",
-  "theme_color": "#1B4D3E",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
   "orientation": "portrait-primary",
   "lang": "fr",
+  "dir": "ltr",
+  "categories": ["utilities", "government", "navigation"],
   "icons": [
     {
-      "src": "assets/icons/icon-192.png",
+      "src": "img/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "assets/icons/icon-512.png",
+      "src": "img/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouveau signalement",
+      "short_name": "Signaler",
+      "url": "./app.html#signaler",
+      "icons": [{ "src": "img/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Espace Autorités",
+      "short_name": "Autorités",
+      "url": "./dashboard.html",
+      "icons": [{ "src": "img/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

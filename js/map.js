@@ -1,204 +1,205 @@
-// Carte Leaflet Debrisat
+// Cartographie Leaflet : fonds sombre/clair, marqueurs de severite, popups en verre
 window.debrisat.carte = {
-    map: null,
-    marqueurs: {},
-    clusteur: null,
-    heatLayer: null,
-    zonesLayer: null,
-    heatVisible: false,
-    zonesVisible: true,
+    creer(element, { interactive = true, centre, zoom } = {}) {
+        const D = window.debrisat;
+        const depart = centre || D.DAKAR_CENTRE;
+        const carte = L.map(element, {
+            zoomControl: false,
+            attributionControl: true,
+            dragging: interactive,
+            scrollWheelZoom: interactive,
+            doubleClickZoom: interactive,
+            touchZoom: interactive,
+            boxZoom: interactive,
+            keyboard: interactive,
+            tap: interactive
+        }).setView([depart.lat, depart.lng], zoom || D.ZOOM_DEFAUT);
 
-    init() {
-        this.map = L.map('map', {
-            zoomControl: false
-        }).setView(
-            [window.debrisat.DAKAR_CENTER.lat, window.debrisat.DAKAR_CENTER.lng],
-            window.debrisat.ZOOM_DEFAUT
-        );
+        carte.attributionControl.setPrefix(false);
+        const tuiles = L.tileLayer(D.TUILES[D.theme.actuel()], {
+            attribution: D.TUILES.attribution,
+            subdomains: 'abcd',
+            maxZoom: 19,
+            detectRetina: false
+        }).addTo(carte);
 
-        L.control.zoom({ position: 'topright' }).addTo(this.map);
+        window.addEventListener('debrisat:theme', (e) => tuiles.setUrl(D.TUILES[e.detail.theme]));
+        carte._tuilesDebrisat = tuiles;
+        return carte;
+    },
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
-            maxZoom: 19
-        }).addTo(this.map);
+    icone(s) {
+        const taille = 10 + (s.severite || 1) * 3;
+        const resolu = s.statut === 'resolu' ? ' resolu' : '';
+        return L.divIcon({
+            className: `marqueur-signalement${resolu}`,
+            html: `<span class="point" style="--sev:${window.debrisat.utils.couleurSeverite(s.severite)};width:${taille}px;height:${taille}px;margin:${(36 - taille) / 2}px"></span>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+            popupAnchor: [0, -14]
+        });
+    },
 
-        this.clusteur = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            spiderfyOnMaxZoom: true,
-            showCoverageOnHover: false,
-            iconCreateFunction: (cluster) => {
-                const count = cluster.getChildCount();
-                let taille = 'small';
-                if (count > 10) taille = 'medium';
-                if (count > 50) taille = 'large';
-                return L.divIcon({
-                    html: `<div class="cluster-${taille}"><span>${count}</span></div>`,
-                    className: 'marker-cluster',
-                    iconSize: [40, 40]
+    iconeEpingle() {
+        return L.divIcon({
+            className: 'marqueur-epingle',
+            html: '<i class="bi bi-geo-alt-fill" aria-hidden="true"></i>',
+            iconSize: [40, 40],
+            iconAnchor: [20, 38]
+        });
+    },
+
+    iconeUtilisateur() {
+        return L.divIcon({ className: 'marqueur-utilisateur', html: '<span class="point"></span>', iconSize: [18, 18], iconAnchor: [9, 9] });
+    },
+
+    popup(s, { admin = false } = {}) {
+        const u = window.debrisat.utils;
+        const type = u.infoType(s.type_obstruction);
+        const sevInfo = window.debrisat.SEVERITES[s.severite] || window.debrisat.SEVERITES[1];
+        const source = s.source === 'whatsapp'
+            ? '<span class="badge badge-neutral"><i class="bi bi-whatsapp" aria-hidden="true"></i>WhatsApp</span>'
+            : s.source === 'satellite' ? '<span class="badge badge-neutral"><i class="bi bi-broadcast" aria-hidden="true"></i>Satellite</span>' : '';
+
+        const actions = admin
+            ? `<div class="popup-admin">
+                    <label class="form-label" for="statut-${u.echapper(s.id)}" style="margin:0">Changer le statut</label>
+                    <div class="select-enveloppe">
+                        <select class="select" id="statut-${u.echapper(s.id)}" data-action="statut-popup" data-id="${u.echapper(s.id)}">
+                            ${Object.entries(window.debrisat.STATUTS).map(([cle, v]) => `<option value="${cle}"${cle === s.statut ? ' selected' : ''}>${v.label}</option>`).join('')}
+                        </select>
+                    </div>
+               </div>`
+            : `<div class="popup-actions">
+                    <button type="button" class="btn btn-primary btn-sm" data-action="confirmer" data-id="${u.echapper(s.id)}"${['resolu', 'rejete'].includes(s.statut) ? ' disabled' : ''}>
+                        <i class="bi bi-check-circle" aria-hidden="true"></i><span data-i18n="action.confirmer">Confirmer</span>
+                    </button>
+                    <button type="button" class="btn-lien" data-action="voir-detail" data-id="${u.echapper(s.id)}">
+                        Voir détail<i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </button>
+               </div>`;
+
+        return `
+            <article class="popup-glass" aria-label="Signalement ${u.echapper(type.label)}">
+                ${u.htmlVisuel(s)}
+                <div class="popup-corps">
+                    <div class="popup-titre">
+                        <span class="popup-type"><i class="bi ${type.icone}" aria-hidden="true"></i>${u.echapper(type.label)}</span>
+                        ${u.htmlStatut(s.statut)}
+                    </div>
+                    <div class="popup-ligne">${u.htmlSeverite(s.severite)}<span>${sevInfo.label}</span>${source}</div>
+                    <div class="popup-ligne"><i class="bi bi-geo-alt" aria-hidden="true"></i><span>${u.echapper(s.adresse || 'Adresse inconnue')}${s.commune ? ', ' + u.echapper(s.commune) : ''}</span></div>
+                    <div class="popup-ligne">
+                        <i class="bi bi-clock" aria-hidden="true"></i><span>${u.formatDate(s.created_at)}</span>
+                        <span aria-hidden="true">·</span>
+                        <i class="bi bi-check-circle" aria-hidden="true"></i><span data-compte-confirmations="${u.echapper(s.id)}">${s.nombre_confirmations || 0} confirmation${(s.nombre_confirmations || 0) > 1 ? 's' : ''}</span>
+                    </div>
+                    ${actions}
+                </div>
+            </article>`;
+    },
+
+    // Gere un ensemble de marqueurs (avec regroupement) sur une carte
+    gestionnaire(carte, { regrouper = true, admin = false } = {}) {
+        const groupe = regrouper && L.markerClusterGroup
+            ? L.markerClusterGroup({
+                maxClusterRadius: 48,
+                showCoverageOnHover: false,
+                spiderfyOnMaxZoom: true,
+                iconCreateFunction: (cluster) => {
+                    const n = cluster.getChildCount();
+                    const taille = n < 10 ? 40 : n < 50 ? 48 : 56;
+                    return L.divIcon({ html: `<div>${n}</div>`, className: 'cluster-verre', iconSize: [taille, taille] });
+                }
+            })
+            : L.layerGroup();
+        groupe.addTo(carte);
+
+        const marqueurs = new Map();
+        let filtre = () => true;
+
+        const creerMarqueur = (s) => {
+            const m = L.marker([s.lat, s.lng], {
+                icon: this.icone(s),
+                title: `${window.debrisat.utils.infoType(s.type_obstruction).label}, sévérité ${s.severite}`,
+                alt: window.debrisat.utils.infoType(s.type_obstruction).label,
+                keyboard: true,
+                riseOnHover: true
+            });
+            m.bindPopup(() => this.popup(m.signalement, { admin }), { maxWidth: 300, minWidth: 280, autoPanPadding: [24, 80] });
+            m.signalement = s;
+            return m;
+        };
+
+        return {
+            groupe,
+            marqueurs,
+
+            definir(signalements) {
+                groupe.clearLayers();
+                marqueurs.clear();
+                signalements.filter(s => s.lat != null).forEach(s => marqueurs.set(s.id, creerMarqueur(s)));
+                this.appliquerFiltre();
+            },
+
+            ajouter(s) {
+                if (s.lat == null) return;
+                const existant = marqueurs.get(s.id);
+                if (existant) groupe.removeLayer(existant);
+                const m = creerMarqueur(s);
+                marqueurs.set(s.id, m);
+                if (filtre(s)) groupe.addLayer(m);
+            },
+
+            filtrer(fn) {
+                filtre = fn || (() => true);
+                return this.appliquerFiltre();
+            },
+
+            appliquerFiltre() {
+                groupe.clearLayers();
+                const visibles = [];
+                marqueurs.forEach(m => {
+                    if (filtre(m.signalement)) visibles.push(m);
                 });
+                if (groupe.addLayers) groupe.addLayers(visibles);
+                else visibles.forEach(m => groupe.addLayer(m));
+                return visibles.map(m => m.signalement);
+            },
+
+            signalements() {
+                return Array.from(marqueurs.values()).map(m => m.signalement);
+            },
+
+            ouvrir(id) {
+                const m = marqueurs.get(id);
+                if (!m) return;
+                if (groupe.zoomToShowLayer) groupe.zoomToShowLayer(m, () => m.openPopup());
+                else {
+                    carte.setView(m.getLatLng(), 17);
+                    m.openPopup();
+                }
             }
+        };
+    },
+
+    couleurZone(score) {
+        if (score >= 85) return 'var(--severity-5)';
+        if (score >= 75) return 'var(--severity-4)';
+        return 'var(--severity-3)';
+    },
+
+    dessinerZones(carte, zones) {
+        const couche = L.layerGroup();
+        const styles = getComputedStyle(document.documentElement);
+        zones.forEach(z => {
+            if (!z.polygone?.length) return;
+            const variable = this.couleurZone(z.score_risque).match(/--[\w-]+/)[0];
+            const couleur = styles.getPropertyValue(variable).trim();
+            L.polygon(z.polygone, { color: couleur, weight: 1, opacity: 0.7, fillColor: couleur, fillOpacity: 0.07, dashArray: '3 5' })
+                .bindTooltip(`<strong>${window.debrisat.utils.echapper(z.nom)}</strong><br>Risque ${z.score_risque}/100`, { className: 'etiquette-zone', sticky: true })
+                .addTo(couche);
         });
-        this.map.addLayer(this.clusteur);
-
-        this.zonesLayer = L.layerGroup().addTo(this.map);
-
-        this.chargerSignalements();
-        this.chargerZonesRisque();
-    },
-
-    async chargerSignalements() {
-        try {
-            const { data, error } = await window.debrisat.supabase
-                .from('signalements')
-                .select('*')
-                .neq('statut', 'rejete')
-                .order('created_at', { ascending: false })
-                .limit(500);
-
-            if (error) throw error;
-            if (data) {
-                this.clusteur.clearLayers();
-                this.marqueurs = {};
-                data.forEach(s => this.ajouterMarqueur(s));
-                this.mettreAJourHeatmap(data);
-            }
-        } catch (e) {
-            console.error('Erreur chargement signalements:', e);
-        }
-    },
-
-    ajouterMarqueur(signalement) {
-        if (!signalement.localisation) return;
-        let lat, lng;
-        if (typeof signalement.localisation === 'string') {
-            const match = signalement.localisation.match(/POINT\(([^ ]+) ([^)]+)\)/);
-            if (match) { lng = parseFloat(match[1]); lat = parseFloat(match[2]); }
-        } else if (signalement.localisation.coordinates) {
-            [lng, lat] = signalement.localisation.coordinates;
-        } else if (signalement.lat && signalement.lng) {
-            lat = signalement.lat; lng = signalement.lng;
-        }
-        if (!lat || !lng) return;
-
-        const typeInfo = window.debrisat.TYPES_OBSTRUCTION[signalement.type_obstruction] || { label: signalement.type_obstruction, icone: '📌' };
-        const statutInfo = window.debrisat.STATUTS[signalement.statut] || { label: signalement.statut, classe: 'badge-neutral' };
-
-        const marqueur = L.marker([lat, lng], {
-            icon: window.debrisat.utils.creerIconeMarqueur(signalement.severite)
-        });
-
-        const popupHtml = `
-            <div class="marker-popup">
-                ${signalement.photo_url ? `<img src="${signalement.photo_url}" alt="Photo du signalement" loading="lazy">` : ''}
-                <h4>${typeInfo.icone} ${typeInfo.label}</h4>
-                <div class="popup-meta">
-                    <span class="badge ${statutInfo.classe}">${statutInfo.label}</span>
-                    <span>Severite: ${signalement.severite}/5</span>
-                </div>
-                <p style="font-size:0.8125rem;color:var(--text-secondary)">
-                    ${signalement.adresse || signalement.commune || 'Localisation inconnue'}<br>
-                    ${window.debrisat.utils.formatDate(signalement.created_at)}
-                    ${signalement.nombre_confirmations > 0 ? ` · ${signalement.nombre_confirmations} confirmation(s)` : ''}
-                </p>
-                ${signalement.description ? `<p style="font-size:0.8125rem;margin-top:6px">${signalement.description}</p>` : ''}
-                <div class="popup-actions">
-                    <button class="btn btn-primary btn-sm" onclick="confirmerSignalement('${signalement.id}')">Confirmer</button>
-                    <button class="btn btn-ghost btn-sm" onclick="voirDetails('${signalement.id}')">Details</button>
-                </div>
-            </div>
-        `;
-        marqueur.bindPopup(popupHtml, { maxWidth: 300 });
-        this.clusteur.addLayer(marqueur);
-        this.marqueurs[signalement.id] = { marqueur, data: signalement, lat, lng };
-    },
-
-    mettreAJourMarqueur(signalement) {
-        if (this.marqueurs[signalement.id]) {
-            this.clusteur.removeLayer(this.marqueurs[signalement.id].marqueur);
-            delete this.marqueurs[signalement.id];
-        }
-        this.ajouterMarqueur(signalement);
-    },
-
-    async chargerZonesRisque() {
-        try {
-            const { data } = await window.debrisat.supabase.from('zones_risque').select('*');
-            if (!data) return;
-            this.zonesLayer.clearLayers();
-            data.forEach(zone => {
-                const couleur = zone.score_risque > 85 ? '#E53935' :
-                               zone.score_risque > 70 ? '#FF6B35' : '#FFC107';
-                try {
-                    if (zone.zone && typeof zone.zone === 'object' && zone.zone.coordinates) {
-                        const coords = zone.zone.coordinates[0].map(c => [c[1], c[0]]);
-                        L.polygon(coords, {
-                            color: couleur, fillColor: couleur, fillOpacity: 0.15,
-                            weight: 2
-                        }).addTo(this.zonesLayer).bindPopup(
-                            `<b>${zone.nom}</b><br>Commune: ${zone.commune}<br>Score risque: <b>${zone.score_risque}/100</b>`
-                        );
-                    }
-                } catch(e) {}
-            });
-        } catch(e) {}
-    },
-
-    mettreAJourHeatmap(data) {
-        const points = [];
-        Object.values(this.marqueurs).forEach(m => {
-            points.push([m.lat, m.lng, m.data.severite / 5]);
-        });
-        if (this.heatLayer) this.map.removeLayer(this.heatLayer);
-        if (typeof L.heatLayer === 'function') {
-            this.heatLayer = L.heatLayer(points, {
-                radius: 30, blur: 20, maxZoom: 15,
-                gradient: { 0.2: '#4CAF50', 0.5: '#FFC107', 0.8: '#FF6B35', 1: '#E53935' }
-            });
-            if (this.heatVisible) this.heatLayer.addTo(this.map);
-        }
-    },
-
-    toggleHeatmap() {
-        this.heatVisible = !this.heatVisible;
-        if (this.heatVisible && this.heatLayer) {
-            this.heatLayer.addTo(this.map);
-        } else if (this.heatLayer) {
-            this.map.removeLayer(this.heatLayer);
-        }
-    },
-
-    toggleZones() {
-        this.zonesVisible = !this.zonesVisible;
-        if (this.zonesVisible) {
-            this.map.addLayer(this.zonesLayer);
-        } else {
-            this.map.removeLayer(this.zonesLayer);
-        }
-    },
-
-    async centrerSurUtilisateur() {
-        try {
-            const pos = await window.debrisat.utils.obtenirPosition();
-            this.map.setView([pos.lat, pos.lng], 15);
-            L.circleMarker([pos.lat, pos.lng], {
-                radius: 8, fillColor: '#2196F3', fillOpacity: 1,
-                color: '#fff', weight: 3
-            }).addTo(this.map).bindPopup('Vous etes ici');
-        } catch(e) {
-            window.debrisat.utils.toast('Impossible d\'obtenir votre position', 'error');
-        }
-    },
-
-    filtrer(filtres) {
-        this.clusteur.clearLayers();
-        Object.values(this.marqueurs).forEach(m => {
-            let visible = true;
-            if (filtres.type && m.data.type_obstruction !== filtres.type) visible = false;
-            if (filtres.statut && m.data.statut !== filtres.statut) visible = false;
-            if (filtres.severiteMin && m.data.severite < filtres.severiteMin) visible = false;
-            if (filtres.commune && m.data.commune !== filtres.commune) visible = false;
-            if (visible) this.clusteur.addLayer(m.marqueur);
-        });
+        return couche;
     }
 };
