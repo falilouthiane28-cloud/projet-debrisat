@@ -136,3 +136,12 @@ Reste :
 - Tester admin.html et dashboard.html connectés dans le navigateur (comptes dans `.claude/comptes-test.md`).
 - Non fait du prompt : page « Satellite & IA » dédiée, export PDF, dessin de zones sur la carte.
 - Committer, pousser, redéployer Vercel.
+
+## Défi d'observation de la Terre 2026 (20 octobre 2026)
+- Analyse réelle Sentinel-2 L2A (3 avril / 31 août 2026, tuile 28PBB) sur Pikine-Guédiawaye : `scripts/analyse_ndwi.py`, sorties dans `assets/satellite/`.
+  MNDWI > 0, nuages SCL masqués, mer + 500 m exclus : 11,0 ha d'eau nouvelle (7,0 à 30,4 ha selon le seuil), 29 tronçons de route (0,61 km) et 13 bâtiments OSM exposés.
+- `hackathon.html` : comparateur avant/après, couches d'eau et d'exposition, sensibilité au seuil, méthode, DPGI, données, limites, reproduction, calendrier, IA déclarée.
+- Accueil : badge du défi, section « Concept pour la DPGI », chiffres 2009 sourcés (PDNA 2010), chiffre non sourcé remplacé par la mesure Sentinel-2.
+- Espace agent et administration : vue « Priorités DPGI » (score documenté).
+- `docs/` : note de concept, reproduction, inventaire des sources.
+Reste : Sentinel-1 et CHIRPS (prévus), contributions des membres à compléter dans `docs/sources-inventaire.md`, test de la vue Priorités en étant connecté.

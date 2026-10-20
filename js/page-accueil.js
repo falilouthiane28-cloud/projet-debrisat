@@ -99,3 +99,11 @@ async function demarrer() {
 }
 
 demarrer();
+
+// Chiffre mesure sur les scenes Sentinel-2 (scripts/analyse_ndwi.py), lu dans le fichier produit
+fetch('assets/satellite/metadata.json', { cache: 'no-cache' })
+    .then(r => (r.ok ? r.json() : null))
+    .then(m => {
+        if (m) $('#statEauNouvelle').textContent = `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(m.eau_nouvelle_ha)} ha`;
+    })
+    .catch(() => { /* chiffre facultatif */ });

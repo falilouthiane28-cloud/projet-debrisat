@@ -1,0 +1,96 @@
+/* Page du concept DPGI (hackathon) */
+.page-hackathon main { padding-top: 64px; }
+.entete-concept h1 { font-size: var(--text-4xl); letter-spacing: -0.03em; line-height: 1.08; max-width: 18ch; }
+.entete-concept .chapeau { font-size: var(--text-lg); line-height: var(--leading-relaxed); color: var(--color-secondary-text); max-width: 68ch; }
+
+.carte-demo { position: relative; padding: 0; overflow: hidden; border-radius: var(--radius-2xl); }
+#carteDemo { height: min(70svh, 620px); min-height: 380px; background: #0A0A0A; }
+.etat-carte {
+    position: absolute; inset: auto 50% 50% auto; transform: translate(50%, 50%); z-index: 500;
+    display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-full); background: var(--glass-bg-heavy); border: 1px solid var(--glass-border);
+    font-size: var(--text-sm); color: var(--color-secondary-text);
+}
+
+/* Comparateur : trait vertical, poignee au centre, etiquettes de date en haut */
+.comparateur-poignee { position: absolute; top: 0; bottom: 0; z-index: 600; width: 0; pointer-events: none; }
+.comparateur-poignee::before { content: ''; position: absolute; top: 0; bottom: 0; left: -1px; width: 2px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 0 12px rgba(0, 0, 0, 0.6); }
+.comparateur-bouton {
+    position: absolute; top: 50%; left: 0; transform: translate(-50%, -50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center; pointer-events: auto; cursor: ew-resize; touch-action: none;
+    background: #FAFAFA; color: #0A0A0A; font-size: 1.125rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    transition: transform 100ms var(--ease-out);
+}
+.comparateur-bouton:active { transform: translate(-50%, -50%) scale(0.94); }
+.comparateur-bouton:focus-visible { outline: 3px solid var(--accent-info); outline-offset: 3px; }
+.comparateur-etiquette {
+    position: absolute; top: var(--space-3); white-space: nowrap;
+    padding: 6px 10px; border-radius: var(--radius-full);
+    background: rgba(10, 10, 10, 0.72); color: #FAFAFA; font-size: var(--text-xs); font-weight: var(--weight-medium);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.comparateur-etiquette.gauche { right: 12px; }
+.comparateur-etiquette.droite { left: 12px; }
+
+.couches-demo { display: flex; flex-wrap: wrap; gap: var(--space-2); border: 0; padding: 0; }
+.puce-couche { position: relative; cursor: pointer; }
+.puce-couche input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.puce-couche span {
+    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-4);
+    border-radius: var(--radius-full); border: 1px solid var(--glass-border); background: var(--glass-bg);
+    font-size: var(--text-sm); color: var(--color-secondary-text);
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.puce-couche input:checked + span { background: var(--color-contrast); color: var(--color-on-contrast); border-color: transparent; }
+.puce-couche input:focus-visible + span { outline: 2px solid var(--color-bright); outline-offset: 2px; }
+.puce-couche input:disabled + span { opacity: 0.4; cursor: not-allowed; }
+
+.grille-resultats { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+.etapes-methode, .grille-utilisateur { display: grid; gap: var(--space-4); list-style: none; }
+.etapes-methode li, .grille-utilisateur article { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); }
+.etapes-methode .numero { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-muted); }
+.etapes-methode h3, .grille-utilisateur h3 { font-size: var(--text-lg); }
+.etapes-methode p, .grille-utilisateur p { color: var(--color-secondary-text); line-height: var(--leading-relaxed); }
+.grille-utilisateur .bi { font-size: 1.5rem; color: var(--color-bright); }
+
+.grille-limites { display: grid; gap: var(--space-4); }
+.liste-limites, .frise { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); list-style: none; }
+.liste-limites li { display: flex; gap: var(--space-3); color: var(--color-secondary-text); line-height: var(--leading-relaxed); }
+.liste-limites .bi { color: var(--accent-warning); margin-top: 3px; flex-shrink: 0; }
+.prochaine-etape { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3); }
+.prochaine-etape > .bi { font-size: 1.75rem; color: var(--accent-success); }
+.prochaine-etape p { color: var(--color-secondary-text); line-height: var(--leading-relaxed); }
+.frise li { display: grid; grid-template-columns: 88px 1fr; gap: var(--space-3); color: var(--color-secondary-text); }
+.frise .date { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-heading); }
+.liste-simple { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; color: var(--color-secondary-text); font-size: var(--text-sm); }
+
+.chaine-traitement { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; counter-reset: etape; }
+.chaine-traitement li {
+    display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md); background: var(--glass-bg); border: 1px solid var(--glass-border);
+    font-size: var(--text-sm); color: var(--color-secondary-text);
+}
+.chaine-traitement .bi { color: var(--accent-info); }
+.bloc-code {
+    overflow-x: auto; padding: var(--space-4) var(--space-5); border-radius: var(--radius-md);
+    background: var(--color-pure-dark); border: 1px solid var(--glass-border);
+    font-family: var(--font-mono); font-size: var(--text-sm); color: #E5E5E5; line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+    .etapes-methode { grid-template-columns: repeat(2, 1fr); }
+    .etapes-methode li:last-child { grid-column: 1 / -1; }
+    .grille-utilisateur { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+    .etapes-methode { grid-template-columns: repeat(3, 1fr); }
+    .etapes-methode li:last-child { grid-column: auto; }
+    .grille-utilisateur { grid-template-columns: repeat(4, 1fr); }
+    .grille-limites { grid-template-columns: 1.4fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .comparateur-bouton, .puce-couche span { transition: none; }
+}

@@ -3,3 +3,5 @@
 .git
 supabase
 *.md
+.cache
+scripts

@@ -40,6 +40,7 @@
             <p class="eyebrow titre-groupe">Pilotage</p>
             <a class="sidebar-item" href="#vue-ensemble" data-route="vue-ensemble" title="Tableau de bord"><span class="tuile"><i class="bi bi-speedometer2" aria-hidden="true"></i></span><span class="libelle">Tableau de bord</span></a>
             <a class="sidebar-item" href="#utilisateurs" data-route="utilisateurs" title="Utilisateurs"><span class="tuile"><i class="bi bi-people" aria-hidden="true"></i></span><span class="libelle">Utilisateurs</span></a>
+            <a class="sidebar-item" href="#priorites" data-route="priorites" title="Priorités DPGI"><span class="tuile"><i class="bi bi-sort-down" aria-hidden="true"></i></span><span class="libelle">Priorités DPGI</span></a>
             <a class="sidebar-item" href="#signalements" data-route="signalements" title="Tous les signalements"><span class="tuile"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span><span class="libelle">Tous les signalements</span><span class="compteur" id="compteurAttente"></span></a>
             <a class="sidebar-item" href="#carte" data-route="carte" title="Carte globale"><span class="tuile"><i class="bi bi-map" aria-hidden="true"></i></span><span class="libelle">Carte globale</span></a>
             <p class="eyebrow titre-groupe">Territoire</p>
@@ -227,6 +228,34 @@
                         <h2 style="font-size:var(--text-lg)">Répartition par type</h2>
                         <div class="zone-canvas donut"><canvas id="graphiqueTypes" role="img" aria-label="Répartition des signalements par type d'obstruction"></canvas></div>
                     </article>
+                </div>
+            </section>
+
+            <!-- Vue DPGI : interventions prioritaires -->
+            <section class="pile" id="section-priorites" data-section hidden aria-labelledby="titrePriorites" style="gap:var(--space-5)">
+                <div class="bandeau-dpgi glass-card">
+                    <div class="pile-sm">
+                        <div class="rangee-wrap">
+                            <span class="badge badge-neutral"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i>Earth Observation Data Challenge 2026</span>
+                            <span class="badge badge-info">ODD 11</span><span class="badge badge-success">ODD 13</span>
+                        </div>
+                        <h1 id="titrePriorites">Interventions prioritaires</h1>
+                        <p class="texte-secondaire">Vue pensée pour la DPGI : les dix signalements actifs à traiter en premier.</p>
+                    </div>
+                    <a class="btn btn-sm btn-secondary" href="hackathon.html#reproduction"><i class="bi bi-journal-code" aria-hidden="true"></i>Données et méthode</a>
+                </div>
+                <div class="card pile-sm">
+                    <p class="texte-sm"><strong>Score de priorité</strong> = sévérité (1 à 5) × (1 + confirmations citoyennes) × facteur de zone.</p>
+                    <p class="texte-sm texte-secondaire">Le facteur de zone vaut score de risque / 50 si le signalement est dans une zone à risque (de 1 à 2), sinon 1. Ce score ordonne les interventions ; ce n'est pas une probabilité d'inondation.</p>
+                </div>
+                <div class="card table-container" style="padding:0">
+                    <div class="table-defilement">
+                        <table class="table">
+                            <caption class="sr-only">Dix interventions prioritaires</caption>
+                            <thead><tr><th scope="col">Rang</th><th scope="col">Signalement</th><th scope="col">Commune</th><th scope="col">Sévérité</th><th scope="col">Confirmations</th><th scope="col">Zone</th><th scope="col">Score</th><th scope="col">Action</th></tr></thead>
+                            <tbody id="corpsPriorites"></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 

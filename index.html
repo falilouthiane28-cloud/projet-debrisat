@@ -66,6 +66,7 @@
             <div class="hero-fond" aria-hidden="true"></div>
             <div class="hero-terre" aria-hidden="true"></div>
             <div class="container">
+                <a class="badge-defi" href="hackathon.html" data-reveal="fade-up"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i>Earth Observation Data Challenge 2026 · TRL Space × SENSAT<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
                 <p class="hero-eyebrow" data-reveal="fade-up"><span class="point-direct" aria-hidden="true"></span><span id="eyebrowDirect">Signalements en direct à Dakar</span></p>
                 <h1 id="titreHero" data-reveal="fade-up" data-delay="80">Prévenir les inondations. <span>Protéger Dakar.</span></h1>
                 <p class="hero-sous-titre" data-reveal="fade-up" data-delay="160">Détection intelligente des obstructions par satellite et signalement citoyen en temps réel.</p>
@@ -84,10 +85,39 @@
                     </div>
                     <div class="hero-stat" data-reveal="fade-up">
                         <span class="icone-ronde"><i class="bi bi-cloud-rain-heavy" aria-hidden="true"></i></span>
-                        <div><p class="chiffre">137,5 mm</p><p class="libelle">Record de pluie, oct. 2026</p></div>
+                        <div><p class="chiffre" id="statEauNouvelle">— ha</p><p class="libelle">D'eau nouvelle à Pikine, Sentinel-2 2026</p></div>
                     </div>
                 </div>
+                <p class="hero-source">Inondations de 2009 : évaluation post-catastrophe (PDNA), Gouvernement du Sénégal et Banque mondiale, 2010. Eau nouvelle : analyse Debrisat, scènes Sentinel-2 du 3 avril et du 31 août 2026.</p>
                 <a class="indicateur-defilement" href="#fonctionnement" aria-label="Découvrir le fonctionnement"><i class="bi bi-chevron-down" aria-hidden="true"></i></a>
+            </div>
+        </section>
+
+        <!-- Concept pour la DPGI -->
+        <section class="section" id="concept" aria-labelledby="titreConceptAccueil">
+            <div class="container">
+                <div class="bloc-concept glass-card" data-reveal="fade-up">
+                    <div class="pile" style="gap:var(--space-4)">
+                        <div class="rangee-wrap">
+                            <span class="badge badge-info"><i class="bi bi-buildings" aria-hidden="true"></i>ODD 11</span>
+                            <span class="badge badge-success"><i class="bi bi-globe-americas" aria-hidden="true"></i>ODD 13</span>
+                            <span class="badge badge-neutral">Utilisateur : DPGI</span>
+                        </div>
+                        <h2 id="titreConceptAccueil">Inondations et exposition, mesurées sur données réelles</h2>
+                        <p>Deux scènes Sentinel-2 de 2026, saison sèche et saison des pluies, révèlent où l'eau s'accumule à Pikine et Guédiawaye. Croisées avec OpenStreetMap et les signalements citoyens, elles indiquent à la DPGI où envoyer les équipes de curage en premier.</p>
+                        <ul class="liste-points" role="list">
+                            <li><i class="bi bi-check2-circle" aria-hidden="true"></i>Méthode en cinq étapes, seuils et incertitudes publiés</li>
+                            <li><i class="bi bi-check2-circle" aria-hidden="true"></i>Données ouvertes uniquement, script de reproduction fourni</li>
+                            <li><i class="bi bi-check2-circle" aria-hidden="true"></i>Limites assumées : résolution de 10 m, nuages d'hivernage</li>
+                        </ul>
+                        <div><a class="btn btn-plein" href="hackathon.html"><i class="bi bi-layout-split" aria-hidden="true"></i>Voir la démonstration</a></div>
+                    </div>
+                    <a class="apercu-concept" href="hackathon.html#demonstration" aria-label="Ouvrir la comparaison des scènes Sentinel-2">
+                        <img src="assets/satellite/pluies-rgb.png" alt="Pikine et Guédiawaye vus par Sentinel-2 le 31 août 2026" loading="lazy" width="667" height="667">
+                        <img src="assets/satellite/changement.png" alt="" class="masque" loading="lazy" width="667" height="667">
+                        <span class="legende-apercu"><i class="bi bi-square-fill" aria-hidden="true" style="color:#FF6B35"></i>Eau nouvelle en saison des pluies</span>
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -235,6 +265,7 @@
                         <a href="#direct">En direct</a>
                         <a href="#chiffres">Chiffres</a>
                         <a href="#technologies">Technologies</a>
+                        <a href="hackathon.html">Concept DPGI</a>
                     </div>
                     <div class="pied-colonne">
                         <p class="pied-titre">Espaces</p>
@@ -255,6 +286,7 @@
             <div class="pied-bas">
                 <p>&copy; <span id="annee">2026</span> Équipe Saturn (Satur Studio)</p>
                 <p class="pied-sources">Cartes &copy; OpenStreetMap, Esri · Imagerie Copernicus Sentinel-2</p>
+                <p class="pied-ia"><i class="bi bi-robot" aria-hidden="true"></i>Outils d'IA déclarés : Claude (Anthropic) pour le code et l'analyse des photos citoyennes. <a href="hackathon.html#calendrier">Détails</a></p>
                 <a class="btn-icon nu pied-haut" href="#" aria-label="Revenir en haut de la page"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
             </div>
         </div>

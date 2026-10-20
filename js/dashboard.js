@@ -70,7 +70,7 @@ $('.principal-tableau').addEventListener('transitionend', e => {
 // ============ Sections et onglets ============
 const TITRES = {
     'vue-ensemble': "Vue d'ensemble", signalements: 'Signalements', carte: 'Carte',
-    alertes: 'Alertes', zones: 'Zones à risque', statistiques: 'Statistiques', parametres: 'Paramètres',
+    alertes: 'Alertes', zones: 'Zones à risque', priorites: 'Priorités DPGI', statistiques: 'Statistiques', parametres: 'Paramètres',
     ...(moduleAdmin?.TITRES || {})
 };
 const ONGLET_PAR_ROUTE = { 'vue-ensemble': 'carte', signalements: 'signalements', carte: 'carte', alertes: 'alertes' };
@@ -107,6 +107,7 @@ const routeur = new Routeur({
     alertes: vueOnglet('alertes'),
     zones: { entrer() { afficherSection('section-zones'); rendreZones(); } },
     statistiques: { entrer() { afficherSection('section-statistiques'); rendreStatistiques(); } },
+    priorites: { entrer() { afficherSection('section-priorites'); rendrePriorites(); } },
     parametres: { entrer() { afficherSection('section-parametres'); rendreParametres(); } },
     ...(moduleAdmin?.routes({ afficherSection, etat }) || {})
 }, {
@@ -144,6 +145,7 @@ $('#choixPeriode').addEventListener('click', e => {
     majPeriode();
     rendreVue();
     if (routeur.courante === 'statistiques') rendreStatistiques();
+    else if (routeur.courante === 'priorites') rendrePriorites();
     annoncer(`Statistiques sur les ${etat.jours} derniers jours`);
 });
 
@@ -601,6 +603,55 @@ function initCarteAdmin() {
     });
     setTimeout(() => carteAdmin.invalidateSize(), 50);
 }
+
+// ============ Priorites DPGI ============
+
+// Point dans polygone (lancer de rayon) ; coordonnees [lat, lng]
+function dansPolygone([lat, lng], polygone) {
+    let dedans = false;
+    for (let i = 0, j = polygone.length - 1; i < polygone.length; j = i++) {
+        const [yi, xi] = polygone[i];
+        const [yj, xj] = polygone[j];
+        if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) dedans = !dedans;
+    }
+    return dedans;
+}
+
+function prioriser() {
+    return etat.signalements
+        .filter(s => STATUTS_ACTIFS.includes(s.statut) && s.lat != null)
+        .map(s => {
+            const zone = etat.zones.find(z => z.coordonnees?.length && dansPolygone([s.lat, s.lng], z.coordonnees));
+            const facteur = zone ? Math.min(2, Math.max(1, zone.score_risque / 50)) : 1;
+            return { s, zone, score: s.severite * (1 + (s.nombre_confirmations || 0)) * facteur };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+}
+
+function rendrePriorites() {
+    const liste = prioriser();
+    $('#corpsPriorites').innerHTML = liste.length ? liste.map(({ s, zone, score }, i) => {
+        const type = TYPES_OBSTRUCTION[s.type_obstruction] || TYPES_OBSTRUCTION.autre;
+        return `<tr>
+            <td class="chiffre">${i + 1}</td>
+            <td><span class="rangee" style="gap:6px"><i class="bi ${type.icone}" aria-hidden="true"></i>${echapper(type.libelle)}</span><span class="texte-xs texte-muet" style="display:block">${echapper(idCourt(s.id))} · ${formatRelatif(s.created_at)}</span></td>
+            <td>${echapper(s.commune || '—')}</td>
+            <td>${htmlSeverite(s.severite)}</td>
+            <td class="chiffre">${s.nombre_confirmations || 0}</td>
+            <td>${zone ? `${echapper(zone.nom)} <span class="texte-xs texte-muet">(${Math.round(zone.score_risque)})</span>` : '<span class="texte-muet">Hors zone</span>'}</td>
+            <td class="chiffre"><strong>${score.toFixed(1)}</strong></td>
+            <td><button type="button" class="btn btn-sm btn-ghost" data-priorite-carte="${s.id}"><i class="bi bi-geo-alt" aria-hidden="true"></i>Carte</button></td>
+        </tr>`;
+    }).join('') : '<tr><td colspan="8"><div class="etat-vide"><i class="bi bi-check2-circle" aria-hidden="true"></i><p>Aucun signalement actif dans votre périmètre.</p></div></td></tr>';
+}
+
+$('#corpsPriorites')?.addEventListener('click', e => {
+    const bouton = e.target.closest('[data-priorite-carte]');
+    if (!bouton) return;
+    routeur.aller('carte');
+    setTimeout(() => coucheAdmin?.ouvrir(bouton.dataset.prioriteCarte), 250);
+});
 
 // ============ Zones ============
 function rendreZones() {

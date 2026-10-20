@@ -232,3 +232,7 @@
     .interrupteur span, .squelette-ligne span { transition: none; animation: none; }
 }
 @media (min-width: 768px) { .deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); } }
+
+/* ===== Vue DPGI ===== */
+.bandeau-dpgi { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); padding: var(--space-6); }
+.bandeau-dpgi h1 { font-size: var(--text-2xl); letter-spacing: -0.02em; }

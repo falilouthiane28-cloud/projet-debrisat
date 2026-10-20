@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
+    <title>Concept DPGI · Debrisat</title>
+    <meta name="description" content="Debrisat, concept de solution pour la DPGI : eau détectée par Sentinel-2 à Pikine et Guédiawaye entre saison sèche et saison des pluies 2026, et routes et bâtiments OpenStreetMap exposés.">
+    <meta name="theme-color" content="#0A0A0A">
+    <script>try{var t=JSON.parse(localStorage.getItem('debrisat-theme'));if(t==='clair'||(t==='systeme'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.setAttribute('data-theme','light')}catch(e){}document.documentElement.classList.add('js')</script>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/hackathon.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="page-hackathon">
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+    <header class="entete-site defile" id="entete">
+        <div class="container">
+            <a class="marque" href="index.html" aria-label="Debrisat, accueil">
+                <img src="img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
+            </a>
+            <nav class="nav-liens" aria-label="Sections du concept">
+                <a href="#demonstration">Démonstration</a>
+                <a href="#methode">Méthode</a>
+                <a href="#donnees">Données</a>
+                <a href="#limites">Limites</a>
+            </nav>
+            <div class="nav-actions">
+                <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
+                <a class="btn btn-sm btn-plein" href="app.html">Prototype</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenu">
+        <section class="section entete-concept" aria-labelledby="titreConcept">
+            <div class="container pile" style="gap:var(--space-5)">
+                <div class="rangee-wrap">
+                    <span class="badge badge-neutral"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i>Earth Observation Data Challenge 2026 · TRL Space × SENSAT</span>
+                    <span class="badge badge-info"><i class="bi bi-buildings" aria-hidden="true"></i>ODD 11 · Villes durables</span>
+                    <span class="badge badge-success"><i class="bi bi-globe-americas" aria-hidden="true"></i>ODD 13 · Action climatique</span>
+                </div>
+                <h1 id="titreConcept">Inondations et exposition à Pikine et Guédiawaye</h1>
+                <p class="chapeau">Concept de solution pour la <strong>DPGI</strong> (Direction de la Prévention et de la Gestion des Inondations) : repérer, à partir d'images Sentinel-2 ouvertes, l'eau apparue pendant la saison des pluies 2026, puis compter les routes et bâtiments OpenStreetMap concernés. Les signalements citoyens de Debrisat servent de vérité terrain sur les canaux bouchés.</p>
+                <p class="texte-sm texte-muet">Équipe Saturn (Satur Studio), Dakar · Thème du guide : « Inondations et exposition » · Remise le 23 octobre 2026</p>
+            </div>
+        </section>
+
+        <!-- Demonstration sur donnees reelles -->
+        <section class="section" id="demonstration" aria-labelledby="titreDemo">
+            <div class="container pile" style="gap:var(--space-6)">
+                <div class="entete-section">
+                    <p class="eyebrow">Résultat sur données réelles</p>
+                    <h2 id="titreDemo">Saison sèche et saison des pluies 2026</h2>
+                    <p id="descDemo">Faites glisser le curseur pour comparer les deux scènes Sentinel-2. Les couches d'eau et d'exposition se superposent.</p>
+                </div>
+
+                <div class="carte-demo glass-card">
+                    <div id="carteDemo" role="region" aria-label="Comparaison des scènes Sentinel-2 sur Pikine et Guédiawaye"></div>
+                    <div class="etat-carte" id="etatCarte" aria-live="polite"><span class="spinner" aria-hidden="true"></span>Chargement des scènes…</div>
+                </div>
+
+                <fieldset class="couches-demo" aria-label="Couches affichées">
+                    <legend class="sr-only">Couches affichées</legend>
+                    <label class="puce-couche"><input type="checkbox" data-couche="eauSeche"><span><i class="bi bi-droplet" aria-hidden="true"></i>Eau, saison sèche</span></label>
+                    <label class="puce-couche"><input type="checkbox" data-couche="eauPluies"><span><i class="bi bi-droplet-fill" aria-hidden="true"></i>Eau, saison des pluies</span></label>
+                    <label class="puce-couche"><input type="checkbox" data-couche="changement" checked><span><i class="bi bi-exclamation-diamond" aria-hidden="true"></i>Eau nouvelle</span></label>
+                    <label class="puce-couche"><input type="checkbox" data-couche="routes" checked><span><i class="bi bi-sign-turn-right" aria-hidden="true"></i>Routes exposées</span></label>
+                    <label class="puce-couche"><input type="checkbox" data-couche="batiments" checked><span><i class="bi bi-house" aria-hidden="true"></i>Bâtiments exposés</span></label>
+                </fieldset>
+
+                <div class="grille-resultats" id="grilleResultats" aria-live="polite"></div>
+
+                <div class="card pile">
+                    <h3 class="h4"><i class="bi bi-sliders" aria-hidden="true"></i> Contrôle de l'incertitude : sensibilité au seuil</h3>
+                    <p class="texte-sm texte-secondaire">La surface d'eau dépend du seuil appliqué à l'indice. Nous retenons MNDWI &gt; 0 (valeur de référence de Xu, 2006) et publions la plage obtenue avec les autres seuils plutôt qu'un chiffre unique.</p>
+                    <div class="table-defilement">
+                        <table class="table" id="tableSensibilite">
+                            <caption class="sr-only">Surface d'eau en hectares selon le seuil</caption>
+                            <thead><tr><th scope="col">Seuil MNDWI</th><th scope="col">Eau saison sèche (ha)</th><th scope="col">Eau saison des pluies (ha)</th><th scope="col">Eau nouvelle hors mer (ha)</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Methode -->
+        <section class="section" id="methode" aria-labelledby="titreMethode">
+            <div class="container">
+                <div class="entete-section">
+                    <p class="eyebrow">Notre approche</p>
+                    <h2 id="titreMethode">Une méthode en cinq étapes</h2>
+                </div>
+                <ol class="etapes-methode" role="list">
+                    <li class="glass-card"><span class="numero">01</span><h3>Problème et décision visée</h3><p>Les canaux de drainage obstrués par les déchets et le sable aggravent les inondations de Pikine et Guédiawaye. Décision visée : prioriser les curages et les interventions avant et pendant l'hivernage.</p></li>
+                    <li class="glass-card"><span class="numero">02</span><h3>Données choisies</h3><p>Sentinel-2 L2A (10 m, revisite 5 jours) pour l'eau visible ; OpenStreetMap pour les routes et bâtiments ; signalements citoyens géolocalisés pour les obstructions, invisibles à 10 m.</p></li>
+                    <li class="glass-card"><span class="numero">03</span><h3>Préparation et analyse</h3><p>Deux scènes quasi sans nuages, même tuile 28PBB. Masque nuages par la bande SCL, indice MNDWI (B03, B11), différence saison des pluies moins saison sèche, masque de la mer et du déferlement.</p></li>
+                    <li class="glass-card"><span class="numero">04</span><h3>Contrôle des résultats</h3><p>Couverture nuageuse mesurée sur la zone et non sur la tuile, sensibilité au seuil publiée, NDWI calculé en comparaison, contrôle visuel sur l'image en couleurs naturelles, confirmation terrain par trois voisins dans l'application.</p></li>
+                    <li class="glass-card"><span class="numero">05</span><h3>Interprétation</h3><p>Nous distinguons l'observé (eau détectée à une date) du supposé (lien avec une inondation ou un canal bouché). L'eau nouvelle signale où envoyer une équipe vérifier, elle ne prouve pas un dégât.</p></li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Utilisateur -->
+        <section class="section" id="utilisateur" aria-labelledby="titreUtilisateur">
+            <div class="container">
+                <div class="entete-section">
+                    <p class="eyebrow">Utilisateur cible</p>
+                    <h2 id="titreUtilisateur">La DPGI, d'abord</h2>
+                    <p>Avec, comme partenaires naturels, le CSE, l'ANSD, le SGNS et les communes.</p>
+                </div>
+                <div class="grille-utilisateur">
+                    <article class="glass-card"><i class="bi bi-question-circle" aria-hidden="true"></i><h3>Ce qui manque aujourd'hui</h3><p>Une carte à jour des obstructions de canaux, reliée aux zones où l'eau s'accumule et aux infrastructures exposées.</p></article>
+                    <article class="glass-card"><i class="bi bi-signpost-split" aria-hidden="true"></i><h3>Décision préparée</h3><p>Ordre de passage des équipes de curage, répartition des moyens par zone, messages d'alerte aux habitants.</p></article>
+                    <article class="glass-card"><i class="bi bi-arrow-repeat" aria-hidden="true"></i><h3>Fréquence</h3><p>En continu pour les signalements citoyens ; à chaque scène Sentinel-2 exploitable (tous les 5 jours au mieux, moins en saison des pluies à cause des nuages).</p></article>
+                    <article class="glass-card"><i class="bi bi-display" aria-hidden="true"></i><h3>Format</h3><p>Tableau de bord web par commune, file des interventions prioritaires, alertes WhatsApp et SMS.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Donnees -->
+        <section class="section" id="donnees" aria-labelledby="titreDonnees">
+            <div class="container pile" style="gap:var(--space-5)">
+                <div class="entete-section">
+                    <p class="eyebrow">Données ouvertes</p>
+                    <h2 id="titreDonnees">Sources utilisées et prévues</h2>
+                    <p>Nous séparons ce qui est réellement utilisé dans ce résultat de ce qui est prévu pour la suite.</p>
+                </div>
+                <div class="card table-container" style="padding:0">
+                    <div class="table-defilement">
+                        <table class="table">
+                            <caption class="sr-only">Inventaire des données</caption>
+                            <thead><tr><th scope="col">Source</th><th scope="col">Produit</th><th scope="col">Résolution</th><th scope="col">Période</th><th scope="col">Licence</th><th scope="col">Usage</th><th scope="col">État</th></tr></thead>
+                            <tbody>
+                                <tr><td>Copernicus (ESA), via Earth Search</td><td>Sentinel-2 L2A (B02, B03, B04, B08, B11, SCL)</td><td>10 m (B11 et SCL : 20 m)</td><td>3 avril et 31 août 2026</td><td>Libre et gratuite (Copernicus)</td><td>Eau saison sèche / saison des pluies</td><td><span class="badge badge-success">Utilisé</span></td></tr>
+                                <tr><td>OpenStreetMap</td><td>Routes (highway), bâtiments (building)</td><td>Vecteur</td><td>Extraction du 20 octobre 2026</td><td>ODbL</td><td>Exposition des infrastructures</td><td><span class="badge badge-success">Utilisé</span></td></tr>
+                                <tr><td>Esri</td><td>Fond de carte Canvas</td><td>Tuiles</td><td>Actuel</td><td>Gratuit avec attribution</td><td>Fond des cartes de l'application</td><td><span class="badge badge-success">Utilisé</span></td></tr>
+                                <tr><td>EOX</td><td>Sentinel-2 cloudless 2020</td><td>10 m</td><td>2020</td><td>CC BY-NC-SA 4.0</td><td>Couche satellite de l'application</td><td><span class="badge badge-success">Utilisé</span></td></tr>
+                                <tr><td>Citoyens (Debrisat)</td><td>Photos géolocalisées, type, sévérité</td><td>Point GPS</td><td>Continu</td><td>Données du projet</td><td>Vérité terrain des obstructions</td><td><span class="badge badge-success">Utilisé</span></td></tr>
+                                <tr><td>Copernicus (ESA)</td><td>Sentinel-1 GRD (radar)</td><td>10 m</td><td>Saison des pluies</td><td>Libre et gratuite</td><td>Eau sous les nuages</td><td><span class="badge badge-warning">Prévu</span></td></tr>
+                                <tr><td>CHIRPS (UCSB)</td><td>Précipitations journalières</td><td>0,05°</td><td>1981 à aujourd'hui</td><td>Domaine public</td><td>Relier l'eau détectée aux pluies</td><td><span class="badge badge-warning">Prévu</span></td></tr>
+                                <tr><td>ESA WorldCover</td><td>Occupation du sol</td><td>10 m</td><td>2021</td><td>CC BY 4.0</td><td>Exclure les plans d'eau permanents</td><td><span class="badge badge-warning">Prévu</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limites -->
+        <section class="section" id="limites" aria-labelledby="titreLimites">
+            <div class="container">
+                <div class="entete-section">
+                    <p class="eyebrow">Honnêteté sur les résultats</p>
+                    <h2 id="titreLimites">Limites et prochaine étape</h2>
+                </div>
+                <div class="grille-limites">
+                    <ul class="liste-limites glass-card" role="list">
+                        <li><i class="bi bi-aspect-ratio" aria-hidden="true"></i><span><strong>Résolution.</strong> À 10 m, un canal bouché n'est pas visible : le satellite montre où l'eau stagne, les citoyens montrent pourquoi.</span></li>
+                        <li><i class="bi bi-cloud" aria-hidden="true"></i><span><strong>Nuages.</strong> Peu de scènes optiques exploitables pendant l'hivernage ; le radar Sentinel-1 est nécessaire pour suivre un épisode précis.</span></li>
+                        <li><i class="bi bi-calendar2-range" aria-hidden="true"></i><span><strong>Dates.</strong> Le 31 août est une date de saison des pluies, pas le lendemain d'une pluie donnée : l'eau détectée peut être plus ancienne ou déjà en partie évacuée.</span></li>
+                        <li><i class="bi bi-rulers" aria-hidden="true"></i><span><strong>Seuil.</strong> Les surfaces varient fortement selon le seuil (voir le tableau) ; les ombres et toits sombres peuvent créer de faux positifs.</span></li>
+                        <li><i class="bi bi-map" aria-hidden="true"></i><span><strong>OpenStreetMap.</strong> La couverture des bâtiments à Pikine est incomplète : les comptes sont des minimums.</span></li>
+                        <li><i class="bi bi-cpu" aria-hidden="true"></i><span><strong>IA sur photos.</strong> L'analyse automatique des photos citoyennes n'a pas encore été évaluée sur un jeu d'images de Dakar.</span></li>
+                    </ul>
+                    <div class="glass-card prochaine-etape">
+                        <i class="bi bi-flag" aria-hidden="true"></i>
+                        <h3>Prochaine étape réaliste</h3>
+                        <p>Un pilote de trois mois avec la DPGI sur une commune (Pikine ou Keur Massar) : 50 habitants testeurs, ajout de Sentinel-1 pour les épisodes nuageux, et comparaison des zones détectées avec les relevés d'intervention de la DPGI pour mesurer la précision.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reproductibilite -->
+        <section class="section" id="reproduction" aria-labelledby="titreReproduction">
+            <div class="container pile" style="gap:var(--space-5)">
+                <div class="entete-section">
+                    <p class="eyebrow">Reproductibilité</p>
+                    <h2 id="titreReproduction">Refaire l'analyse en une commande</h2>
+                    <p>Le script récupère les scènes, calcule les indices, produit les images et les chiffres de cette page. Aucun compte ni clé d'API.</p>
+                </div>
+                <ol class="chaine-traitement" role="list">
+                    <li><i class="bi bi-search" aria-hidden="true"></i><span>Recherche STAC des scènes (tuile 28PBB, nuages &lt; 5 %)</span></li>
+                    <li><i class="bi bi-cloud-download" aria-hidden="true"></i><span>Lecture des bandes COG sur la seule emprise</span></li>
+                    <li><i class="bi bi-cloud-slash" aria-hidden="true"></i><span>Masque nuages (SCL) et mer</span></li>
+                    <li><i class="bi bi-droplet-half" aria-hidden="true"></i><span>MNDWI et différence entre dates</span></li>
+                    <li><i class="bi bi-diagram-3" aria-hidden="true"></i><span>Croisement avec OpenStreetMap</span></li>
+                </ol>
+                <pre class="bloc-code"><code>pip install rasterio==1.5.2 numpy==2.5.4 pillow==13.0.0 requests==2.34.2 pyproj==3.8.0
+python scripts/analyse_ndwi.py</code></pre>
+                <p class="texte-sm texte-secondaire" id="infoGeneration"></p>
+                <p class="texte-sm texte-secondaire">Paramètres, étapes manuelles équivalentes (QGIS) et liens des scènes : <code>docs/reproduction.md</code> dans le dépôt du projet.</p>
+            </div>
+        </section>
+
+        <!-- Calendrier et outils -->
+        <section class="section" id="calendrier" aria-labelledby="titreCalendrier">
+            <div class="container">
+                <div class="entete-section">
+                    <p class="eyebrow">Défi du 8 au 26 octobre 2026</p>
+                    <h2 id="titreCalendrier">Calendrier et outils déclarés</h2>
+                </div>
+                <div class="grille-limites">
+                    <ol class="frise glass-card" role="list">
+                        <li><span class="date">8 oct.</span><span>Lancement du défi, choix du thème « Inondations et exposition »</span></li>
+                        <li><span class="date">18-19 oct.</span><span>Prototype Debrisat : signalement citoyen, carte, base Supabase, rôles</span></li>
+                        <li><span class="date">20 oct.</span><span>Analyse Sentinel-2 et OpenStreetMap sur Pikine-Guédiawaye</span></li>
+                        <li><span class="date">23 oct.</span><span>Remise : note de concept, résultats, éléments de reproduction</span></li>
+                        <li><span class="date">24-26 oct.</span><span>Évaluation du jury, annonce des équipes retenues, présentations</span></li>
+                    </ol>
+                    <div class="glass-card pile">
+                        <h3 class="h4"><i class="bi bi-robot" aria-hidden="true"></i> Outils d'IA utilisés</h3>
+                        <ul class="liste-simple" role="list">
+                            <li><strong>Claude (Anthropic)</strong> : assistance à l'écriture du code et des documents.</li>
+                            <li><strong>Claude, vision</strong> : analyse automatique des photos citoyennes (type, sévérité), dans la fonction serveur analyser-image.</li>
+                            <li><strong>Roboflow</strong> : détection d'objets en option, non activée pour ce résultat.</li>
+                        </ul>
+                        <h3 class="h4"><i class="bi bi-boxes" aria-hidden="true"></i> Bibliothèques</h3>
+                        <p class="texte-sm texte-secondaire">Leaflet 1.9.4, Chart.js 4.4.1, Supabase JS 2.58.0, Bootstrap Icons 1.11.3 ; analyse : rasterio, NumPy, Pillow, pyproj.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pied">
+        <div class="container">
+            <div class="pied-bas">
+                <p>&copy; 2026 Équipe Saturn (Satur Studio), Dakar</p>
+                <p class="pied-sources">Contient des données Copernicus Sentinel-2 modifiées (2026) · © contributeurs OpenStreetMap · Fond Esri</p>
+                <a class="btn-icon nu pied-haut" href="#" aria-label="Revenir en haut de la page"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script type="module" src="js/page-hackathon.js"></script>
+</body>
+</html>
