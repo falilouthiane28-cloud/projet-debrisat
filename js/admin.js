@@ -1,6 +1,6 @@
 // Sections propres a l'administration : utilisateurs, codes d'acces, configuration, journal.
 // Charge uniquement par admin.html (via dashboard.js) ; chaque action est aussi verifiee et journalisee en SQL.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, COMMUNES, ROLES, MODE_DEMO, TYPES_OBSTRUCTION, STATUTS } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, COMMUNES, ROLES, MODE_DEMO, TYPES_OBSTRUCTION, STATUTS, supabase } from './config.js';
 import { chargerAnalyse, boundsAnalyse, ComparateurAvantApres, ATTRIBUTION_SCENES } from './satellite.js';
 import { $, $$, echapper, formatDate, formatRelatif, formatNombre, initiales, debounce, telechargerFichier } from './utils.js';
 import { Feuille } from './animations.js';
@@ -503,6 +503,8 @@ async function chargerSatellite() {
         return;
     }
     carteSatellite = L.map('carteSatelliteAdmin', { zoomSnap: 0.25 });
+    initCopernicus();
+    carteSatellite.createPane('analyse').style.zIndex = 420;
     carteSatellite.attributionControl.setPrefix(false);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
         maxNativeZoom: 16, maxZoom: 18, attribution: 'Fond © Esri'
@@ -516,7 +518,6 @@ async function chargerSatellite() {
             avant: 'assets/satellite/seche-rgb.png', apres: 'assets/satellite/pluies-rgb.png', bounds,
             libelleAvant: `Saison sèche · ${formatDate(seche.date)}`, libelleApres: `Saison des pluies · ${formatDate(pluies.date)}`
         });
-        carteSatellite.createPane('analyse').style.zIndex = 420;
         L.imageOverlay('assets/satellite/changement.png', bounds, { pane: 'analyse', alt: 'Eau nouvelle' }).addTo(carteSatellite);
         carteSatellite.attributionControl.addAttribution(ATTRIBUTION_SCENES);
         const plage = Object.values(metadata.eau_nouvelle_ha_par_seuil);
@@ -531,6 +532,78 @@ async function chargerSatellite() {
     } catch (err) {
         erreur('Analyse satellite indisponible', err.message);
     }
+}
+
+// ============ Image a la demande (Copernicus Data Space, via la fonction Edge) ============
+
+let calqueCdse = null;
+let urlCdse = null;
+const dateIso = d => d.toISOString().slice(0, 10);
+
+function initCopernicus() {
+    const aujourdhui = new Date();
+    $('#champFinCdse').value = dateIso(aujourdhui);
+    $('#champDebutCdse').value = dateIso(new Date(aujourdhui - 12 * 86400000));
+    $('#btnRetirerCdse').addEventListener('click', retirerCdse);
+    $('#formCopernicus').addEventListener('submit', async e => {
+        e.preventDefault();
+        $('#erreurCdse').textContent = '';
+        if (MODE_DEMO) {
+            $('#erreurCdse').textContent = 'Indisponible en mode démo : Supabase doit être configuré.';
+            return;
+        }
+        const debut = $('#champDebutCdse').value;
+        const fin = $('#champFinCdse').value;
+        if (!debut || !fin || debut > fin) {
+            $('#erreurCdse').textContent = 'Choisissez une période valide.';
+            return;
+        }
+        const b = carteSatellite.getBounds();
+        const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map(v => Math.round(v * 1e5) / 1e5);
+        if (bbox[2] - bbox[0] > 0.25 || bbox[3] - bbox[1] > 0.25) {
+            $('#erreurCdse').textContent = 'Zone trop grande : rapprochez la carte (0,25° au plus).';
+            return;
+        }
+        const bouton = $('#btnCdse');
+        bouton.disabled = true;
+        bouton.classList.add('btn-chargement');
+        $('#infoCdse').textContent = 'Calcul en cours chez Copernicus…';
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const produit = $('#champProduitCdse').value;
+            const reponse = await fetch(`${SUPABASE_URL}/functions/v1/imagerie-copernicus`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${session?.access_token}`, apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ produit, debut, fin, bbox })
+            });
+            if (!reponse.ok) {
+                const corps = await reponse.json().catch(() => ({}));
+                throw new Error(corps.erreur || `Erreur ${reponse.status}`);
+            }
+            retirerCdse();
+            urlCdse = URL.createObjectURL(await reponse.blob());
+            calqueCdse = L.imageOverlay(urlCdse, [[bbox[1], bbox[0]], [bbox[3], bbox[2]]], {
+                pane: 'analyse', opacity: produit === 'couleurs' ? 1 : 0.85, alt: 'Image Copernicus'
+            }).addTo(carteSatellite);
+            carteSatellite.attributionControl.addAttribution('Copernicus Sentinel (ESA) via Copernicus Data Space Ecosystem');
+            $('#btnRetirerCdse').hidden = false;
+            $('#infoCdse').textContent = `Mosaïque ${produit === 'radar' ? 'Sentinel-1 la plus récente' : 'Sentinel-2 la moins nuageuse'} entre le ${formatDate(debut)} et le ${formatDate(fin)}.`;
+        } catch (err) {
+            $('#infoCdse').textContent = '';
+            $('#erreurCdse').textContent = err.message;
+        } finally {
+            bouton.disabled = false;
+            bouton.classList.remove('btn-chargement');
+        }
+    });
+}
+
+function retirerCdse() {
+    calqueCdse?.remove();
+    calqueCdse = null;
+    if (urlCdse) URL.revokeObjectURL(urlCdse);
+    urlCdse = null;
+    $('#btnRetirerCdse').hidden = true;
 }
 
 // ============ WhatsApp ============

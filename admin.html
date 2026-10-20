@@ -299,6 +299,32 @@
                 </div>
                 <div class="carte-admin carte-satellite-admin"><div id="carteSatelliteAdmin" role="region" aria-label="Comparaison saison sèche et saison des pluies"></div></div>
                 <div class="grille-stats" id="statsSatellite" aria-live="polite"></div>
+                <form class="card pile" id="formCopernicus" novalidate aria-labelledby="titreCopernicus">
+                    <div>
+                        <h2 id="titreCopernicus" class="h5"><i class="bi bi-broadcast-pin" aria-hidden="true"></i> Image à la demande (Copernicus Data Space)</h2>
+                        <p class="texte-sm texte-secondaire">Calcule une image sur la vue actuelle de la carte (0,25° au plus, région de Dakar). Le radar Sentinel-1 voit à travers les nuages : l'eau calme y apparaît en bleu.</p>
+                    </div>
+                    <div class="deux-colonnes">
+                        <div class="form-group">
+                            <label class="form-label" for="champProduitCdse">Produit</label>
+                            <select class="select" id="champProduitCdse">
+                                <option value="radar">Sentinel-1, radar (eau sous les nuages)</option>
+                                <option value="eau">Sentinel-2, eau détectée (MNDWI)</option>
+                                <option value="couleurs">Sentinel-2, couleurs naturelles</option>
+                            </select>
+                        </div>
+                        <div class="deux-colonnes">
+                            <div class="form-group"><label class="form-label" for="champDebutCdse">Du</label><input class="input" type="date" id="champDebutCdse" required></div>
+                            <div class="form-group"><label class="form-label" for="champFinCdse">Au</label><input class="input" type="date" id="champFinCdse" required></div>
+                        </div>
+                    </div>
+                    <p class="form-error" id="erreurCdse" role="alert"></p>
+                    <div class="rangee-wrap">
+                        <button type="submit" class="btn btn-plein" id="btnCdse"><i class="bi bi-cloud-download" aria-hidden="true"></i>Afficher sur la carte</button>
+                        <button type="button" class="btn btn-secondary" id="btnRetirerCdse" hidden><i class="bi bi-x-lg" aria-hidden="true"></i>Retirer l'image</button>
+                    </div>
+                    <p class="texte-xs texte-muet" id="infoCdse" aria-live="polite"></p>
+                </form>
             </section>
 
             <!-- WhatsApp -->

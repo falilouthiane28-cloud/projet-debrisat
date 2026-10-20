@@ -53,3 +53,18 @@ Les mêmes produits sont consultables dans le Copernicus Browser : https://brows
 7. Compter les entités qui intersectent le masque d'eau nouvelle.
 
 Les résultats peuvent différer légèrement selon le rééchantillonnage (bilinéaire dans le script).
+
+## Images à la demande (Copernicus Data Space Ecosystem)
+
+La page Satellite de l'administration peut calculer une image Sentinel-1 (radar) ou Sentinel-2 sur la vue courante, via la fonction Edge `imagerie-copernicus`. Elle utilise l'API Process de Sentinel Hub sur le CDSE, avec un client OAuth dont le secret reste côté serveur.
+
+1. Se connecter sur https://shapps.dataspace.copernicus.eu/dashboard/ (compte CDSE gratuit).
+2. User settings, OAuth clients, « + Create » : nom `debrisat`, sans date d'expiration ou au-delà de la remise.
+3. Copier le Client ID et le Client secret (ce dernier n'est affiché qu'une fois).
+4. Les poser comme secrets Supabase (jamais dans le code ni dans le site) :
+
+```bash
+supabase secrets set CDSE_CLIENT_ID=<client id> CDSE_CLIENT_SECRET=<client secret> --project-ref bezkifetuusykmmwwiad
+```
+
+Produits : `radar` (Sentinel-1 IW VV, eau si σ0 < −18 dB, mosaïque la plus récente), `eau` (Sentinel-2 L2A, MNDWI > 0, nuages SCL masqués) et `couleurs` (B04, B03, B02). Emprise limitée à la région de Dakar et à 0,25° de côté pour ménager le quota gratuit.

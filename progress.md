@@ -150,3 +150,8 @@ Reste : Sentinel-1 et CHIRPS (prévus), contributions des membres à compléter 
 - Vue d'ensemble : grands chiffres avec courbe 7 jours et halo par catégorie, classement des communes (actifs, risque, résolution), flux en direct ; fond sombre à grille de points.
 - Pages Équipe (charge, résolus 30 j, délai moyen par agent), Satellite et WhatsApp (administration).
 - Non repris du prompt : tuiles CARTO (clé requise), supabase-js 2.39.3 (incompatible avec la clé publiable), création du profil côté client (fait par le déclencheur SQL, l'insertion client est interdite par la RLS).
+
+## Copernicus Data Space (20 octobre 2026)
+- Fonction Edge `imagerie-copernicus` déployée (agents et admins) : Sentinel-1 radar, Sentinel-2 eau et couleurs via l'API Process CDSE.
+- Formulaire « Image à la demande » dans la page Satellite de l'administration.
+- À faire par l'équipe : créer le client OAuth CDSE et poser `CDSE_CLIENT_ID` / `CDSE_CLIENT_SECRET` en secrets Supabase (docs/reproduction.md). Tant que ce n'est pas fait, la fonction répond 503 avec un message clair.
