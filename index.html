@@ -215,22 +215,47 @@
     </main>
 
     <footer class="pied">
-        <div class="container pile" style="gap:var(--space-7)">
-            <div class="pied-grille">
-                <div class="pile-sm">
-                    <img src="img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
-                    <p class="texte-sm texte-secondaire">Une plateforme de l'équipe Saturn (Satur Studio) pour la prévention des inondations à Dakar.</p>
+        <div class="container">
+            <div class="pied-panneau">
+                <div class="pied-marque">
+                    <a href="index.html" class="pied-logo" aria-label="Debrisat, haut de la page d'accueil">
+                        <img src="img/logo.png" class="logo-img" alt="" width="98" height="22">
+                    </a>
+                    <p class="pied-accroche">Les habitants signalent les canaux bouchés, les autorités interviennent avant la pluie.</p>
+                    <div class="pied-actions">
+                        <a class="btn btn-sm btn-plein" href="app.html"><i class="bi bi-plus-circle" aria-hidden="true"></i>Signaler une obstruction</a>
+                        <a class="btn btn-sm btn-secondary" href="app.html"><i class="bi bi-map" aria-hidden="true"></i>Voir la carte</a>
+                    </div>
                 </div>
-                <nav class="pied-liens" aria-label="Liens du pied de page">
-                    <a href="#fonctionnement">À propos</a>
-                    <a href="app.html">Application</a>
-                    <a href="dashboard.html">Espace autorités</a>
-                    <button type="button" id="btnMentions">Mentions légales</button>
+
+                <nav class="pied-colonnes" aria-label="Plan du site">
+                    <div class="pied-colonne">
+                        <p class="pied-titre">Plateforme</p>
+                        <a href="#fonctionnement">Fonctionnement</a>
+                        <a href="#direct">En direct</a>
+                        <a href="#chiffres">Chiffres</a>
+                        <a href="#technologies">Technologies</a>
+                    </div>
+                    <div class="pied-colonne">
+                        <p class="pied-titre">Espaces</p>
+                        <a href="app.html">Application citoyenne</a>
+                        <a href="dashboard.html">Espace agent</a>
+                        <a href="admin.html">Administration</a>
+                        <a href="auth.html">Connexion</a>
+                    </div>
+                    <div class="pied-colonne">
+                        <p class="pied-titre">Projet</p>
+                        <a href="auth.html?mode=inscription">Créer un compte</a>
+                        <button type="button" id="btnMentions">Mentions légales</button>
+                        <span class="pied-lieu"><i class="bi bi-geo-alt" aria-hidden="true"></i>Dakar, Sénégal</span>
+                    </div>
                 </nav>
             </div>
+
             <div class="pied-bas">
-                <p>&copy; <span id="annee">2026</span> Équipe Saturn · Données cartographiques &copy; contributeurs OpenStreetMap, Esri, Copernicus</p>
-                <p class="rangee" style="gap:6px"><i class="bi bi-geo-alt" aria-hidden="true"></i>Fait avec détermination à Dakar</p>
+                <p>&copy; <span id="annee">2026</span> Équipe Saturn (Satur Studio)</p>
+                <p class="pied-sources">Cartes &copy; OpenStreetMap, Esri · Imagerie Copernicus Sentinel-2</p>
+                <a class="btn-icon nu pied-haut" href="#" aria-label="Revenir en haut de la page"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
             </div>
         </div>
     </footer>

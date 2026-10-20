@@ -256,21 +256,60 @@
 .liste-points li { display: flex; gap: var(--space-3); align-items: flex-start; color: var(--color-primary-text); font-size: var(--text-base); }
 .liste-points .bi { color: var(--color-bright); margin-top: 2px; }
 
-/* Pied de page */
-.pied {
-    padding: var(--space-10) 0 calc(var(--space-8) + var(--safe-bottom));
-    border-top: 1px solid var(--glass-border);
+/* Pied de page : panneau de verre, marque a gauche, plan du site en colonnes */
+.pied { padding: var(--space-10) 0 calc(var(--space-6) + var(--safe-bottom)); }
+.pied-panneau {
+    display: grid; gap: var(--space-8);
+    padding: var(--space-7) var(--space-5);
+    border-radius: var(--radius-xl);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-.pied-grille { display: flex; flex-direction: column; gap: var(--space-7); }
-.pied-liens { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); }
-.pied-liens a, .pied-liens button {
-    display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3);
-    border-radius: var(--radius-sm);
-    color: var(--color-secondary-text); font-size: var(--text-sm);
-}
-.pied-liens a:hover, .pied-liens button:hover { color: var(--color-heading); background: var(--glass-bg-hover); }
-.pied-bas { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-muted); }
-.pied-bas .bi { color: var(--color-secondary-text); }
+.pied-marque { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); max-width: 380px; }
+.pied-logo { display: inline-flex; align-items: center; min-height: 44px; }
+.pied .logo-img { width: 98px; height: 22px; max-width: none; object-fit: contain; }
+.pied-accroche { color: var(--color-secondary-text); font-size: var(--text-base); line-height: 1.55; }
+.pied-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
-/* Le logo garde ses proportions quelle que soit la largeur de la colonne */
-.pied .logo-img { width: 98px; height: 22px; max-width: none; align-self: flex-start; object-fit: contain; }
+.pied-colonnes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-4); }
+.pied-colonne { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.pied-titre {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-xs); font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted);
+}
+.pied-colonne a, .pied-colonne button {
+    display: inline-flex; align-items: center; min-height: 40px;
+    margin-left: calc(var(--space-2) * -1); padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm); color: var(--color-secondary-text); text-align: left;
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+.pied-colonne a:hover, .pied-colonne button:hover { color: var(--color-heading); background: var(--glass-bg-hover); }
+.pied-lieu { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; font-size: var(--text-sm); color: var(--color-muted); }
+
+.pied-bas {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5);
+    padding: var(--space-5) var(--space-2) 0;
+    font-size: var(--text-xs); color: var(--color-muted);
+}
+/* Sur mobile : copyright et retour en haut sur une ligne, sources dessous */
+.pied-sources { order: 3; flex-basis: 100%; }
+.pied-haut { margin-left: auto; border: 1px solid var(--glass-border); border-radius: var(--radius-full); }
+.pied-haut:hover { background: var(--glass-bg-hover); color: var(--color-heading); }
+
+@media (pointer: coarse) { .pied-colonne a, .pied-colonne button { min-height: 44px; } }
+@media (min-width: 768px) {
+    .pied-panneau { padding: var(--space-8); }
+    .pied-sources { order: 0; flex: 1; flex-basis: auto; }
+    .pied-colonnes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+    .pied-panneau { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--space-10); }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .pied-panneau { background: var(--color-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

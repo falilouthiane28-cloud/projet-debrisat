@@ -79,8 +79,6 @@
     .carte-satellite { grid-template-columns: 1fr 1fr; }
     .carte-satellite .visuel { min-height: 420px; }
     .carte-satellite .contenu { padding: var(--space-9); justify-content: center; }
-    .pied-grille { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-    .pied-bas { flex-direction: row; justify-content: space-between; }
 
     /* Application : barre du haut complete, pas de barre du bas */
     .bottom-nav { display: none; }
