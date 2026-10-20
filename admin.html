@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/hackathon.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body class="page-tableau" data-espace="admin">
@@ -44,6 +45,9 @@
             <a class="sidebar-item" href="#signalements" data-route="signalements" title="Tous les signalements"><span class="tuile"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span><span class="libelle">Tous les signalements</span><span class="compteur" id="compteurAttente"></span></a>
             <a class="sidebar-item" href="#carte" data-route="carte" title="Carte globale"><span class="tuile"><i class="bi bi-map" aria-hidden="true"></i></span><span class="libelle">Carte globale</span></a>
             <p class="eyebrow titre-groupe">Territoire</p>
+            <a class="sidebar-item" href="#equipe" data-route="equipe" title="Équipe"><span class="tuile"><i class="bi bi-people" aria-hidden="true"></i></span><span class="libelle">Équipe</span></a>
+            <a class="sidebar-item" href="#satellite" data-route="satellite" title="Satellite"><span class="tuile"><i class="bi bi-globe-americas" aria-hidden="true"></i></span><span class="libelle">Satellite</span></a>
+            <a class="sidebar-item" href="#whatsapp" data-route="whatsapp" title="WhatsApp"><span class="tuile"><i class="bi bi-whatsapp" aria-hidden="true"></i></span><span class="libelle">WhatsApp</span></a>
             <a class="sidebar-item" href="#zones" data-route="zones" title="Zones à risque"><span class="tuile"><i class="bi bi-shield-check" aria-hidden="true"></i></span><span class="libelle">Zones à risque</span></a>
             <a class="sidebar-item" href="#alertes" data-route="alertes" title="Alertes système"><span class="tuile"><i class="bi bi-bell" aria-hidden="true"></i></span><span class="libelle">Alertes système</span></a>
             <a class="sidebar-item" href="#statistiques" data-route="statistiques" title="Analytiques"><span class="tuile"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></span><span class="libelle">Analytiques</span></a>
@@ -101,19 +105,41 @@
                 <div class="grille-stats" id="grilleStats" aria-live="polite">
                     <article class="card-stat glass-card">
                         <div class="rangee-entre"><span class="icone-ronde"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span><span class="tendance" id="tendTotal"></span></div>
-                        <p class="valeur chiffre" id="statTotal">—</p><p class="libelle">Nouveaux signalements</p>
+                        <p class="valeur chiffre" id="statTotal">—</p><canvas class="courbe-stat" id="courbeTotal" width="160" height="40" aria-hidden="true"></canvas><p class="libelle">Nouveaux signalements</p>
                     </article>
                     <article class="card-stat glass-card">
                         <div class="rangee-entre"><span class="icone-ronde alerte"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span><span class="tendance" id="tendAttente"></span></div>
-                        <p class="valeur chiffre" id="statAttente">—</p><p class="libelle">En attente aujourd'hui</p>
+                        <p class="valeur chiffre" id="statAttente">—</p><canvas class="courbe-stat" id="courbeAttente" width="160" height="40" aria-hidden="true"></canvas><p class="libelle">En attente aujourd'hui</p>
                     </article>
                     <article class="card-stat glass-card">
                         <div class="rangee-entre"><span class="icone-ronde info"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span><span class="tendance" id="tendCours"></span></div>
-                        <p class="valeur chiffre" id="statCours">—</p><p class="libelle">En cours d'intervention</p>
+                        <p class="valeur chiffre" id="statCours">—</p><canvas class="courbe-stat" id="courbeCours" width="160" height="40" aria-hidden="true"></canvas><p class="libelle">En cours d'intervention</p>
                     </article>
                     <article class="card-stat glass-card">
                         <div class="rangee-entre"><span class="icone-ronde succes"><i class="bi bi-check-lg" aria-hidden="true"></i></span><span class="tendance" id="tendResolus"></span></div>
-                        <p class="valeur chiffre" id="statResolus">—</p><p class="libelle">Résolus · <span id="tauxResolution">—</span></p>
+                        <p class="valeur chiffre" id="statResolus">—</p><canvas class="courbe-stat" id="courbeResolus" width="160" height="40" aria-hidden="true"></canvas><p class="libelle">Résolus · <span id="tauxResolution">—</span></p>
+                    </article>
+                </div>
+
+                <div class="grille-direct">
+                    <article class="card glass-card carte-classement" aria-labelledby="titreClassementCommunes">
+                        <div class="rangee-entre">
+                            <h2 id="titreClassementCommunes" class="h5"><i class="bi bi-bar-chart-steps" aria-hidden="true"></i> Classement des communes</h2>
+                            <label class="sr-only" for="triClassement">Trier le classement</label>
+                            <select class="select compact" id="triClassement" style="width:auto">
+                                <option value="actifs">Signalements actifs</option>
+                                <option value="risque">Score de risque</option>
+                                <option value="resolution">Taux de résolution</option>
+                            </select>
+                        </div>
+                        <ol class="classement-communes" id="classementCommunes" aria-live="polite"></ol>
+                    </article>
+                    <article class="card glass-card carte-flux" aria-labelledby="titreFlux">
+                        <div class="rangee-entre">
+                            <h2 id="titreFlux" class="h5"><i class="bi bi-lightning-charge" aria-hidden="true"></i> Signalements en direct</h2>
+                            <span class="indicateur-direct"><span class="point-direct" aria-hidden="true"></span>En direct</span>
+                        </div>
+                        <ul class="flux-direct" id="fluxDirect" role="list" aria-live="polite"></ul>
                     </article>
                 </div>
 
@@ -254,6 +280,52 @@
                             <caption class="sr-only">Dix interventions prioritaires</caption>
                             <thead><tr><th scope="col">Rang</th><th scope="col">Signalement</th><th scope="col">Commune</th><th scope="col">Sévérité</th><th scope="col">Confirmations</th><th scope="col">Zone</th><th scope="col">Score</th><th scope="col">Action</th></tr></thead>
                             <tbody id="corpsPriorites"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equipe -->
+            <section class="pile" id="section-equipe" data-section hidden aria-labelledby="titreEquipe" style="gap:var(--space-5)">
+                <div class="titre-page"><p class="eyebrow">Charge et résultats des agents</p><h1 id="titreEquipe">Équipe</h1></div>
+                <div class="grille-equipe" id="grilleEquipe" aria-live="polite"></div>
+            </section>
+
+            <!-- Satellite -->
+            <section class="pile" id="section-satellite" data-section hidden aria-labelledby="titreSatellite" style="gap:var(--space-5)">
+                <div class="titre-page rangee-entre" style="align-items:flex-end;flex-wrap:wrap">
+                    <div><p class="eyebrow">Sentinel-2 L2A · Pikine et Guédiawaye</p><h1 id="titreSatellite">Satellite</h1></div>
+                    <a class="btn btn-sm btn-secondary" href="hackathon.html#demonstration"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Page de démonstration</a>
+                </div>
+                <div class="carte-admin carte-satellite-admin"><div id="carteSatelliteAdmin" role="region" aria-label="Comparaison saison sèche et saison des pluies"></div></div>
+                <div class="grille-stats" id="statsSatellite" aria-live="polite"></div>
+            </section>
+
+            <!-- WhatsApp -->
+            <section class="pile" id="section-whatsapp" data-section hidden aria-labelledby="titreWhatsapp" style="gap:var(--space-5)">
+                <div class="titre-page"><p class="eyebrow">Signalement sans application</p><h1 id="titreWhatsapp">Bot WhatsApp</h1></div>
+                <div class="grille-stats" id="statsWhatsapp" aria-live="polite"></div>
+                <div class="card pile">
+                    <h2 class="h5"><i class="bi bi-diagram-2" aria-hidden="true"></i> Parcours de l'habitant</h2>
+                    <ol class="chaine-whatsapp" role="list">
+                        <li><i class="bi bi-camera" aria-hidden="true"></i>Photo de l'obstruction</li>
+                        <li><i class="bi bi-geo-alt" aria-hidden="true"></i>Partage de la position</li>
+                        <li><i class="bi bi-list-ol" aria-hidden="true"></i>Choix du type (1 à 9)</li>
+                        <li><i class="bi bi-check2-circle" aria-hidden="true"></i>Signalement créé, analyse de la photo</li>
+                    </ol>
+                </div>
+                <div class="card">
+                    <div class="ligne-parametre"><div><p class="titre">Adresse du webhook (console Twilio)</p><p class="description chiffre" id="urlWebhook"></p></div>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnCopierWebhook"><i class="bi bi-clipboard" aria-hidden="true"></i>Copier</button></div>
+                    <div class="ligne-parametre"><div><p class="titre">État du service</p><p class="description" id="etatWebhook">Vérification…</p></div></div>
+                    <div class="ligne-parametre"><div><p class="titre">Secrets Twilio</p><p class="description">À poser côté serveur : <code>supabase secrets set TWILIO_ACCOUNT_SID=… TWILIO_AUTH_TOKEN=… TWILIO_NUMERO_WHATSAPP=…</code></p></div></div>
+                </div>
+                <div class="card table-container" style="padding:0">
+                    <div class="table-defilement">
+                        <table class="table">
+                            <caption class="sr-only">Derniers signalements reçus par WhatsApp</caption>
+                            <thead><tr><th scope="col">Type</th><th scope="col">Commune</th><th scope="col">Reçu</th><th scope="col">Statut</th></tr></thead>
+                            <tbody id="corpsWhatsapp"></tbody>
                         </table>
                     </div>
                 </div>

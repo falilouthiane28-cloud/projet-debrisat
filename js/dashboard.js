@@ -70,7 +70,7 @@ $('.principal-tableau').addEventListener('transitionend', e => {
 // ============ Sections et onglets ============
 const TITRES = {
     'vue-ensemble': "Vue d'ensemble", signalements: 'Signalements', carte: 'Carte',
-    alertes: 'Alertes', zones: 'Zones à risque', priorites: 'Priorités DPGI', statistiques: 'Statistiques', parametres: 'Paramètres',
+    alertes: 'Alertes', zones: 'Zones à risque', priorites: 'Priorités DPGI', equipe: 'Équipe', statistiques: 'Statistiques', parametres: 'Paramètres',
     ...(moduleAdmin?.TITRES || {})
 };
 const ONGLET_PAR_ROUTE = { 'vue-ensemble': 'carte', signalements: 'signalements', carte: 'carte', alertes: 'alertes' };
@@ -108,6 +108,7 @@ const routeur = new Routeur({
     zones: { entrer() { afficherSection('section-zones'); rendreZones(); } },
     statistiques: { entrer() { afficherSection('section-statistiques'); rendreStatistiques(); } },
     priorites: { entrer() { afficherSection('section-priorites'); rendrePriorites(); } },
+    equipe: { entrer() { afficherSection('section-equipe'); rendreEquipe(); } },
     parametres: { entrer() { afficherSection('section-parametres'); rendreParametres(); } },
     ...(moduleAdmin?.routes({ afficherSection, etat }) || {})
 }, {
@@ -146,6 +147,7 @@ $('#choixPeriode').addEventListener('click', e => {
     rendreVue();
     if (routeur.courante === 'statistiques') rendreStatistiques();
     else if (routeur.courante === 'priorites') rendrePriorites();
+    else if (routeur.courante === 'equipe') rendreEquipe();
     annoncer(`Statistiques sur les ${etat.jours} derniers jours`);
 });
 
@@ -210,6 +212,143 @@ function rendreStats() {
     const enAttente = etat.signalements.filter(s => s.statut === 'en_attente').length;
     $('#compteurAttente').textContent = enAttente || '';
     $('#compteurAttente').setAttribute('aria-label', `${enAttente} en attente`);
+}
+
+// ============ Courbes 7 jours ============
+
+// Nombre par jour sur les 7 derniers jours (aujourd'hui en dernier)
+function serie7Jours(liste, champ = 'created_at') {
+    const debut = new Date();
+    debut.setHours(0, 0, 0, 0);
+    const jours = Array(7).fill(0);
+    for (const s of liste) {
+        if (!s[champ]) continue;
+        const ecart = Math.floor((debut - new Date(s[champ]).setHours(0, 0, 0, 0)) / JOUR);
+        if (ecart >= 0 && ecart < 7) jours[6 - ecart]++;
+    }
+    return jours;
+}
+
+// Courbe minimale dessinee au canvas : pas besoin d'une instance Chart.js par carte
+function dessinerCourbe(canvas, valeurs, couleur) {
+    if (!canvas) return;
+    const ratio = window.devicePixelRatio || 1;
+    const largeur = canvas.clientWidth || 160;
+    const hauteur = canvas.clientHeight || 40;
+    canvas.width = largeur * ratio;
+    canvas.height = hauteur * ratio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    ctx.clearRect(0, 0, largeur, hauteur);
+    const max = Math.max(1, ...valeurs);
+    const points = valeurs.map((v, i) => [(i / (valeurs.length - 1)) * (largeur - 4) + 2, hauteur - 4 - (v / max) * (hauteur - 10)]);
+    const degrade = ctx.createLinearGradient(0, 0, 0, hauteur);
+    degrade.addColorStop(0, couleur.replace(')', ', 0.35)').replace('rgb(', 'rgba('));
+    degrade.addColorStop(1, couleur.replace(')', ', 0)').replace('rgb(', 'rgba('));
+    ctx.beginPath();
+    points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.lineTo(points.at(-1)[0], hauteur);
+    ctx.lineTo(points[0][0], hauteur);
+    ctx.closePath();
+    ctx.fillStyle = degrade;
+    ctx.fill();
+    ctx.beginPath();
+    points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.strokeStyle = couleur;
+    ctx.lineWidth = 1.75;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    const [xf, yf] = points.at(-1);
+    ctx.beginPath();
+    ctx.arc(xf, yf, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = couleur;
+    ctx.fill();
+}
+
+function rendreCourbes() {
+    const s = etat.signalements;
+    dessinerCourbe($('#courbeTotal'), serie7Jours(s), 'rgb(100, 181, 246)');
+    dessinerCourbe($('#courbeAttente'), serie7Jours(s.filter(x => x.statut === 'en_attente')), 'rgb(255, 179, 64)');
+    dessinerCourbe($('#courbeCours'), serie7Jours(s.filter(x => x.statut === 'en_cours'), 'updated_at'), 'rgb(77, 208, 225)');
+    dessinerCourbe($('#courbeResolus'), serie7Jours(s, 'resolu_at'), 'rgb(102, 187, 106)');
+}
+
+// ============ Classement des communes ============
+
+let triClassement = 'actifs';
+function rendreClassement() {
+    const parCommune = new Map();
+    for (const s of etat.signalements) {
+        if (!s.commune) continue;
+        const c = parCommune.get(s.commune) || { commune: s.commune, actifs: 0, resolus: 0, total: 0, risque: 0 };
+        c.total++;
+        if (STATUTS_ACTIFS.includes(s.statut)) c.actifs++;
+        if (s.statut === 'resolu') c.resolus++;
+        parCommune.set(s.commune, c);
+    }
+    for (const z of etat.zones) {
+        const c = parCommune.get(z.commune);
+        if (c) c.risque = Math.max(c.risque, z.score_risque);
+        else if (z.commune) parCommune.set(z.commune, { commune: z.commune, actifs: 0, resolus: 0, total: 0, risque: z.score_risque });
+    }
+    const lignes = [...parCommune.values()].map(c => ({ ...c, resolution: c.total ? Math.round((c.resolus / c.total) * 100) : 0 }));
+    lignes.sort((a, b) => b[triClassement] - a[triClassement] || b.actifs - a.actifs);
+    const max = Math.max(1, ...lignes.map(l => l[triClassement]));
+    const unite = { actifs: '', risque: '/100', resolution: ' %' }[triClassement];
+    $('#classementCommunes').innerHTML = lignes.length ? lignes.slice(0, 8).map((l, i) => `
+        <li>
+            <span class="rang chiffre">${String(i + 1).padStart(2, '0')}</span>
+            <span class="nom">${echapper(l.commune)}</span>
+            <span class="valeur chiffre">${Math.round(l[triClassement])}${unite}</span>
+            <span class="barre" aria-hidden="true"><span style="--part:${(l[triClassement] / max).toFixed(3)}" data-ton="${triClassement === 'resolution' ? 'succes' : l.risque >= 85 ? 'critique' : l.risque >= 70 ? 'haut' : 'moyen'}"></span></span>
+        </li>`).join('') : '<li class="vide texte-muet">Aucun signalement dans votre périmètre.</li>';
+}
+$('#triClassement')?.addEventListener('change', e => { triClassement = e.target.value; rendreClassement(); });
+
+// ============ Flux en direct ============
+
+function rendreFlux() {
+    const recents = etat.signalements.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 7);
+    $('#fluxDirect').innerHTML = recents.length ? recents.map(s => {
+        const type = TYPES_OBSTRUCTION[s.type_obstruction] || TYPES_OBSTRUCTION.autre;
+        const statut = STATUTS[s.statut] || STATUTS.en_attente;
+        return `<li>
+            <span class="icone-flux" data-severite="${s.severite}"><i class="bi ${type.icone}" aria-hidden="true"></i></span>
+            <span class="contenu-flux"><strong>${echapper(type.libelle)}</strong>
+                <span class="meta">${echapper(s.commune || 'Dakar')} · sévérité ${s.severite}/5 · ${formatRelatif(s.created_at)}${s.source === 'whatsapp' ? ' · WhatsApp' : ''}</span></span>
+            <span class="pastille-statut" style="--couleur:${statut.couleur}" title="${statut.libelle}"><span class="sr-only">${statut.libelle}</span></span>
+        </li>`;
+    }).join('') : '<li class="vide texte-muet">Aucun signalement pour le moment.</li>';
+}
+
+// ============ Equipe ============
+
+function rendreEquipe() {
+    const agents = etat.agents || [];
+    if (!agents.length) {
+        $('#grilleEquipe').innerHTML = '<div class="card etat-vide"><i class="bi bi-people" aria-hidden="true"></i><p>Aucun agent dans votre périmètre.</p></div>';
+        return;
+    }
+    const ilYa30j = Date.now() - 30 * JOUR;
+    $('#grilleEquipe').innerHTML = agents.map(a => {
+        const siens = etat.signalements.filter(s => s.assigne_a === a.id);
+        const enCours = siens.filter(s => s.statut === 'en_cours').length;
+        const ouverts = siens.filter(s => STATUTS_ACTIFS.includes(s.statut)).length;
+        const resolus30 = siens.filter(s => s.statut === 'resolu' && s.resolu_at && new Date(s.resolu_at) > ilYa30j);
+        const delais = resolus30.map(s => (new Date(s.resolu_at) - new Date(s.created_at)) / JOUR);
+        const delai = delais.length ? delais.reduce((t, d) => t + d, 0) / delais.length : null;
+        const charge = Math.min(1, ouverts / 10);
+        return `<article class="card glass-card carte-agent">
+            <div class="rangee"><span class="avatar">${echapper(initiales(a.nom_complet || ''))}</span>
+                <div><p><strong>${echapper(a.nom_complet)}</strong></p><p class="texte-xs texte-muet">${ouverts} dossier${ouverts > 1 ? 's' : ''} ouvert${ouverts > 1 ? 's' : ''}</p></div></div>
+            <div class="jauge-charge" role="meter" aria-label="Charge de travail" aria-valuemin="0" aria-valuemax="10" aria-valuenow="${ouverts}"><span style="--part:${charge}" data-ton="${charge >= 0.8 ? 'critique' : charge >= 0.5 ? 'haut' : 'succes'}"></span></div>
+            <dl class="chiffres-agent">
+                <div><dt>En cours</dt><dd class="chiffre">${enCours}</dd></div>
+                <div><dt>Résolus (30 j)</dt><dd class="chiffre">${resolus30.length}</dd></div>
+                <div><dt>Délai moyen</dt><dd class="chiffre">${delai === null ? '—' : `${delai.toFixed(1)} j`}</dd></div>
+            </dl>
+        </article>`;
+    }).join('');
 }
 
 // ============ Graphiques ============
@@ -765,10 +904,16 @@ $('#btnDeconnexionTableau').addEventListener('click', async () => {
 // ============ Donnees ============
 const rendreVue = () => {
     rendreStats();
+    rendreCourbes();
+    rendreClassement();
+    rendreFlux();
     rendreGraphiquesVue();
 };
 const rendreApresChangement = debounce(() => {
     rendreStats();
+    rendreCourbes();
+    rendreClassement();
+    rendreFlux();
     if (!$('#panneauTableau').hidden) rendreTable();
     if (routeur.courante === 'statistiques') rendreStatistiques();
     else rendreGraphiquesVue();

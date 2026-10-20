@@ -1,6 +1,7 @@
 // Sections propres a l'administration : utilisateurs, codes d'acces, configuration, journal.
 // Charge uniquement par admin.html (via dashboard.js) ; chaque action est aussi verifiee et journalisee en SQL.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, COMMUNES, ROLES, MODE_DEMO } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, COMMUNES, ROLES, MODE_DEMO, TYPES_OBSTRUCTION, STATUTS } from './config.js';
+import { chargerAnalyse, boundsAnalyse, ComparateurAvantApres, ATTRIBUTION_SCENES } from './satellite.js';
 import { $, $$, echapper, formatDate, formatRelatif, formatNombre, initiales, debounce, telechargerFichier } from './utils.js';
 import { Feuille } from './animations.js';
 import { profilCourant } from './auth.js';
@@ -12,7 +13,8 @@ import {
 } from './donnees.js';
 
 export const TITRES = {
-    utilisateurs: 'Utilisateurs', codes: "Codes d'accès", configuration: 'Configuration', journal: "Journal d'activité"
+    utilisateurs: 'Utilisateurs', codes: "Codes d'accès", configuration: 'Configuration', journal: "Journal d'activité",
+    satellite: 'Satellite', whatsapp: 'WhatsApp'
 };
 
 const CLASSES_ROLE = { citoyen: 'badge-neutral', agent_municipal: 'badge-info', admin: 'badge-warning' };
@@ -492,9 +494,86 @@ export async function supprimerSignalement(id) {
     }
 }
 
+// ============ Satellite ============
+
+let carteSatellite = null;
+async function chargerSatellite() {
+    if (carteSatellite) {
+        setTimeout(() => carteSatellite.invalidateSize(), 50);
+        return;
+    }
+    carteSatellite = L.map('carteSatelliteAdmin', { zoomSnap: 0.25 });
+    carteSatellite.attributionControl.setPrefix(false);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        maxNativeZoom: 16, maxZoom: 18, attribution: 'Fond © Esri'
+    }).addTo(carteSatellite);
+    try {
+        const { metadata, exposition } = await chargerAnalyse();
+        const bounds = boundsAnalyse(metadata);
+        carteSatellite.fitBounds(bounds);
+        const [seche, pluies] = metadata.scenes;
+        new ComparateurAvantApres(carteSatellite, {
+            avant: 'assets/satellite/seche-rgb.png', apres: 'assets/satellite/pluies-rgb.png', bounds,
+            libelleAvant: `Saison sèche · ${formatDate(seche.date)}`, libelleApres: `Saison des pluies · ${formatDate(pluies.date)}`
+        });
+        carteSatellite.createPane('analyse').style.zIndex = 420;
+        L.imageOverlay('assets/satellite/changement.png', bounds, { pane: 'analyse', alt: 'Eau nouvelle' }).addTo(carteSatellite);
+        carteSatellite.attributionControl.addAttribution(ATTRIBUTION_SCENES);
+        const plage = Object.values(metadata.eau_nouvelle_ha_par_seuil);
+        const nb = v => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(v);
+        const carte = (icone, valeur, libelle) => `<article class="card-stat glass-card"><span class="icone-ronde"><i class="bi ${icone}" aria-hidden="true"></i></span><p class="valeur chiffre">${valeur}</p><p class="libelle">${libelle}</p></article>`;
+        $('#statsSatellite').innerHTML = [
+            carte('bi-droplet-half', `${nb(metadata.eau_nouvelle_ha)} ha`, `Eau nouvelle (plage ${nb(Math.min(...plage))} à ${nb(Math.max(...plage))} ha)`),
+            carte('bi-sign-turn-right', exposition ? `${nb(exposition.longueur_routes_exposees_km)} km` : '—', 'Routes exposées'),
+            carte('bi-house', exposition?.batiments_exposes ?? '—', 'Bâtiments exposés'),
+            carte('bi-cloud', `${nb(seche.nuages_zone_pct)} % / ${nb(pluies.nuages_zone_pct)} %`, 'Nuages sur la zone')
+        ].join('');
+    } catch (err) {
+        erreur('Analyse satellite indisponible', err.message);
+    }
+}
+
+// ============ WhatsApp ============
+
+let etatTableau = null;
+async function chargerWhatsapp() {
+    const url = `${SUPABASE_URL}/functions/v1/webhook-whatsapp`;
+    $('#urlWebhook').textContent = MODE_DEMO ? 'Mode démo : Supabase non configuré' : url;
+    const recus = (etatTableau?.signalements || []).filter(s => s.source === 'whatsapp')
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const semaine = recus.filter(s => Date.now() - new Date(s.created_at) < 7 * 86400000).length;
+    const carte = (icone, valeur, libelle) => `<article class="card-stat glass-card"><span class="icone-ronde"><i class="bi ${icone}" aria-hidden="true"></i></span><p class="valeur chiffre">${valeur}</p><p class="libelle">${libelle}</p></article>`;
+    $('#statsWhatsapp').innerHTML = [
+        carte('bi-whatsapp', formatNombre(recus.length), 'Signalements reçus'),
+        carte('bi-calendar-week', formatNombre(semaine), 'Ces 7 derniers jours'),
+        carte('bi-check2-circle', formatNombre(recus.filter(s => s.statut === 'resolu').length), 'Résolus')
+    ].join('');
+    $('#corpsWhatsapp').innerHTML = recus.length ? recus.slice(0, 20).map(s => {
+        const type = TYPES_OBSTRUCTION[s.type_obstruction] || TYPES_OBSTRUCTION.autre;
+        const statut = STATUTS[s.statut] || STATUTS.en_attente;
+        return `<tr><td><i class="bi ${type.icone}" aria-hidden="true"></i> ${echapper(type.libelle)}</td><td>${echapper(s.commune || '—')}</td>
+            <td>${formatRelatif(s.created_at)}</td><td><span class="badge ${statut.classe}">${statut.libelle}</span></td></tr>`;
+    }).join('') : ligneVide(4, 'bi-whatsapp', 'Aucun signalement reçu par WhatsApp pour le moment.');
+
+    if (MODE_DEMO) {
+        $('#etatWebhook').textContent = 'Non disponible en mode démo.';
+        return;
+    }
+    // Une requete sans signature doit etre refusee (403) : cela prouve que la fonction repond et se protege
+    try {
+        const reponse = await fetch(url, { method: 'POST', body: '' });
+        $('#etatWebhook').innerHTML = reponse.status === 403
+            ? '<span class="badge badge-success"><i class="bi bi-check-circle" aria-hidden="true"></i>En ligne</span> La fonction répond et refuse les requêtes non signées par Twilio.'
+            : `<span class="badge badge-warning">Réponse inattendue (${reponse.status})</span>`;
+    } catch {
+        $('#etatWebhook').innerHTML = '<span class="badge badge-danger">Injoignable</span>';
+    }
+}
+
 // ============ Routes ============
 
-export function routes({ afficherSection }) {
+export function routes({ afficherSection, etat: etatDashboard }) {
+    etatTableau = etatDashboard;
     const route = (section, charger) => ({
         entrer() {
             initialiser();
@@ -506,6 +585,8 @@ export function routes({ afficherSection }) {
         utilisateurs: route('section-utilisateurs', () => chargerUtilisateurs()),
         codes: route('section-codes', () => chargerCodes()),
         configuration: route('section-configuration', chargerConfiguration),
-        journal: route('section-journal', () => chargerJournal(true))
+        journal: route('section-journal', () => chargerJournal(true)),
+        satellite: route('section-satellite', chargerSatellite),
+        whatsapp: route('section-whatsapp', chargerWhatsapp)
     };
 }

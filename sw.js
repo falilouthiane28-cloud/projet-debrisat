@@ -1,5 +1,5 @@
 // Service worker Debrisat : coquille de l'application hors ligne, tuiles de carte mises en cache au fil de la navigation.
-const VERSION = 'debrisat-v5';
+const VERSION = 'debrisat-v6';
 const CACHE_COQUILLE = `${VERSION}-coquille`;
 const CACHE_CDN = `${VERSION}-cdn`;
 const CACHE_TUILES = `${VERSION}-tuiles`;

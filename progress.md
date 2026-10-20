@@ -145,3 +145,8 @@ Reste :
 - Espace agent et administration : vue « Priorités DPGI » (score documenté).
 - `docs/` : note de concept, reproduction, inventaire des sources.
 Reste : Sentinel-1 et CHIRPS (prévus), contributions des membres à compléter dans `docs/sources-inventaire.md`, test de la vue Priorités en étant connecté.
+
+## Tableau de bord « données » (20 octobre 2026)
+- Vue d'ensemble : grands chiffres avec courbe 7 jours et halo par catégorie, classement des communes (actifs, risque, résolution), flux en direct ; fond sombre à grille de points.
+- Pages Équipe (charge, résolus 30 j, délai moyen par agent), Satellite et WhatsApp (administration).
+- Non repris du prompt : tuiles CARTO (clé requise), supabase-js 2.39.3 (incompatible avec la clé publiable), création du profil côté client (fait par le déclencheur SQL, l'insertion client est interdite par la RLS).
