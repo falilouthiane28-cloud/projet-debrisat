@@ -506,9 +506,11 @@ async function chargerSatellite() {
     initCopernicus();
     carteSatellite.createPane('analyse').style.zIndex = 420;
     carteSatellite.attributionControl.setPrefix(false);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-        maxNativeZoom: 16, maxZoom: 18, attribution: 'Fond © Esri'
+    const fondSat = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxNativeZoom: 19, maxZoom: 20,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(carteSatellite);
+    carteSatellite.getContainer().querySelector('.leaflet-tile-pane').style.filter = 'invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.1) saturate(0.3)';
     try {
         const { metadata, exposition } = await chargerAnalyse();
         const bounds = boundsAnalyse(metadata);

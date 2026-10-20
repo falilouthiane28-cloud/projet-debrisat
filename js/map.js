@@ -2,13 +2,13 @@ import { DAKAR_CENTRE, ZOOM_DEFAUT, SEVERITES, TYPES_OBSTRUCTION, STATUTS, SEUIL
 import { echapper, htmlSeverite, htmlStatut, htmlVignette, formatRelatif, lieuSignalement } from './utils.js';
 import { themeEffectif } from './theme.js';
 
-// Fonds Esri « Canvas » gris fonce / gris clair : sans cle d'API (CARTO exige desormais une cle).
-const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas';
+// Fonds de carte detailles : OpenStreetMap avec filtre CSS pour le mode sombre (sans cle d'API)
+const URL_OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TUILES = {
-    sombre: { fond: `${ESRI}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`, etiquettes: `${ESRI}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}` },
-    clair: { fond: `${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`, etiquettes: `${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}` }
+    sombre: { fond: URL_OSM, etiquettes: null, filtre: true },
+    clair: { fond: URL_OSM, etiquettes: null, filtre: false }
 };
-const ATTRIBUTION = 'Fond de carte &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, &copy; contributeurs <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+const ATTRIBUTION = '&copy; contributeurs <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
 export function creerCarte(element, { interactive = true, centre = DAKAR_CENTRE, zoom = ZOOM_DEFAUT } = {}) {
     const carte = L.map(element, {
@@ -30,15 +30,20 @@ export function creerCarte(element, { interactive = true, centre = DAKAR_CENTRE,
     carte.getPane('etiquettes').style.pointerEvents = 'none';
 
     const tuiles = TUILES[themeEffectif()];
-    const options = { maxNativeZoom: 16, maxZoom: 19, crossOrigin: true };
+    const options = { maxNativeZoom: 19, maxZoom: 20, crossOrigin: true };
     const fond = L.tileLayer(tuiles.fond, { ...options, attribution: ATTRIBUTION }).addTo(carte);
-    const etiquettes = L.tileLayer(tuiles.etiquettes, { ...options, pane: 'etiquettes' }).addTo(carte);
+    const appliquerFiltre = (f) => {
+        const c = carte.getContainer().querySelector('.leaflet-tile-pane');
+        if (c) c.style.filter = f ? 'invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.1) saturate(0.3)' : '';
+    };
+    appliquerFiltre(tuiles.filtre);
     document.addEventListener('theme-change', e => {
-        fond.setUrl(TUILES[e.detail.theme].fond);
-        etiquettes.setUrl(TUILES[e.detail.theme].etiquettes);
+        const t = TUILES[e.detail.theme];
+        fond.setUrl(t.fond);
+        appliquerFiltre(t.filtre);
     });
     carte.fond = fond;
-    carte.etiquettes = etiquettes;
+    carte.etiquettes = null;
     return carte;
 }
 

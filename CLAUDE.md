@@ -11,7 +11,7 @@ Détecte et suit les obstructions de canaux de drainage (déchets, sable, gravat
 - **Frontend** : HTML5 + CSS3 + JavaScript ES2022 en **modules ES** (`<script type="module">`). Aucun framework, aucun jQuery, aucun build.
 - **Backend** : Supabase (PostgreSQL + PostGIS + Auth + Storage + Realtime + Edge Functions Deno)
 - **Carte** : Leaflet 1.9.4 + leaflet.heat 0.2.0 + leaflet.markercluster 1.5.3
-- **Fonds de carte** : Esri Canvas gris foncé / gris clair (sans clé). **CARTO exige désormais une clé : ne pas l'utiliser.**
+- **Fonds de carte** : OpenStreetMap (sans clé), filtre CSS `invert+hue-rotate` pour le mode sombre. **CARTO et Esri Canvas exigent désormais des clés : ne pas les utiliser.**
 - **Satellite** : mosaïque Sentinel-2 cloudless 2020 d'EOX (sans clé)
 - **Icônes** : Bootstrap Icons 1.11.3 uniquement
 - **Graphiques** : Chart.js 4.4.1 (tableau de bord uniquement)
