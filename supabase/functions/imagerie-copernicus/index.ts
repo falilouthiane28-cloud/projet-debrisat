@@ -72,6 +72,16 @@ function dateValide(v: unknown): v is string {
 Deno.serve(async (req) => {
   const reponsePreflight = preflight(req);
   if (reponsePreflight) return reponsePreflight;
+  // Diagnostic public : dit si le client OAuth est configure et accepte, sans rien reveler du secret
+  if (req.method === 'GET') {
+    if (!CLIENT_ID || !CLIENT_SECRET) return json({ configure: false, authentification: 'absente' });
+    try {
+      await obtenirJeton();
+      return json({ configure: true, authentification: 'acceptee' });
+    } catch (err) {
+      return json({ configure: true, authentification: 'refusee', detail: String((err as Error).message) });
+    }
+  }
   if (req.method !== 'POST') return json({ erreur: 'Méthode non autorisée' }, 405);
 
   const appelant = await identifierAppelant(req);

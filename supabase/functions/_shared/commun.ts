@@ -4,7 +4,7 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.3
 export const CORS = {
   'Access-Control-Allow-Origin': Deno.env.get('ORIGINE_AUTORISEE') ?? '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 export function json(corps: unknown, statut = 200): Response {
