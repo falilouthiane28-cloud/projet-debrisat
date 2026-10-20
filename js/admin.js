@@ -504,6 +504,7 @@ async function chargerSatellite() {
     }
     carteSatellite = L.map('carteSatelliteAdmin', { zoomSnap: 0.25 });
     initCopernicus();
+    initOneAtlas();
     carteSatellite.createPane('analyse').style.zIndex = 420;
     carteSatellite.attributionControl.setPrefix(false);
     const fondSat = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -606,6 +607,72 @@ function retirerCdse() {
     if (urlCdse) URL.revokeObjectURL(urlCdse);
     urlCdse = null;
     $('#btnRetirerCdse').hidden = true;
+}
+
+// ============ OneAtlas (fond satellite Airbus) ============
+
+let calqueOneAtlas = null;
+
+async function initOneAtlas() {
+    if (MODE_DEMO) {
+        $('#etatOneAtlas').textContent = 'Indisponible en mode demo.';
+        $('#btnOneAtlas').disabled = true;
+        return;
+    }
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const r = await fetch(`${SUPABASE_URL}/functions/v1/proxy-oneatlas`, {
+            headers: { Authorization: `Bearer ${session?.access_token}`, apikey: SUPABASE_ANON_KEY }
+        });
+        const d = await r.json();
+        if (d.configure && d.authentification === 'acceptee') {
+            $('#etatOneAtlas').innerHTML = '<span class="badge badge-success"><i class="bi bi-check-circle" aria-hidden="true"></i>Connecte</span> Cle API OneAtlas valide.';
+        } else if (d.configure) {
+            $('#etatOneAtlas').innerHTML = `<span class="badge badge-warning">Authentification ${d.authentification}</span>`;
+        } else {
+            $('#etatOneAtlas').innerHTML = '<span class="badge badge-danger">Non configure</span> Secret ONEATLAS_API_KEY absent.';
+            $('#btnOneAtlas').disabled = true;
+        }
+    } catch {
+        $('#etatOneAtlas').innerHTML = '<span class="badge badge-danger">Injoignable</span>';
+    }
+
+    $('#btnOneAtlas').addEventListener('click', async () => {
+        if (calqueOneAtlas) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        calqueOneAtlas = L.tileLayer(`${SUPABASE_URL}/functions/v1/proxy-oneatlas?layer=advancedBasemap&size=256&z={z}&x={x}&y={y}`, {
+            maxNativeZoom: 19, maxZoom: 20,
+            attribution: '&copy; Airbus Defence and Space',
+            crossOrigin: true,
+            // Le token passe dans les en-tetes via un intercepteur fetch
+        }).addTo(carteSatellite);
+        // Intercepter les requetes de tuiles pour ajouter le token
+        const fetchOriginal = calqueOneAtlas.createTile;
+        calqueOneAtlas.createTile = function(coords, done) {
+            const tile = document.createElement('img');
+            tile.crossOrigin = 'anonymous';
+            const url = this.getTileUrl(coords);
+            fetch(url, { headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_ANON_KEY } })
+                .then(r => r.blob())
+                .then(blob => { tile.src = URL.createObjectURL(blob); done(null, tile); })
+                .catch(err => done(err, tile));
+            return tile;
+        };
+        // Retirer le filtre sombre sur les tuiles car OneAtlas est deja un fond satellite
+        carteSatellite.getContainer().querySelector('.leaflet-tile-pane').style.filter = '';
+        carteSatellite.attributionControl.addAttribution('&copy; Airbus Defence and Space');
+        $('#btnRetirerOneAtlas').hidden = false;
+        $('#btnOneAtlas').disabled = true;
+    });
+
+    $('#btnRetirerOneAtlas').addEventListener('click', () => {
+        calqueOneAtlas?.remove();
+        calqueOneAtlas = null;
+        carteSatellite.getContainer().querySelector('.leaflet-tile-pane').style.filter = 'invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.1) saturate(0.3)';
+        $('#btnRetirerOneAtlas').hidden = true;
+        $('#btnOneAtlas').disabled = false;
+    });
 }
 
 // ============ WhatsApp ============
