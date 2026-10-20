@@ -4,7 +4,8 @@ import { initTheme, preferenceTheme, definirTheme } from './theme.js';
 import { LANGUES, langueCourante, definirLangue, initI18n } from './i18n.js';
 import { initPwa, surInstallationPossible, installer } from './pwa.js';
 import { initRetourTactile, compterJusqua } from './animations.js';
-import { initAuth, estConnecte, estAutorite, profilCourant, utilisateurCourant, rafraichirProfil, deconnexion } from './auth.js';
+import { estConnecte, estAutorite, profilCourant, utilisateurCourant, rafraichirProfil, deconnexion, accueilRole, activerCodeAcces } from './auth.js';
+import { garderPage } from './guard.js';
 import { listerBadges, signalementsDe, historiquePoints, rangUtilisateur, mettreAJourProfil, reinitialiserDemo } from './donnees.js';
 import { htmlBadges, prochainBadge, RAISONS_POINTS } from './gamification.js';
 import { succes, erreur, info, permissionNotifications, demanderPermissionNotifications } from './notifications.js';
@@ -93,6 +94,8 @@ async function rendre() {
         return;
     }
     $('#lienTableau').hidden = !estAutorite();
+    $('#lienTableau').href = accueilRole();
+    $('#blocCodeAgent').hidden = profil.role !== 'citoyen' || MODE_DEMO;
     $('#blocCompte').hidden = false;
     $('#blocDemo').hidden = !MODE_DEMO;
 
@@ -192,4 +195,23 @@ $('#btnReinitDemo').addEventListener('click', () => {
     setTimeout(() => location.reload(), 600);
 });
 
-initAuth().then(rendre).catch(err => erreur('Chargement impossible', err.message));
+garderPage().then(ok => { if (ok) return rendre(); }).catch(err => erreur('Chargement impossible', err.message));
+
+$('#formCodeAgent').addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = $('#champCodeAgent').value.trim();
+    if (!/^AGT-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(code)) {
+        erreur('Code invalide', 'Le code a la forme AGT-XXXX-XXXX.');
+        return;
+    }
+    const bouton = $('#btnCodeAgent');
+    bouton.disabled = true;
+    try {
+        const commune = await activerCodeAcces(code);
+        succes('Compte agent activé', `Vous êtes rattaché à ${commune}.`);
+        setTimeout(() => location.assign('dashboard.html'), 1200);
+    } catch (err) {
+        erreur('Activation impossible', err.message);
+        bouton.disabled = false;
+    }
+});

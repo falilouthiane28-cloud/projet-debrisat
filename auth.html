@@ -84,6 +84,8 @@
                             <button type="button" class="btn-icon nu suffixe" id="btnVoirMotDePasse" aria-label="Afficher le mot de passe" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
                         </div>
                         <p class="form-helper" id="aideMotDePasse" data-champ="inscription" hidden>8 caractères minimum.</p>
+                        <div class="jauge-force" id="jaugeForce" data-champ="inscription" data-score="0" hidden aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                        <p class="form-helper" id="libelleForce" data-champ="inscription" hidden aria-live="polite"></p>
                         <p class="form-error" id="erreurMotDePasse"></p>
                     </div>
                     <div class="form-group" data-champ="inscription" hidden>
@@ -98,6 +100,26 @@
                         <input class="input" id="champTelephone" name="telephone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+221 77 123 45 67" aria-describedby="aideTelephone erreurTelephone">
                         <p class="form-helper" id="aideTelephone">Pour recevoir les alertes par SMS ou WhatsApp et signaler depuis WhatsApp.</p>
                         <p class="form-error" id="erreurTelephone"></p>
+                    </div>
+                    <div class="form-group" data-champ="inscription" hidden>
+                        <label class="form-label" for="champRole"><i class="bi bi-person-badge" aria-hidden="true"></i> Type de compte</label>
+                        <select class="select" id="champRole" name="role">
+                            <option value="citoyen">Citoyen</option>
+                            <option value="agent_municipal">Agent municipal (code d'accès requis)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="groupeCode" hidden>
+                        <label class="form-label" for="champCode"><i class="bi bi-key" aria-hidden="true"></i> Code d'accès agent</label>
+                        <input class="input" id="champCode" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AGT-XXXX-XXXX" aria-describedby="aideCode erreurCode">
+                        <p class="form-helper" id="aideCode">Remis par l'administrateur de Debrisat. Il rattache votre compte à votre commune.</p>
+                        <p class="form-error" id="erreurCode"></p>
+                    </div>
+                    <div class="form-group" data-champ="inscription" hidden>
+                        <label class="case-a-cocher" for="champConditions">
+                            <input type="checkbox" id="champConditions" name="conditions" aria-describedby="erreurConditions">
+                            <span>J'accepte les <a href="index.html#mentions">conditions d'utilisation</a></span>
+                        </label>
+                        <p class="form-error" id="erreurConditions"></p>
                     </div>
                     <p class="form-error" id="erreurGenerale" role="alert"></p>
                     <button type="submit" class="btn btn-plein btn-lg btn-block" id="btnValider">Se connecter</button>

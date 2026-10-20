@@ -7,7 +7,8 @@ import { initTheme, themeEffectif, preferenceTheme, definirTheme } from './theme
 import { initPwa } from './pwa.js';
 import { initRetourTactile, compterJusqua } from './animations.js';
 import { Routeur } from './router.js';
-import { initAuth, estConnecte, estAutorite, profilCourant, deconnexion } from './auth.js';
+import { estConnecte, estAutorite, estAgent, profilCourant, deconnexion } from './auth.js';
+import { garderPage } from './guard.js';
 import { listerSignalements, listerZones, listerAlertes, creerAlerte, changerStatut, listerAgents } from './donnees.js';
 import { creerCarte, CoucheSignalements, creerCoucheZones, couleurRisque } from './map.js';
 import { suivreSignalements } from './realtime.js';
@@ -16,6 +17,11 @@ import { succes, erreur, toast, annoncer } from './notifications.js';
 initTheme();
 initPwa();
 initRetourTactile();
+
+// Une meme base pour deux interfaces : l'espace agent (dashboard.html) et l'administration (admin.html)
+const ESPACE = document.body.dataset.espace === 'admin' ? 'admin' : 'agent';
+const NOM_ESPACE = ESPACE === 'admin' ? 'Administration' : 'Espace agent';
+const moduleAdmin = ESPACE === 'admin' ? await import('./admin.js') : null;
 
 const JOUR = 86400000;
 const etat = {
@@ -64,7 +70,8 @@ $('.principal-tableau').addEventListener('transitionend', e => {
 // ============ Sections et onglets ============
 const TITRES = {
     'vue-ensemble': "Vue d'ensemble", signalements: 'Signalements', carte: 'Carte',
-    alertes: 'Alertes', zones: 'Zones à risque', statistiques: 'Statistiques', parametres: 'Paramètres'
+    alertes: 'Alertes', zones: 'Zones à risque', statistiques: 'Statistiques', parametres: 'Paramètres',
+    ...(moduleAdmin?.TITRES || {})
 };
 const ONGLET_PAR_ROUTE = { 'vue-ensemble': 'carte', signalements: 'signalements', carte: 'carte', alertes: 'alertes' };
 
@@ -100,12 +107,13 @@ const routeur = new Routeur({
     alertes: vueOnglet('alertes'),
     zones: { entrer() { afficherSection('section-zones'); rendreZones(); } },
     statistiques: { entrer() { afficherSection('section-statistiques'); rendreStatistiques(); } },
-    parametres: { entrer() { afficherSection('section-parametres'); rendreParametres(); } }
+    parametres: { entrer() { afficherSection('section-parametres'); rendreParametres(); } },
+    ...(moduleAdmin?.routes({ afficherSection, etat }) || {})
 }, {
     defaut: 'vue-ensemble',
     surChangement: nom => {
         $('#filCourant').textContent = TITRES[nom];
-        document.title = `${TITRES[nom]} · Espace autorités · Debrisat`;
+        document.title = `${TITRES[nom]} · ${NOM_ESPACE} · Debrisat`;
         window.scrollTo({ top: 0 });
     }
 });
@@ -424,6 +432,7 @@ function rendreTable() {
                 <label class="sr-only" for="ag-${s.id}">Agent assigné</label>
                 <select class="select compact" id="ag-${s.id}" data-assigner="${s.id}">${optionsAgents(s)}</select>
                 <button type="button" class="btn-icon nu" data-localiser="${s.id}" aria-label="Voir ${echapper(idCourt(s.id))} sur la carte"><i class="bi bi-geo-alt" aria-hidden="true"></i></button>
+                ${moduleAdmin ? `<button type="button" class="btn-icon nu" data-supprimer="${s.id}" aria-label="Supprimer ${echapper(idCourt(s.id))}"><i class="bi bi-trash3" aria-hidden="true"></i></button>` : ''}
             </div></td>
         </tr>`;
     }).join('') : `<tr><td colspan="9"><div class="etat-vide"><i class="bi bi-search" aria-hidden="true"></i><p>Aucun signalement ne correspond à cette recherche.</p></div></td></tr>`;
@@ -465,6 +474,10 @@ function initTable() {
     $('#rechercheTable').addEventListener('input', debounce(e => { t.recherche = e.target.value.trim(); t.page = 1; rendreTable(); }, 200));
     $('#filtreStatutTable').addEventListener('change', e => { t.statut = e.target.value; t.page = 1; rendreTable(); });
     $('#filtreCommuneTable').addEventListener('change', e => { t.commune = e.target.value; t.page = 1; rendreTable(); });
+    if (communeAgent) {
+        $('#filtreCommuneTable').value = communeAgent;
+        $('#filtreCommuneTable').disabled = true;
+    }
     $('#btnPagePrec').addEventListener('click', () => { t.page--; rendreTable(); });
     $('#btnPageSuiv').addEventListener('click', () => { t.page++; rendreTable(); });
 
@@ -507,7 +520,17 @@ function initTable() {
         }
     });
 
-    $('#corpsTable').addEventListener('click', e => {
+    $('#corpsTable').addEventListener('click', async e => {
+        const suppression = e.target.closest('[data-supprimer]');
+        if (suppression && moduleAdmin) {
+            const id = suppression.dataset.supprimer;
+            if (await moduleAdmin.supprimerSignalement(id)) {
+                etat.signalements = etat.signalements.filter(s => s.id !== id);
+                coucheAdmin?.definir(etat.signalements);
+                rendreApresChangement();
+            }
+            return;
+        }
         const bouton = e.target.closest('[data-localiser]');
         if (!bouton) return;
         routeur.aller('carte');
@@ -700,8 +723,12 @@ const rendreApresChangement = debounce(() => {
     else rendreGraphiquesVue();
 }, 300);
 
+// Un agent ne gere que sa commune ; l'administration voit tout
+let communeAgent = null;
+const dansPerimetre = s => !communeAgent || s.commune === communeAgent;
+
 function integrer(s) {
-    if (!s) return;
+    if (!s || !dansPerimetre(s)) return;
     const i = etat.signalements.findIndex(x => x.id === s.id);
     if (i >= 0) etat.signalements[i] = { ...etat.signalements[i], ...s };
     else etat.signalements.unshift(s);
@@ -721,21 +748,22 @@ function afficherAcces() {
 async function demarrer() {
     $('#chipDemo').hidden = !MODE_DEMO;
     majPeriode();
-    await initAuth();
-    if (!afficherAcces()) {
-        $('#accesRefuse').hidden = false;
-        $('#choixPeriode').hidden = true;
-        if (estConnecte()) {
-            $('#messageAcces').textContent = "Votre compte citoyen n'a pas accès à cet espace. Un administrateur peut vous attribuer le rôle d'agent municipal ou d'autorité.";
-            $('#lienConnexionAcces').hidden = true;
+    if (!await garderPage({ roles: ESPACE === 'admin' ? ['admin'] : ['agent_municipal', 'admin'] })) return;
+    afficherAcces();
+    if (estAgent()) {
+        communeAgent = profilCourant()?.commune_assignee || null;
+        if (communeAgent) {
+            $('#titreVue').textContent = `Commune de ${communeAgent}`;
+            etat.table.commune = communeAgent;
+        } else {
+            toast({ type: 'warning', titre: 'Commune non assignée', message: "Demandez à un administrateur de vous rattacher à une commune.", duree: 8000 });
         }
-        return;
     }
     initTable();
     initAlertes();
     try {
         const [signalements, zones, alertes, agents] = await Promise.all([listerSignalements(), listerZones(), listerAlertes(20), listerAgents()]);
-        Object.assign(etat, { signalements, zones, alertes, agents });
+        Object.assign(etat, { signalements: signalements.filter(dansPerimetre), zones, alertes, agents });
     } catch (err) {
         erreur('Chargement impossible', err.message);
     }

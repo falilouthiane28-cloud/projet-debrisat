@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="preconnect" href="https://bezkifetuusykmmwwiad.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
+    <title>Administration · Debrisat</title>
+    <meta name="description" content="Tableau de bord des autorités : suivi des signalements d'obstructions, zones à risque et alertes à Dakar.">
+    <meta name="theme-color" content="#0A0A0A">
+    <meta name="robots" content="noindex">
+    <script>try{var t=JSON.parse(localStorage.getItem('debrisat-theme'));if(t==='clair'||(t==='systeme'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="page-tableau" data-espace="admin">
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+    <aside class="barre-laterale" id="barreLaterale" aria-label="Navigation de l'administration">
+        <a class="marque" href="index.html" aria-label="Debrisat, accueil">
+            <img src="img/symbole.png" class="symbole-img" alt="" width="32" height="28" style="height:32px">
+            <span class="libelle" style="font-weight:600;letter-spacing:-0.01em">Debrisat</span>
+            <span class="badge badge-neutral libelle">Admin</span>
+        </a>
+        <button type="button" class="btn-icon nu btn-replier" id="btnReplier" aria-label="Replier la navigation" aria-expanded="true" aria-controls="barreLaterale"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+        <nav aria-label="Sections">
+            <p class="eyebrow titre-groupe">Pilotage</p>
+            <a class="sidebar-item" href="#vue-ensemble" data-route="vue-ensemble" title="Tableau de bord"><span class="tuile"><i class="bi bi-speedometer2" aria-hidden="true"></i></span><span class="libelle">Tableau de bord</span></a>
+            <a class="sidebar-item" href="#utilisateurs" data-route="utilisateurs" title="Utilisateurs"><span class="tuile"><i class="bi bi-people" aria-hidden="true"></i></span><span class="libelle">Utilisateurs</span></a>
+            <a class="sidebar-item" href="#signalements" data-route="signalements" title="Tous les signalements"><span class="tuile"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span><span class="libelle">Tous les signalements</span><span class="compteur" id="compteurAttente"></span></a>
+            <a class="sidebar-item" href="#carte" data-route="carte" title="Carte globale"><span class="tuile"><i class="bi bi-map" aria-hidden="true"></i></span><span class="libelle">Carte globale</span></a>
+            <p class="eyebrow titre-groupe">Territoire</p>
+            <a class="sidebar-item" href="#zones" data-route="zones" title="Zones à risque"><span class="tuile"><i class="bi bi-shield-check" aria-hidden="true"></i></span><span class="libelle">Zones à risque</span></a>
+            <a class="sidebar-item" href="#alertes" data-route="alertes" title="Alertes système"><span class="tuile"><i class="bi bi-bell" aria-hidden="true"></i></span><span class="libelle">Alertes système</span></a>
+            <a class="sidebar-item" href="#statistiques" data-route="statistiques" title="Analytiques"><span class="tuile"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></span><span class="libelle">Analytiques</span></a>
+            <p class="eyebrow titre-groupe">Administration</p>
+            <a class="sidebar-item" href="#codes" data-route="codes" title="Codes d'accès"><span class="tuile"><i class="bi bi-key" aria-hidden="true"></i></span><span class="libelle">Codes d'accès</span></a>
+            <a class="sidebar-item" href="#configuration" data-route="configuration" title="Configuration"><span class="tuile"><i class="bi bi-sliders" aria-hidden="true"></i></span><span class="libelle">Configuration</span></a>
+            <a class="sidebar-item" href="#journal" data-route="journal" title="Journal d'activité"><span class="tuile"><i class="bi bi-journal-text" aria-hidden="true"></i></span><span class="libelle">Journal d'activité</span></a>
+            <a class="sidebar-item" href="#parametres" data-route="parametres" title="Paramètres"><span class="tuile"><i class="bi bi-gear" aria-hidden="true"></i></span><span class="libelle">Paramètres</span></a>
+            <p class="eyebrow titre-groupe">Autres espaces</p>
+            <a class="sidebar-item" href="dashboard.html" title="Espace agent"><span class="tuile"><i class="bi bi-building" aria-hidden="true"></i></span><span class="libelle">Espace agent</span></a>
+            <a class="sidebar-item" href="app.html" title="Application citoyenne"><span class="tuile"><i class="bi bi-phone" aria-hidden="true"></i></span><span class="libelle">Application citoyenne</span></a>
+        </nav>
+        <div class="carte-utilisateur" id="carteUtilisateur">
+            <span class="avatar" id="avatarAgent"><i class="bi bi-person" aria-hidden="true"></i></span>
+            <div class="flex-1 libelle"><p class="nom tronque" id="nomAgent">—</p><p class="texte-xs texte-muet" id="roleAgent"></p></div>
+        </div>
+    </aside>
+    <div class="voile-barre" id="voileBarre"></div>
+
+    <div class="principal-tableau">
+        <header class="entete-tableau">
+            <button type="button" class="btn-icon nu btn-menu" id="btnMenu" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="barreLaterale"><i class="bi bi-list" aria-hidden="true"></i></button>
+            <nav class="fil-ariane" aria-label="Fil d'Ariane">
+                <span>Administration</span><i class="bi bi-chevron-right" aria-hidden="true"></i><span class="courant tronque" id="filCourant" aria-current="page">Vue d'ensemble</span>
+            </nav>
+            <div class="segmente periode" role="group" aria-label="Période des statistiques" id="choixPeriode">
+                <button type="button" data-jours="7" aria-pressed="false">7 j</button>
+                <button type="button" data-jours="30" aria-pressed="true">30 j</button>
+                <button type="button" data-jours="90" aria-pressed="false">90 j</button>
+            </div>
+            <span class="badge badge-demo" id="chipDemo" hidden><i class="bi bi-info-circle" aria-hidden="true"></i>Démo</span>
+            <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair" style="margin-left:auto"><i class="bi bi-sun" aria-hidden="true"></i></button>
+        </header>
+
+        <main class="contenu-tableau" id="contenu">
+            <div class="acces-refuse" id="accesRefuse" hidden>
+                <div class="card">
+                    <span class="icone-ronde lg danger"><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
+                    <h1 style="font-size:var(--text-xl)">Accès réservé aux autorités</h1>
+                    <p class="texte-secondaire" id="messageAcces">Cet espace est réservé aux agents municipaux et aux autorités. Connectez-vous avec un compte habilité.</p>
+                    <div class="rangee-wrap" style="justify-content:center">
+                        <a class="btn btn-plein" href="auth.html?retour=dashboard.html" id="lienConnexionAcces">Se connecter</a>
+                        <a class="btn btn-secondary" href="app.html">Application citoyenne</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vue d'ensemble -->
+            <section class="pile" id="section-vue" data-section hidden aria-labelledby="titreVue" style="gap:var(--space-5)">
+                <div class="titre-page">
+                    <p class="eyebrow" id="sousTitreVue">30 derniers jours</p>
+                    <h1 id="titreVue">Vue d'ensemble</h1>
+                </div>
+
+                <div class="grille-stats" id="grilleStats" aria-live="polite">
+                    <article class="card-stat glass-card">
+                        <div class="rangee-entre"><span class="icone-ronde"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span><span class="tendance" id="tendTotal"></span></div>
+                        <p class="valeur chiffre" id="statTotal">—</p><p class="libelle">Nouveaux signalements</p>
+                    </article>
+                    <article class="card-stat glass-card">
+                        <div class="rangee-entre"><span class="icone-ronde alerte"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span><span class="tendance" id="tendAttente"></span></div>
+                        <p class="valeur chiffre" id="statAttente">—</p><p class="libelle">En attente aujourd'hui</p>
+                    </article>
+                    <article class="card-stat glass-card">
+                        <div class="rangee-entre"><span class="icone-ronde info"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span><span class="tendance" id="tendCours"></span></div>
+                        <p class="valeur chiffre" id="statCours">—</p><p class="libelle">En cours d'intervention</p>
+                    </article>
+                    <article class="card-stat glass-card">
+                        <div class="rangee-entre"><span class="icone-ronde succes"><i class="bi bi-check-lg" aria-hidden="true"></i></span><span class="tendance" id="tendResolus"></span></div>
+                        <p class="valeur chiffre" id="statResolus">—</p><p class="libelle">Résolus · <span id="tauxResolution">—</span></p>
+                    </article>
+                </div>
+
+                <div class="bloc-onglets">
+                    <div class="barre-outils">
+                        <div class="onglets" role="tablist" aria-label="Affichage des signalements">
+                            <button type="button" class="onglet" role="tab" id="ongletCarte" aria-controls="panneauCarte" data-onglet="carte"><i class="bi bi-map" aria-hidden="true"></i>Carte</button>
+                            <button type="button" class="onglet" role="tab" id="ongletTableau" aria-controls="panneauTableau" data-onglet="signalements"><i class="bi bi-list-ul" aria-hidden="true"></i>Tableau</button>
+                            <button type="button" class="onglet" role="tab" id="ongletAlertes" aria-controls="panneauAlertes" data-onglet="alertes"><i class="bi bi-bell" aria-hidden="true"></i>Alertes</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnExport"><i class="bi bi-download" aria-hidden="true"></i>Exporter en CSV</button>
+                    </div>
+
+                    <div class="panneau-onglet" id="panneauCarte" role="tabpanel" aria-labelledby="ongletCarte" hidden>
+                        <div class="carte-admin">
+                            <div id="carteAdmin" role="region" aria-label="Carte de gestion des signalements"></div>
+                            <div class="legende-admin glass" aria-label="Légende">
+                                <span><i style="background:var(--severity-1)"></i>Sévérité 1</span>
+                                <span><i style="background:var(--severity-3)"></i>3</span>
+                                <span><i style="background:var(--severity-5)"></i>5</span>
+                                <span><i style="background:var(--color-muted);opacity:.5"></i>Résolu / rejeté</span>
+                            </div>
+                        </div>
+                        <p class="form-helper" style="margin-top:var(--space-2)"><i class="bi bi-info-circle" aria-hidden="true"></i> Cliquez sur un signalement pour changer son statut directement depuis la carte.</p>
+                    </div>
+
+                    <div class="panneau-onglet table-container" id="panneauTableau" role="tabpanel" aria-labelledby="ongletTableau" hidden>
+                        <div class="barre-filtres-table">
+                            <div class="input-group" style="min-width:min(100%,280px)">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                                <label class="sr-only" for="rechercheTable">Rechercher dans les signalements</label>
+                                <input type="search" class="input" id="rechercheTable" placeholder="Rechercher un lieu, une description…" style="min-height:40px">
+                            </div>
+                            <div class="rangee">
+                                <label class="sr-only" for="filtreStatutTable">Filtrer par statut</label>
+                                <select class="select compact" id="filtreStatutTable" style="width:auto"><option value="">Tous les statuts</option></select>
+                                <label class="sr-only" for="filtreCommuneTable">Filtrer par commune</label>
+                                <select class="select compact" id="filtreCommuneTable" style="width:auto"><option value="">Toutes les communes</option></select>
+                            </div>
+                        </div>
+                        <div class="actions-groupees" id="actionsGroupees" hidden>
+                            <span><strong id="nbSelection">0</strong> sélectionné(s)</span>
+                            <label class="sr-only" for="statutGroupe">Nouveau statut</label>
+                            <select class="select compact" id="statutGroupe" style="width:auto"><option value="">Marquer comme…</option></select>
+                            <button type="button" class="btn btn-sm btn-plein" id="btnAppliquerGroupe" disabled>Appliquer</button>
+                            <button type="button" class="btn btn-sm btn-ghost" id="btnAnnulerSelection">Annuler</button>
+                        </div>
+                        <div class="table-defilement">
+                            <table class="table" aria-describedby="infoPagination">
+                                <caption class="sr-only">Liste des signalements, triable par colonne</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="col-collante"><label class="checkbox"><input type="checkbox" id="toutSelectionner"><span class="sr-only">Tout sélectionner sur cette page</span></label></th>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Photo</th>
+                                        <th scope="col" data-tri="type_obstruction"><button type="button" class="tri">Type<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col" data-tri="severite"><button type="button" class="tri">Sévérité<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col" data-tri="commune"><button type="button" class="tri">Commune<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col" data-tri="created_at" aria-sort="descending"><button type="button" class="tri">Date<i class="bi bi-sort-down" aria-hidden="true"></i></button></th>
+                                        <th scope="col" data-tri="statut"><button type="button" class="tri">Statut<i class="bi bi-arrow-down-up" aria-hidden="true"></i></button></th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpsTable"></tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <span id="infoPagination" aria-live="polite">—</span>
+                            <div class="boutons">
+                                <button type="button" class="btn btn-sm btn-secondary" id="btnPagePrec" aria-label="Page précédente"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                                <button type="button" class="btn btn-sm btn-secondary" id="btnPageSuiv" aria-label="Page suivante"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panneau-onglet" id="panneauAlertes" role="tabpanel" aria-labelledby="ongletAlertes" hidden>
+                        <div class="grille-graphiques egal">
+                            <form class="card formulaire-alerte" id="formAlerte" novalidate aria-labelledby="titreFormAlerte">
+                                <h2 id="titreFormAlerte" style="font-size:var(--text-lg)">Nouvelle alerte</h2>
+                                <div class="form-group">
+                                    <label class="form-label" for="champTitreAlerte">Titre</label>
+                                    <input class="input" id="champTitreAlerte" maxlength="90" required aria-describedby="erreurTitreAlerte" placeholder="Exemple : fortes pluies attendues ce soir">
+                                    <p class="form-error" id="erreurTitreAlerte"></p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="champMessageAlerte">Message</label>
+                                    <textarea class="textarea" id="champMessageAlerte" maxlength="320" required aria-describedby="aideMessageAlerte erreurMessageAlerte" placeholder="Consignes claires pour les habitants"></textarea>
+                                    <p class="form-helper" id="aideMessageAlerte"><span id="compteurMessage">0</span> / 320 · deux SMS au maximum</p>
+                                    <p class="form-error" id="erreurMessageAlerte"></p>
+                                </div>
+                                <div class="deux-colonnes">
+                                    <div class="form-group"><label class="form-label" for="champTypeAlerte">Niveau</label><select class="select" id="champTypeAlerte"></select></div>
+                                    <div class="form-group"><label class="form-label" for="champCanalAlerte">Canal</label><select class="select" id="champCanalAlerte"></select></div>
+                                    <div class="form-group"><label class="form-label" for="champZoneAlerte">Zone</label><select class="select" id="champZoneAlerte"><option value="">Toute la région</option></select></div>
+                                </div>
+                                <button type="submit" class="btn btn-plein" id="btnEnvoyerAlerte"><i class="bi bi-send" aria-hidden="true"></i>Envoyer l'alerte</button>
+                            </form>
+                            <div class="pile-sm">
+                                <h2 class="label">Alertes récentes</h2>
+                                <div class="liste-alertes" id="listeAlertesAdmin"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grille-graphiques">
+                    <article class="card carte-graphique glass-card">
+                        <div class="rangee-entre"><h2 style="font-size:var(--text-lg)">Signalements par jour</h2><span class="texte-xs texte-muet" id="legendeLigne"></span></div>
+                        <div class="zone-canvas"><canvas id="graphiqueJours" role="img" aria-label="Courbe du nombre de signalements par jour"></canvas></div>
+                    </article>
+                    <article class="card carte-graphique glass-card">
+                        <h2 style="font-size:var(--text-lg)">Répartition par type</h2>
+                        <div class="zone-canvas donut"><canvas id="graphiqueTypes" role="img" aria-label="Répartition des signalements par type d'obstruction"></canvas></div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Zones a risque -->
+            <section class="pile" id="section-zones" data-section hidden aria-labelledby="titreZones" style="gap:var(--space-5)">
+                <div class="titre-page">
+                    <p class="eyebrow">Calcul à partir des signalements actifs et de l'historique des inondations</p>
+                    <h1 id="titreZones">Zones à risque</h1>
+                </div>
+                <div class="grille-zones" id="grilleZones"></div>
+            </section>
+
+            <!-- Statistiques -->
+            <section class="pile" id="section-statistiques" data-section hidden aria-labelledby="titreStats" style="gap:var(--space-5)">
+                <div class="titre-page">
+                    <p class="eyebrow" id="sousTitreStats">30 derniers jours</p>
+                    <h1 id="titreStats">Statistiques</h1>
+                </div>
+                <div class="grille-graphiques egal">
+                    <article class="card carte-graphique glass-card">
+                        <h2 style="font-size:var(--text-lg)">Par commune</h2>
+                        <div class="zone-canvas"><canvas id="graphiqueCommunes" role="img" aria-label="Nombre de signalements par commune"></canvas></div>
+                    </article>
+                    <article class="card carte-graphique glass-card">
+                        <h2 style="font-size:var(--text-lg)">Délai moyen de résolution</h2>
+                        <div class="zone-canvas"><canvas id="graphiqueDelais" role="img" aria-label="Délai moyen de résolution par commune, en jours"></canvas></div>
+                    </article>
+                    <article class="card carte-graphique glass-card">
+                        <h2 style="font-size:var(--text-lg)">Par sévérité</h2>
+                        <div class="zone-canvas"><canvas id="graphiqueSeverites" role="img" aria-label="Nombre de signalements par niveau de sévérité"></canvas></div>
+                    </article>
+                    <article class="card carte-graphique glass-card">
+                        <h2 style="font-size:var(--text-lg)">Par canal de signalement</h2>
+                        <div class="zone-canvas donut"><canvas id="graphiqueSources" role="img" aria-label="Répartition des signalements par canal"></canvas></div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Parametres -->
+            <section class="pile" id="section-parametres" data-section hidden aria-labelledby="titreParam" style="gap:var(--space-5)">
+                <div class="titre-page"><h1 id="titreParam">Paramètres</h1></div>
+                <div class="card">
+                    <div class="ligne-parametre">
+                        <div><p class="titre">Apparence</p><p class="description">Thème de l'interface sur cet appareil</p></div>
+                        <div class="segmente" role="group" aria-label="Thème" id="choixThemeTableau">
+                            <button type="button" data-theme-choix="sombre" aria-pressed="false"><i class="bi bi-moon" aria-hidden="true"></i>Sombre</button>
+                            <button type="button" data-theme-choix="clair" aria-pressed="false"><i class="bi bi-sun" aria-hidden="true"></i>Clair</button>
+                            <button type="button" data-theme-choix="systeme" aria-pressed="false"><i class="bi bi-circle-half" aria-hidden="true"></i>Système</button>
+                        </div>
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><p class="titre">Export complet</p><p class="description">Tous les signalements, au format CSV compatible Excel</p></div>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnExportComplet"><i class="bi bi-download" aria-hidden="true"></i>Exporter</button>
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><p class="titre">Source des données</p><p class="description" id="descSource"></p></div>
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><p class="titre">Session</p><p class="description" id="descSession"></p></div>
+                        <button type="button" class="btn btn-sm btn-danger" id="btnDeconnexionTableau"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Utilisateurs -->
+            <section class="pile" id="section-utilisateurs" data-section hidden aria-labelledby="titreUtilisateurs" style="gap:var(--space-5)">
+                <div class="titre-page rangee-entre" style="align-items:flex-end;flex-wrap:wrap">
+                    <div><p class="eyebrow" id="sousTitreUtilisateurs">Comptes inscrits</p><h1 id="titreUtilisateurs">Utilisateurs</h1></div>
+                    <a class="btn btn-sm btn-plein" href="#codes"><i class="bi bi-person-plus" aria-hidden="true"></i>Créer un agent</a>
+                </div>
+                <div class="grille-stats" id="statsUtilisateurs" aria-live="polite"></div>
+                <div class="card table-container" style="padding:0">
+                    <div class="barre-outils" style="padding:var(--space-4)">
+                        <div class="input-group" style="flex:1;min-width:200px">
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            <label class="sr-only" for="rechercheUtilisateurs">Rechercher par nom ou e-mail</label>
+                            <input type="search" class="input" id="rechercheUtilisateurs" placeholder="Nom ou e-mail…">
+                        </div>
+                        <label class="sr-only" for="filtreRoleUtilisateurs">Filtrer par rôle</label>
+                        <select class="select compact" id="filtreRoleUtilisateurs" style="width:auto">
+                            <option value="">Tous les rôles</option><option value="citoyen">Citoyens</option><option value="agent_municipal">Agents municipaux</option><option value="admin">Administrateurs</option>
+                        </select>
+                        <label class="sr-only" for="filtreStatutUtilisateurs">Filtrer par statut</label>
+                        <select class="select compact" id="filtreStatutUtilisateurs" style="width:auto">
+                            <option value="">Tous les statuts</option><option value="actif">Actifs</option><option value="inactif">Désactivés</option>
+                        </select>
+                    </div>
+                    <div class="actions-groupees" id="actionsUtilisateurs" hidden>
+                        <span><strong id="nbSelectionUtilisateurs">0</strong> sélectionné(s)</span>
+                        <button type="button" class="btn btn-sm btn-secondary" data-groupe="citoyen"><i class="bi bi-person" aria-hidden="true"></i>Passer citoyen</button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-groupe="desactiver"><i class="bi bi-slash-circle" aria-hidden="true"></i>Désactiver</button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-groupe="activer"><i class="bi bi-check-circle" aria-hidden="true"></i>Réactiver</button>
+                    </div>
+                    <div class="table-defilement">
+                        <table class="table">
+                            <caption class="sr-only">Comptes Debrisat</caption>
+                            <thead><tr>
+                                <th scope="col" class="col-collante"><label class="checkbox"><input type="checkbox" id="toutSelectionnerUtilisateurs"><span class="sr-only">Tout sélectionner</span></label></th>
+                                <th scope="col">Utilisateur</th><th scope="col">Rôle</th><th scope="col">Commune</th><th scope="col">Points</th>
+                                <th scope="col">Inscrit le</th><th scope="col">Statut</th><th scope="col">Actions</th>
+                            </tr></thead>
+                            <tbody id="corpsUtilisateurs"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Codes d'acces -->
+            <section class="pile" id="section-codes" data-section hidden aria-labelledby="titreCodes" style="gap:var(--space-5)">
+                <div class="titre-page"><p class="eyebrow">Un code fait d'un nouvel inscrit un agent rattaché à sa commune</p><h1 id="titreCodes">Codes d'accès</h1></div>
+                <form class="card pile" id="formCode" novalidate aria-labelledby="titreFormCode">
+                    <h2 id="titreFormCode" style="font-size:var(--text-lg)">Générer un code</h2>
+                    <div class="deux-colonnes">
+                        <div class="form-group">
+                            <label class="form-label" for="champCommuneCode">Commune</label>
+                            <select class="select" id="champCommuneCode" required><option value="">Choisissez une commune</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="champExpirationCode">Expire le <span class="texte-muet" style="text-transform:none;letter-spacing:0">(facultatif)</span></label>
+                            <input class="input" type="date" id="champExpirationCode">
+                        </div>
+                    </div>
+                    <p class="form-error" id="erreurFormCode" role="alert"></p>
+                    <div><button type="submit" class="btn btn-plein" id="btnGenererCode"><i class="bi bi-key" aria-hidden="true"></i>Générer le code</button></div>
+                    <div class="code-genere" id="codeGenere" hidden aria-live="polite">
+                        <p class="texte-sm texte-secondaire">Transmettez ce code à l'agent : il le saisit à l'inscription ou dans son profil.</p>
+                        <div class="rangee"><code class="chiffre" id="valeurCodeGenere"></code>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnCopierCode"><i class="bi bi-clipboard" aria-hidden="true"></i>Copier</button></div>
+                    </div>
+                </form>
+                <div class="card table-container" style="padding:0">
+                    <div class="table-defilement">
+                        <table class="table">
+                            <caption class="sr-only">Codes d'accès générés</caption>
+                            <thead><tr><th scope="col">Code</th><th scope="col">Commune</th><th scope="col">Statut</th><th scope="col">Créé le</th><th scope="col">Utilisé par</th><th scope="col">Actions</th></tr></thead>
+                            <tbody id="corpsCodes"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configuration -->
+            <section class="pile" id="section-configuration" data-section hidden aria-labelledby="titreConfiguration" style="gap:var(--space-5)">
+                <div class="titre-page"><p class="eyebrow">Chaque modification est inscrite au journal</p><h1 id="titreConfiguration">Configuration</h1></div>
+                <div class="card">
+                    <div class="ligne-parametre">
+                        <div><label class="titre" for="champNomSite">Nom du site</label><p class="description">Affiché dans les messages envoyés</p></div>
+                        <input class="input" id="champNomSite" maxlength="40" style="max-width:240px" data-config="nom_site" data-type="texte">
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><p class="titre" id="libMaintenance">Mode maintenance</p><p class="description">Seuls les administrateurs voient le site</p></div>
+                        <button type="button" class="interrupteur" role="switch" aria-checked="false" aria-labelledby="libMaintenance" data-config="maintenance" data-type="booleen"><span></span></button>
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><p class="titre" id="libInscriptions">Inscriptions ouvertes</p><p class="description">Fermées, seuls les agents munis d'un code peuvent s'inscrire</p></div>
+                        <button type="button" class="interrupteur" role="switch" aria-checked="true" aria-labelledby="libInscriptions" data-config="inscriptions_ouvertes" data-type="booleen"><span></span></button>
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><label class="titre" for="champPointsSignalement">Points par signalement</label></div>
+                        <input class="input chiffre" type="number" min="0" max="100" id="champPointsSignalement" style="max-width:120px" data-config="points_signalement" data-type="nombre">
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><label class="titre" for="champPointsVerification">Points par vérification</label></div>
+                        <input class="input chiffre" type="number" min="0" max="100" id="champPointsVerification" style="max-width:120px" data-config="points_verification" data-type="nombre">
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 style="font-size:var(--text-lg)"><i class="bi bi-plug" aria-hidden="true"></i> Services connectés</h2>
+                    <p class="texte-sm texte-secondaire" style="margin-block:var(--space-2) var(--space-4)">Les clés secrètes (Anthropic, Twilio, Roboflow) ne sont jamais stockées dans le site : elles se règlent côté serveur avec <code>supabase secrets set</code>.</p>
+                    <div class="ligne-parametre"><div><p class="titre">URL Supabase</p><p class="description chiffre" id="infoUrlSupabase"></p></div></div>
+                    <div class="ligne-parametre"><div><p class="titre">Clé publiable</p><p class="description chiffre" id="infoClePublique">••••••••</p></div>
+                        <button type="button" class="btn btn-sm btn-ghost" id="btnVoirCle" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i>Afficher</button></div>
+                    <div class="ligne-parametre"><div><p class="titre">Connexion Google</p><p class="description" id="infoGoogle">Vérification…</p></div></div>
+                </div>
+                <div class="card zone-danger">
+                    <h2 style="font-size:var(--text-lg)"><i class="bi bi-exclamation-octagon" aria-hidden="true"></i> Zone de danger</h2>
+                    <div class="ligne-parametre">
+                        <div><p class="titre">Remettre tous les points à zéro</p><p class="description">Efface l'historique et les badges de tous les comptes</p></div>
+                        <button type="button" class="btn btn-sm btn-danger" id="btnRazPoints">Remettre à zéro</button>
+                    </div>
+                    <div class="ligne-parametre">
+                        <div><label class="titre" for="champJoursPurge">Purger les signalements clos</label><p class="description">Résolus ou rejetés depuis plus de N jours (30 minimum)</p></div>
+                        <div class="rangee"><input class="input chiffre" type="number" min="30" value="180" id="champJoursPurge" style="max-width:100px">
+                        <button type="button" class="btn btn-sm btn-danger" id="btnPurger">Purger</button></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Journal -->
+            <section class="pile" id="section-journal" data-section hidden aria-labelledby="titreJournal" style="gap:var(--space-5)">
+                <div class="titre-page rangee-entre" style="align-items:flex-end;flex-wrap:wrap">
+                    <div><p class="eyebrow">Actions des administrateurs et des agents</p><h1 id="titreJournal">Journal d'activité</h1></div>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnExportJournal"><i class="bi bi-download" aria-hidden="true"></i>Exporter en CSV</button>
+                </div>
+                <div class="card table-container" style="padding:0">
+                    <div class="barre-outils" style="padding:var(--space-4)">
+                        <label class="sr-only" for="filtreTypeJournal">Filtrer par type</label>
+                        <select class="select compact" id="filtreTypeJournal" style="width:auto">
+                            <option value="">Tous les types</option><option value="utilisateur">Utilisateurs</option><option value="signalement">Signalements</option>
+                            <option value="alerte">Alertes</option><option value="code">Codes</option><option value="config">Configuration</option><option value="zone">Zones</option>
+                        </select>
+                    </div>
+                    <div class="table-defilement">
+                        <table class="table">
+                            <caption class="sr-only">Journal d'activité</caption>
+                            <thead><tr><th scope="col">Date</th><th scope="col">Auteur</th><th scope="col">Action</th><th scope="col">Cible</th><th scope="col">Détails</th></tr></thead>
+                            <tbody id="corpsJournal" aria-live="polite"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+
+    <section class="feuille" id="feuilleUtilisateur" data-desktop="modale" aria-labelledby="titreFeuilleUtilisateur">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
+        <header class="modal-header">
+            <h2 id="titreFeuilleUtilisateur">Utilisateur</h2>
+            <button type="button" class="btn-icon nu" data-fermer aria-label="Fermer"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </header>
+        <div class="modal-body pile" id="corpsFeuilleUtilisateur"></div>
+    </section>
+
+    <section class="feuille" id="feuilleConfirmation" data-desktop="modale" role="alertdialog" aria-labelledby="titreConfirmation" aria-describedby="texteConfirmation">
+        <div class="bottom-sheet-handle" aria-hidden="true"></div>
+        <header class="modal-header">
+            <h2 id="titreConfirmation">Confirmer</h2>
+            <button type="button" class="btn-icon nu" data-fermer aria-label="Annuler"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </header>
+        <div class="modal-body pile">
+            <p id="texteConfirmation"></p>
+            <div class="rangee" style="justify-content:flex-end">
+                <button type="button" class="btn btn-secondary" data-fermer>Annuler</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmer">Confirmer</button>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

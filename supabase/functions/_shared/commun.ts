@@ -41,7 +41,7 @@ export async function identifierAppelant(req: Request): Promise<Appelant | null>
   return { type: 'utilisateur', id: data.user.id, role: profil?.role ?? 'citoyen' };
 }
 
-export const ROLES_AUTORITE = ['autorite'];
+export const ROLES_AUTORITE = ['agent_municipal', 'admin'];
 
 export function estAutorite(appelant: Appelant | null): boolean {
   return appelant?.type === 'service' || (appelant?.type === 'utilisateur' && ROLES_AUTORITE.includes(appelant.role));

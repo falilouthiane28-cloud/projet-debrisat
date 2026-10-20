@@ -83,9 +83,13 @@ export const COMMUNES = [
 
 export const ROLES = {
     citoyen: 'Citoyen',
-    autorite: 'Autorité'
+    agent_municipal: 'Agent municipal',
+    admin: 'Administrateur'
 };
 
-export const ROLES_AUTORITE = ['autorite'];
+export const ROLES_AUTORITE = ['agent_municipal', 'admin'];
+
+// Page d'arrivee de chaque role apres connexion
+export const ACCUEIL_ROLE = { citoyen: 'app.html', agent_municipal: 'dashboard.html', admin: 'admin.html' };
 
 export const RAYON_PROXIMITE_KM = 1;

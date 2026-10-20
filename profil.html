@@ -140,6 +140,16 @@
             </div>
         </section>
 
+        <section class="card pile" aria-labelledby="titreCodeAgent" id="blocCodeAgent" hidden>
+            <h2 id="titreCodeAgent"><i class="bi bi-person-badge" aria-hidden="true"></i> Vous êtes agent municipal ?</h2>
+            <p class="texte-sm texte-secondaire">Saisissez le code d'accès remis par l'administrateur : votre compte sera rattaché à votre commune et vous accéderez à l'espace agent.</p>
+            <form class="rangee-wrap" id="formCodeAgent" novalidate>
+                <label class="sr-only" for="champCodeAgent">Code d'accès</label>
+                <input class="input" id="champCodeAgent" placeholder="AGT-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:180px">
+                <button type="submit" class="btn btn-secondary" id="btnCodeAgent"><i class="bi bi-key" aria-hidden="true"></i>Activer</button>
+            </form>
+        </section>
+
         <section class="card acces-refuse" id="blocDeconnecte" hidden style="min-height:auto">
             <div class="pile" style="align-items:center;text-align:center">
                 <span class="icone-ronde lg"><i class="bi bi-person-circle" aria-hidden="true"></i></span>

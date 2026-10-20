@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
-    <title>Espace autorités · Debrisat</title>
+    <title>Espace agent · Debrisat</title>
     <meta name="description" content="Tableau de bord des autorités : suivi des signalements d'obstructions, zones à risque et alertes à Dakar.">
     <meta name="theme-color" content="#0A0A0A">
     <meta name="robots" content="noindex">
@@ -26,14 +26,14 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
-<body class="page-tableau">
+<body class="page-tableau" data-espace="agent">
     <a class="lien-evitement" href="#contenu">Aller au contenu</a>
 
     <aside class="barre-laterale" id="barreLaterale" aria-label="Navigation de l'espace autorités">
         <a class="marque" href="index.html" aria-label="Debrisat, accueil">
             <img src="img/symbole.png" class="symbole-img" alt="" width="32" height="28" style="height:32px">
             <span class="libelle" style="font-weight:600;letter-spacing:-0.01em">Debrisat</span>
-            <span class="badge badge-neutral libelle">Autorités</span>
+            <span class="badge badge-neutral libelle">Agent</span>
         </a>
         <button type="button" class="btn-icon nu btn-replier" id="btnReplier" aria-label="Replier la navigation" aria-expanded="true" aria-controls="barreLaterale"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
         <nav aria-label="Sections">
@@ -60,7 +60,7 @@
         <header class="entete-tableau">
             <button type="button" class="btn-icon nu btn-menu" id="btnMenu" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="barreLaterale"><i class="bi bi-list" aria-hidden="true"></i></button>
             <nav class="fil-ariane" aria-label="Fil d'Ariane">
-                <span>Espace autorités</span><i class="bi bi-chevron-right" aria-hidden="true"></i><span class="courant tronque" id="filCourant" aria-current="page">Vue d'ensemble</span>
+                <span>Espace agent</span><i class="bi bi-chevron-right" aria-hidden="true"></i><span class="courant tronque" id="filCourant" aria-current="page">Vue d'ensemble</span>
             </nav>
             <div class="segmente periode" role="group" aria-label="Période des statistiques" id="choixPeriode">
                 <button type="button" data-jours="7" aria-pressed="false">7 j</button>

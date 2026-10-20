@@ -123,3 +123,16 @@ Rôles : deux seulement, `citoyen` (par défaut) et `autorite`. Passage en autor
 - Bouton « Continuer avec Google » (auth.html). **À activer par l'équipe** : Supabase > Authentication > Providers > Google (identifiant et secret OAuth Google Cloud), et ajouter `http://localhost:5501/app.html` et l'URL de production dans Redirect URLs. Tant que ce n'est pas fait, le bouton affiche un message clair au lieu de rediriger.
 - Comptes de recette : 2 autorités, 2 citoyens (`.claude/comptes-test.md`, non versionné).
 - Pied de page : taille du logo verrouillée, cache du service worker passé en v3 pour forcer le rechargement.
+
+## Trois rôles et administration (2026-10-19, en cours)
+Fait :
+- Migrations 005 (rôles citoyen / agent_municipal / admin, codes d'accès, journal `logs_admin`, `config_site`, fonctions `admin_*`) et 006, appliquées.
+- Inscription : type de compte, code d'accès AGT-XXXX-XXXX vérifié en SQL, case des conditions, jauge de robustesse. Redirection par rôle après connexion (`ACCUEIL_ROLE`), comptes désactivés déconnectés.
+- `js/guard.js` (rôles + maintenance), espace agent limité à sa commune, `admin.html` + `js/admin.js` (utilisateurs, codes, configuration, journal ; reprend vue, signalements, carte, zones, alertes, analytiques).
+- Profil : activation d'un code agent pour un citoyen déjà inscrit (ex. via Google).
+- Testé en SQL : agent hors commune sans effet, agent de sa commune change statut et priorité, aucune auto-promotion, journal invisible aux agents, inscription avec code (agent rattaché, code consommé), journal alimenté (migration 007 : les déclencheurs lisent le rôle du JWT).
+- Suppression d'un signalement par l'administrateur (tableau, avec confirmation).
+Reste :
+- Tester admin.html et dashboard.html connectés dans le navigateur (comptes dans `.claude/comptes-test.md`).
+- Non fait du prompt : page « Satellite & IA » dédiée, export PDF, dessin de zones sur la carte.
+- Committer, pousser, redéployer Vercel.

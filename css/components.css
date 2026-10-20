@@ -932,3 +932,24 @@
 .btn-google:hover { background: var(--glass-bg-hover); }
 .separateur-ou { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-xs); color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .separateur-ou::before, .separateur-ou::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+
+/* ============ MAINTENANCE ============ */
+.ecran-maintenance {
+    position: fixed; inset: 0; z-index: 9999;
+    display: grid; place-items: center; padding: var(--space-4);
+    background: var(--color-pure-dark, #0A0A0A);
+}
+.en-maintenance > :not(.ecran-maintenance) { display: none !important; }
+
+/* ============ FORCE DU MOT DE PASSE ============ */
+.jauge-force { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: var(--space-2); }
+.jauge-force span { height: 4px; border-radius: var(--radius-full); background: var(--glass-bg-active); transition: background-color var(--duration-fast) var(--ease-out); }
+.jauge-force[data-score="1"] span:nth-child(-n+1) { background: var(--accent-danger); }
+.jauge-force[data-score="2"] span:nth-child(-n+2) { background: var(--accent-warning); }
+.jauge-force[data-score="3"] span:nth-child(-n+3) { background: var(--accent-info); }
+.jauge-force[data-score="4"] span { background: var(--accent-success); }
+
+/* ============ CASE A COCHER ============ */
+.case-a-cocher { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; cursor: pointer; font-size: var(--text-sm); color: var(--color-secondary-text); }
+.case-a-cocher input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--color-bright); }
+.case-a-cocher a { color: var(--color-heading); text-decoration: underline; text-underline-offset: 3px; }

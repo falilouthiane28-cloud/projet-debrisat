@@ -1,19 +1,19 @@
 // Service worker Debrisat : coquille de l'application hors ligne, tuiles de carte mises en cache au fil de la navigation.
-const VERSION = 'debrisat-v3';
+const VERSION = 'debrisat-v4';
 const CACHE_COQUILLE = `${VERSION}-coquille`;
 const CACHE_CDN = `${VERSION}-cdn`;
 const CACHE_TUILES = `${VERSION}-tuiles`;
 const MAX_TUILES = 600;
 
 const COQUILLE = [
-    './', 'index.html', 'app.html', 'dashboard.html', 'auth.html', 'profil.html', 'manifest.json',
+    './', 'index.html', 'app.html', 'dashboard.html', 'admin.html', 'auth.html', 'profil.html', 'manifest.json',
     'css/tokens.css', 'css/reset.css', 'css/base.css', 'css/components.css',
     'css/landing.css', 'css/app.css', 'css/dashboard.css', 'css/responsive.css',
     'js/config.js', 'js/utils.js', 'js/demo.js', 'js/donnees.js', 'js/auth.js', 'js/router.js',
     'js/map.js', 'js/signalement.js', 'js/heatmap.js', 'js/gamification.js', 'js/realtime.js',
     'js/dashboard.js', 'js/notifications.js', 'js/theme.js', 'js/animations.js', 'js/ia-analysis.js',
     'js/satellite.js', 'js/i18n.js', 'js/pwa.js',
-    'js/page-accueil.js', 'js/page-app.js', 'js/page-auth.js', 'js/page-profil.js',
+    'js/page-accueil.js', 'js/page-app.js', 'js/page-auth.js', 'js/page-profil.js', 'js/guard.js', 'js/admin.js',
     'i18n/wo.json',
     'img/logo.png', 'img/symbole.png', 'img/terre-afrique.jpg', 'img/satellite-faisceau.jpg', 'img/satellite-orbite.jpg',
     'img/icons/icon-192.png', 'img/icons/icon-512.png', 'img/icons/favicon-32.png'

@@ -1,4 +1,4 @@
-import { MODE_DEMO, supabase, ROLES_AUTORITE, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { MODE_DEMO, supabase, ROLES_AUTORITE, ACCUEIL_ROLE, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { obtenirProfil, profilDemo } from './donnees.js';
 import { lireStockage, ecrireStockage } from './utils.js';
 import { ID_DEMO } from './demo.js';
@@ -34,13 +34,31 @@ function definirDemo() {
 async function definirSession(session) {
     utilisateur = session?.user || null;
     profil = null;
-    if (utilisateur) {
-        try {
-            profil = await obtenirProfil(utilisateur.id);
-        } catch {
-            profil = null;
-        }
+    if (!utilisateur) return;
+    try {
+        profil = await obtenirProfil(utilisateur.id);
+    } catch {
+        profil = null;
     }
+    // Un compte desactive par un administrateur est deconnecte des son arrivee
+    if (profil && profil.compte_actif === false) {
+        try { sessionStorage.setItem('debrisat-compte-desactive', '1'); } catch { /* stockage indisponible */ }
+        utilisateur = null;
+        profil = null;
+        await supabase.auth.signOut();
+        return;
+    }
+    marquerConnexion(session);
+}
+
+// Date de derniere connexion, une fois par session (la date est posee cote serveur)
+function marquerConnexion(session) {
+    const cle = 'debrisat-connexion-' + (session.access_token || '').slice(-12);
+    try {
+        if (sessionStorage.getItem(cle)) return;
+        sessionStorage.setItem(cle, '1');
+    } catch { /* stockage indisponible */ }
+    supabase.rpc('marquer_connexion').then(() => {}, () => {});
 }
 
 function notifier() {
@@ -56,6 +74,10 @@ export const utilisateurCourant = () => utilisateur;
 export const profilCourant = () => profil;
 export const estConnecte = () => !!utilisateur;
 export const estAutorite = () => !!profil && ROLES_AUTORITE.includes(profil.role);
+export const estAdmin = () => profil?.role === 'admin';
+export const estAgent = () => profil?.role === 'agent_municipal';
+// Page d'arrivee selon le role : application citoyenne, espace agent ou administration
+export const accueilRole = () => ACCUEIL_ROLE[profil?.role] || 'app.html';
 
 export async function rafraichirProfil() {
     if (!utilisateur) return null;
@@ -69,15 +91,19 @@ export async function connexion(email, motDePasse) {
         entrerEnDemo();
         return;
     }
-    const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse });
-    if (error) {
-        if (/Invalid login credentials/i.test(error.message)) throw new Error('Adresse e-mail ou mot de passe incorrect.');
-        if (/Email not confirmed/i.test(error.message)) throw new Error("Confirmez d'abord votre adresse e-mail grâce au lien reçu.");
-        throw new Error('Connexion impossible pour le moment. Réessayez dans un instant.');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: motDePasse });
+    if (!error) {
+        await definirSession(data.session);
+        notifier();
+        if (!utilisateur) throw new Error('Ce compte a été désactivé. Contactez un administrateur.');
+        return;
     }
+    if (/Invalid login credentials/i.test(error.message)) throw new Error('Adresse e-mail ou mot de passe incorrect.');
+    if (/Email not confirmed/i.test(error.message)) throw new Error("Confirmez d'abord votre adresse e-mail grâce au lien reçu.");
+    throw new Error('Connexion impossible pour le moment. Réessayez dans un instant.');
 }
 
-export async function inscription({ email, motDePasse, nomComplet, commune, telephone }) {
+export async function inscription({ email, motDePasse, nomComplet, commune, telephone, codeAcces }) {
     if (MODE_DEMO) {
         entrerEnDemo();
         return { confirmationRequise: false };
@@ -88,8 +114,9 @@ export async function inscription({ email, motDePasse, nomComplet, commune, tele
         email,
         password: motDePasse,
         options: {
-            data: { nom_complet: nomComplet, commune, telephone: telephone || null },
-            emailRedirectTo: new URL('app.html', location.href).href
+            // Le role n'est jamais envoye : seul un code d'acces valide, verifie en SQL, fait d'un compte un agent
+            data: { nom_complet: nomComplet, commune, telephone: telephone || null, code_acces: codeAcces || null },
+            emailRedirectTo: new URL('auth.html', location.href).href
         }
     });
     if (error) {
@@ -97,6 +124,8 @@ export async function inscription({ email, motDePasse, nomComplet, commune, tele
         if (error.code === 'email_address_invalid') throw new Error("Cette adresse e-mail n'est pas valide. Vérifiez-la et réessayez.");
         if (error.code === 'over_email_send_rate_limit') throw new Error("Trop d'inscriptions en peu de temps. Réessayez dans quelques minutes.");
         if (/Password/i.test(error.message)) throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
+        // Le declencheur SQL refuse l'inscription quand elles sont fermees (sauf code d'acces)
+        if (/Database error/i.test(error.message)) throw new Error("Les inscriptions sont fermées pour le moment. Avec un code d'accès agent, vérifiez sa saisie.");
         throw new Error("L'inscription a échoué. Réessayez dans un instant.");
     }
     return { confirmationRequise: !data.session };
@@ -117,7 +146,8 @@ export async function connexionGoogle() {
     if (!active) throw new Error("La connexion Google n'est pas encore activée. Utilisez votre e-mail pour le moment.");
     const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: new URL('app.html', location.href).href }
+        // Retour sur la page de connexion, qui redirige selon le role
+        options: { redirectTo: new URL('auth.html', location.href).href }
     });
     if (error) {
         if (/provider is not enabled|Unsupported provider/i.test(error.message)) throw new Error("La connexion Google n'est pas encore activée. Utilisez votre e-mail pour le moment.");
@@ -168,4 +198,13 @@ export function exigerConnexion(retour = location.pathname.split('/').pop() + lo
     if (estConnecte()) return true;
     location.href = `auth.html?retour=${encodeURIComponent(retour)}`;
     return false;
+}
+
+// Un citoyen deja inscrit (par exemple via Google) devient agent avec un code remis par un administrateur
+export async function activerCodeAcces(code) {
+    if (MODE_DEMO) throw new Error("Les codes d'accès ne fonctionnent pas en mode démo.");
+    const { data, error } = await supabase.rpc('utiliser_code_acces', { p_code: code });
+    if (error) throw new Error(error.message || "Ce code n'a pas pu être activé.");
+    await rafraichirProfil();
+    return data;
 }

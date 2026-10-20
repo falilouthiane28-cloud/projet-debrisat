@@ -409,8 +409,8 @@ export async function compterCitoyensActifs() {
 }
 
 export async function listerAgents() {
-    if (MODE_DEMO) return etatDemo().profils.filter(p => p.role === 'autorite').map(p => ({ id: p.id, nom_complet: p.nom_complet }));
-    const { data } = await supabase.from('classement_public').select('id,nom_complet').eq('role', 'autorite');
+    if (MODE_DEMO) return etatDemo().profils.filter(p => ['agent_municipal', 'admin'].includes(p.role)).map(p => ({ id: p.id, nom_complet: p.nom_complet }));
+    const { data } = await supabase.from('classement_public').select('id,nom_complet').in('role', ['agent_municipal', 'admin']);
     return data || [];
 }
 
@@ -465,4 +465,142 @@ export function demarrerSimulation({ premierDelai = 25000, intervalle = 90000 } 
 export function arreterSimulation() {
     clearTimeout(simulation);
     simulation = null;
+}
+
+// ============ Configuration du site ============
+
+const CONFIG_DEMO = { nom_site: 'Debrisat', maintenance: false, inscriptions_ouvertes: true, points_signalement: 10, points_verification: 3 };
+
+export async function lireConfig() {
+    if (MODE_DEMO) return { ...CONFIG_DEMO };
+    const { data, error } = await supabase.from('config_site').select('cle,valeur');
+    verifierErreur(error, 'Impossible de lire la configuration.');
+    return Object.fromEntries(data.map(l => [l.cle, l.valeur]));
+}
+
+export async function ecrireConfig(cle, valeur) {
+    if (MODE_DEMO) {
+        CONFIG_DEMO[cle] = valeur;
+        return;
+    }
+    const { error } = await supabase.from('config_site').upsert({ cle, valeur });
+    verifierErreur(error, "Le réglage n'a pas pu être enregistré.");
+}
+
+// ============ Administration ============
+// Toutes ces fonctions sont refusees cote serveur a qui n'est pas administrateur (RLS et fonctions SQL).
+
+const demoAdmin = { codes: [], journal: [] };
+
+function journalDemo(action, cible_type, cible_id, details) {
+    demoAdmin.journal.unshift({ id: crypto.randomUUID(), admin_id: ID_DEMO, action, cible_type, cible_id, details, cree_le: new Date().toISOString() });
+}
+
+export async function adminListerUtilisateurs() {
+    if (MODE_DEMO) {
+        return etatDemo().profils.map(p => ({
+            ...p, email: `${(p.nom_complet || 'compte').toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '.')}@exemple.sn`,
+            compte_actif: p.compte_actif !== false, commune_assignee: p.commune_assignee || null, fournisseur: 'email',
+            derniere_connexion: p.created_at
+        }));
+    }
+    const { data, error } = await supabase.rpc('admin_lister_utilisateurs');
+    verifierErreur(error, 'Impossible de charger les utilisateurs.');
+    return data;
+}
+
+export async function adminModifierUtilisateur(id, champs) {
+    const autorises = {};
+    for (const cle of ['role', 'commune_assignee', 'compte_actif', 'points_total']) if (cle in champs) autorises[cle] = champs[cle];
+    if (MODE_DEMO) {
+        const p = etatDemo().profils.find(x => x.id === id);
+        Object.assign(p, autorises);
+        journalDemo('modification_utilisateur', 'utilisateur', id, { nom: p.nom_complet, ...autorises });
+        return { ...p };
+    }
+    const { data, error } = await supabase.from('profils').update(autorises).eq('id', id).select().single();
+    verifierErreur(error, "La modification n'a pas pu être enregistrée.");
+    return data;
+}
+
+export async function adminSupprimerUtilisateur(id) {
+    if (MODE_DEMO) {
+        etatDemo().profils = etat.profils.filter(p => p.id !== id);
+        journalDemo('suppression_compte', 'utilisateur', id, null);
+        return;
+    }
+    const { error } = await supabase.rpc('admin_supprimer_utilisateur', { p_id: id });
+    verifierErreur(error, 'La suppression a échoué.');
+}
+
+export async function adminListerCodes() {
+    if (MODE_DEMO) return demoAdmin.codes.map(c => ({ ...c }));
+    const { data, error } = await supabase.from('codes_acces').select('*, utilisateur:utilise_par(nom_complet)').order('cree_le', { ascending: false });
+    verifierErreur(error, "Impossible de charger les codes d'accès.");
+    return data;
+}
+
+export async function adminGenererCode(commune, expireLe) {
+    if (MODE_DEMO) {
+        const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        const tirage = () => Array.from({ length: 4 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+        const code = `AGT-${tirage()}-${tirage()}`;
+        demoAdmin.codes.unshift({ id: crypto.randomUUID(), code, commune, utilise: false, revoque: false, cree_le: new Date().toISOString(), expire_le: expireLe });
+        journalDemo('creation_code', 'code', code, { commune });
+        return code;
+    }
+    const { data, error } = await supabase.rpc('admin_generer_code', { p_commune: commune, p_expire_le: expireLe || null });
+    verifierErreur(error, "Le code n'a pas pu être généré.");
+    return data;
+}
+
+export async function adminRevoquerCode(id) {
+    if (MODE_DEMO) {
+        const c = demoAdmin.codes.find(x => x.id === id);
+        if (c) c.revoque = true;
+        return;
+    }
+    const { error } = await supabase.rpc('admin_revoquer_code', { p_id: id });
+    verifierErreur(error, "Le code n'a pas pu être révoqué.");
+}
+
+export async function adminReinitialiserPoints(id = null) {
+    if (MODE_DEMO) {
+        journalDemo('reinitialisation_points', 'utilisateur', id || 'tous', null);
+        return 0;
+    }
+    const { data, error } = await supabase.rpc('admin_reinitialiser_points', { p_id: id });
+    verifierErreur(error, 'La remise à zéro a échoué.');
+    return data;
+}
+
+export async function adminPurgerSignalements(jours) {
+    if (MODE_DEMO) return 0;
+    const { data, error } = await supabase.rpc('admin_purger_signalements', { p_jours: jours });
+    if (error) throw new Error(error.message || 'La purge a échoué.');
+    return data;
+}
+
+export async function adminSupprimerSignalement(id) {
+    if (MODE_DEMO) {
+        etatDemo().signalements = etat.signalements.filter(s => s.id !== id);
+        return;
+    }
+    const { error } = await supabase.from('signalements').delete().eq('id', id);
+    verifierErreur(error, 'La suppression du signalement a échoué.');
+}
+
+export async function adminListerJournal(limite = 200) {
+    if (MODE_DEMO) return demoAdmin.journal.slice(0, limite);
+    const { data, error } = await supabase.from('logs_admin').select('*, auteur:admin_id(nom_complet)').order('cree_le', { ascending: false }).limit(limite);
+    verifierErreur(error, 'Impossible de charger le journal.');
+    return data;
+}
+
+export function ecouterJournal(rappel) {
+    if (MODE_DEMO) return () => {};
+    const canal = supabase.channel('journal-' + Math.random().toString(36).slice(2, 8))
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs_admin' }, p => rappel(p.new))
+        .subscribe();
+    return () => supabase.removeChannel(canal);
 }

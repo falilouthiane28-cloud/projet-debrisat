@@ -6,7 +6,7 @@ import {
 import { initTheme } from './theme.js';
 import { initI18n } from './i18n.js';
 import { initPwa, synchroniserAuRetour } from './pwa.js';
-import { initAuth, estConnecte, utilisateurCourant, profilCourant, surChangementAuth, rafraichirProfil } from './auth.js';
+import { estConnecte, utilisateurCourant, profilCourant, surChangementAuth, rafraichirProfil } from './auth.js';
 import { listerSignalements, listerZones, listerAlertes, classement, verifierSignalement, aDejaVerifie, obtenirSignalement } from './donnees.js';
 import { creerCarte, CoucheSignalements, creerCoucheZones, marqueurPosition } from './map.js';
 import { creerCoucheChaleur, mettreAJourChaleur } from './heatmap.js';
@@ -18,6 +18,7 @@ import { suivreSignalements, signalerSiProche } from './realtime.js';
 import { htmlClassement, celebrerPoints } from './gamification.js';
 import { htmlAnalyse } from './ia-analysis.js';
 import { toast, erreur, succes, info, annoncer } from './notifications.js';
+import { garderPage } from './guard.js';
 
 initTheme();
 initI18n();
@@ -590,7 +591,7 @@ function majAvatar() {
     }
 }
 
-const pretAuth = initAuth().then(() => {
+const pretAuth = garderPage().then(() => {
     majAvatar();
     surChangementAuth(majAvatar);
 });

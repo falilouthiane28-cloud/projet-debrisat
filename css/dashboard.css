@@ -198,3 +198,37 @@
 @media (prefers-reduced-motion: reduce) {
     .barre-laterale, .principal-tableau, .btn-replier .bi, .barre-laterale .sidebar-item { transition: none; }
 }
+
+/* ===== Administration ===== */
+.interrupteur {
+    position: relative; flex-shrink: 0;
+    width: 52px; height: 32px; min-height: 32px; padding: 0;
+    border-radius: var(--radius-full);
+    background: var(--glass-bg-active); border: 1px solid var(--glass-border-hover);
+    transition: background-color var(--duration-fast) var(--ease-out);
+}
+/* Cible tactile de 44 px sans grossir le dessin */
+.interrupteur::before { content: ''; position: absolute; inset: -6px -2px; }
+.interrupteur span {
+    position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--color-secondary-text);
+    transition: transform var(--duration-normal) var(--ease-spring), background-color var(--duration-fast) var(--ease-out);
+}
+.interrupteur[aria-checked="true"] { background: var(--accent-success); border-color: transparent; }
+.interrupteur[aria-checked="true"] span { transform: translateX(20px); background: #fff; }
+.interrupteur:focus-visible { outline: 2px solid var(--color-bright); outline-offset: 2px; }
+.zone-danger { border-color: var(--accent-danger-bg); }
+.zone-danger h2 { color: var(--accent-danger); }
+.code-genere { padding: var(--space-4); border-radius: var(--radius-md); background: var(--glass-bg); border: 1px dashed var(--glass-border-hover); display: flex; flex-direction: column; gap: var(--space-2); }
+.code-genere code { font-size: var(--text-xl); letter-spacing: 0.08em; color: var(--color-heading); }
+.cellule-utilisateur { display: flex; align-items: center; gap: var(--space-3); min-width: 200px; }
+.cellule-utilisateur .sous { display: block; font-size: var(--text-xs); color: var(--color-muted); }
+.ligne-desactivee { opacity: 0.55; }
+.details-journal { font-size: var(--text-xs); color: var(--color-secondary-text); max-width: 320px; }
+.squelette-ligne td { padding-block: var(--space-4); }
+.squelette-ligne span { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--glass-bg) 25%, var(--glass-bg-active) 50%, var(--glass-bg) 75%); background-size: 200% 100%; animation: chatoiement 1.4s linear infinite; }
+@keyframes chatoiement { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .interrupteur span, .squelette-ligne span { transition: none; animation: none; }
+}
+@media (min-width: 768px) { .deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); } }
