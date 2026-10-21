@@ -4,7 +4,7 @@ import { initTheme, preferenceTheme, definirTheme } from './theme.js';
 import { LANGUES, langueCourante, definirLangue, initI18n } from './i18n.js';
 import { initPwa, surInstallationPossible, installer } from './pwa.js';
 import { initRetourTactile, compterJusqua } from './animations.js';
-import { estConnecte, estAutorite, profilCourant, utilisateurCourant, rafraichirProfil, deconnexion, accueilRole, activerCodeAcces } from './auth.js';
+import { estConnecte, estAutorite, profilCourant, utilisateurCourant, rafraichirProfil, accueilRole, activerCodeAcces } from './auth.js';
 import { garderPage } from './guard.js';
 import { listerBadges, signalementsDe, historiquePoints, rangUtilisateur, mettreAJourProfil, reinitialiserDemo } from './donnees.js';
 import { htmlBadges, prochainBadge, RAISONS_POINTS } from './gamification.js';
@@ -182,11 +182,6 @@ $('#formProfil').addEventListener('submit', async e => {
     } finally {
         bouton.classList.remove('btn-chargement');
     }
-});
-
-$('#btnDeconnexion').addEventListener('click', async () => {
-    await deconnexion();
-    location.href = 'index.html';
 });
 
 $('#btnReinitDemo').addEventListener('click', () => {

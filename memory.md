@@ -120,3 +120,8 @@ Chaque modification importante sera documentee ici avec :
 - **Ce qui a changé** : barre de l'app en pilule flottante, barre latérale du tableau de bord en tuiles repliables, bouton Google (`connexionGoogle` dans auth.js).
 - **Pourquoi** : références visuelles fournies par l'équipe (barre Tourera, barre latérale à tuiles). Google vérifie d'abord `/auth/v1/settings` : sans ce contrôle, un fournisseur désactivé mène à une page d'erreur JSON de Supabase.
 - **Commit** : non commité.
+
+## 2026-10-21 — Correctif auth : interblocage et déconnexion unique
+- **Ce qui a changé** : le rappel `onAuthStateChange` (`js/auth.js`) est devenu synchrone, le profil est chargé hors du verrou d'auth ; `deconnexion()` unique (bouton `data-action="deconnexion"` sur toutes les pages), qui renvoie sur `auth.html` avec le toast « Vous êtes déconnecté » ; bouton de déconnexion dans l'en-tête de `dashboard.html`, `admin.html` et `profil.html` ; les pages protégées renvoient vers la connexion quand la session se termine ; message « Profil indisponible » au lieu d'un rôle citoyen silencieux.
+- **Pourquoi** : le rappel `async` attendait une requête Supabase sous le verrou d'auth. Au retour sur l'onglet ou au renouvellement du jeton, tout le client restait bloqué (connexion, données, déconnexion). Reproduit puis corrigé (docs/AUDIT.md §4.1).
+- **Commit** : branche `refonte-ux-whatsapp`.

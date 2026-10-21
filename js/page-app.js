@@ -617,11 +617,6 @@ document.addEventListener('click', e => {
         $('#btnMenuUtilisateur').setAttribute('aria-expanded', 'false');
     }
 });
-$('#btnMenuDeconnexion').addEventListener('click', async () => {
-    const { deconnexion } = await import('./auth.js');
-    await deconnexion();
-    location.href = 'auth.html';
-});
 
 const pretAuth = garderPage().then(() => {
     majAvatar();

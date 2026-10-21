@@ -95,6 +95,7 @@ Suivi de l'avancement. Mis à jour à chaque étape importante.
 | 2026-10-19 | Refonte « Obsidian Glass » : design, 5 pages, mode démo, sécurité Supabase | non commité |
 | 2026-10-19 | Mise en service Supabase (projet `debrisat`, eu-west-1) : migrations 001 à 004, 4 fonctions Edge, config.js | non commite |
 | 2026-10-21 | UX : menu utilisateur, redirection post-connexion, indicateurs de navigation | `09e2373` |
+| 2026-10-21 | Correctif interblocage auth, déconnexion unique dans tous les en-têtes | branche `refonte-ux-whatsapp` |
 
 ## Mise en service Supabase (2026-10-19)
 

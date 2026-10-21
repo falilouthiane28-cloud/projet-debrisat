@@ -35,6 +35,7 @@
         <div class="actions">
             <a class="btn-icon nu" href="dashboard.html" id="lienTableau" hidden aria-label="Espace autorités"><i class="bi bi-grid-1x2" aria-hidden="true"></i></a>
             <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-sm btn-secondary btn-deconnexion" data-action="deconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="libelle-deconnexion">Se déconnecter</span></button>
         </div>
     </header>
 
@@ -126,7 +127,7 @@
                     <p class="form-helper" id="aideTelProfil">Utilisé pour les alertes SMS / WhatsApp et pour relier vos signalements WhatsApp à votre compte.</p>
                 </div>
                 <div class="rangee-wrap" style="justify-content:space-between">
-                    <button type="button" class="btn btn-danger" id="btnDeconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
+                    <button type="button" class="btn btn-danger" id="btnDeconnexion" data-action="deconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
                     <button type="submit" class="btn btn-plein" id="btnEnregistrerProfil">Enregistrer</button>
                 </div>
             </form>
