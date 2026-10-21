@@ -610,6 +610,12 @@ function basculerMenuUtilisateur() {
 }
 
 $('#btnMenuUtilisateur').addEventListener('click', basculerMenuUtilisateur);
+$('#menuUtilisateur').addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || $('#dropdownUtilisateur').hidden) return;
+    $('#dropdownUtilisateur').hidden = true;
+    $('#btnMenuUtilisateur').setAttribute('aria-expanded', 'false');
+    $('#btnMenuUtilisateur').focus();
+});
 document.addEventListener('click', e => {
     const menu = $('#menuUtilisateur');
     if (!menu.contains(e.target)) {

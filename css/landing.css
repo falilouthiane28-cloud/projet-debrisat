@@ -197,6 +197,7 @@
     overflow: hidden;
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow-elevated);
+    isolation: isolate;
 }
 .carte-direct #carteApercu { position: absolute; inset: 0; }
 .carte-direct .voile-carte {

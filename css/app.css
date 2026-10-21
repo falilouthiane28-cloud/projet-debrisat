@@ -175,6 +175,9 @@
     border-radius: var(--radius-md);
 }
 .ligne-classement.moi { background: var(--glass-bg-active); }
+/* The highlighted row is lighter, so its secondary text steps up one level to stay above 4.5:1 */
+.ligne-classement.moi .sous { color: var(--color-secondary-text); }
+.ligne-classement.moi .badge-neutral { color: var(--color-heading); }
 .ligne-classement .rang { width: 28px; text-align: center; font-family: var(--font-mono); font-weight: var(--weight-semibold); color: var(--color-muted); }
 .ligne-classement .rang .bi { font-size: 1.125rem; }
 .ligne-classement .rang.or { color: #E8C14A; }
@@ -286,7 +289,7 @@
 .apercu-severite .nom-niveau { font-weight: var(--weight-semibold); color: var(--color-heading); font-size: var(--text-lg); }
 .apercu-severite .explication { color: var(--color-secondary-text); font-size: var(--text-sm); margin-top: 4px; }
 
-.mini-carte { height: 240px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border-hover); position: relative; }
+.mini-carte { height: 240px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border-hover); position: relative; isolation: isolate; }
 .mini-carte .viseur {
     position: absolute; left: 50%; top: 50%; z-index: 500;
     transform: translate(-50%, -100%);

@@ -40,7 +40,11 @@
     backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturate));
     border-bottom: 1px solid var(--glass-border);
 }
-.fil-ariane { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-muted); min-width: 0; }
+.fil-ariane { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-muted); min-width: 0; flex: 1 1 auto; overflow: hidden; white-space: nowrap; }
+.fil-ariane > span:first-child, .fil-ariane > .bi { flex-shrink: 0; }
+@media (max-width: 479px) {
+    .entete-tableau #chipDemo, .fil-ariane > span:first-child, .fil-ariane > .bi { display: none; }
+}
 .fil-ariane .courant { color: var(--color-heading); font-weight: var(--weight-semibold); }
 .fil-ariane .bi { font-size: 0.7rem; }
 .entete-tableau .periode { display: none; }
@@ -56,7 +60,7 @@
 
 .bloc-onglets { display: flex; flex-direction: column; gap: var(--space-3); }
 .bloc-onglets .barre-outils { display: flex; flex-direction: column; gap: var(--space-3); }
-.carte-admin { height: 460px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); position: relative; }
+.carte-admin { height: 460px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); position: relative; isolation: isolate; }
 .carte-admin #carteAdmin { position: absolute; inset: 0; }
 .legende-admin {
     position: absolute; left: var(--space-3); bottom: var(--space-3); z-index: 410;
@@ -106,7 +110,7 @@
 .acces-refuse .card { max-width: 440px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
 
 .grille-parametres { display: grid; gap: var(--space-3); }
-.ligne-parametre { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--glass-border); }
+.ligne-parametre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--glass-border); }
 .ligne-parametre:last-child { border-bottom: none; }
 .ligne-parametre .titre { font-weight: var(--weight-medium); color: var(--color-heading); }
 .ligne-parametre .description { font-size: var(--text-sm); color: var(--color-secondary-text); }
@@ -116,6 +120,8 @@
 .auth-visuel { display: none; position: relative; overflow: hidden; background: #000 url('../img/satellite-orbite.jpg') center / cover no-repeat; }
 .auth-visuel::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,.1) 60%); }
 .auth-visuel .citation { position: absolute; left: var(--space-9); right: var(--space-9); bottom: var(--space-9); z-index: 1; color: #E5E5E5; padding: var(--space-6); }
+/* The photo is dark in both themes, so the caption keeps dark glass even in light mode */
+.auth-visuel .citation.glass { background: rgba(10, 10, 10, 0.55); border-color: rgba(255, 255, 255, 0.12); }
 .auth-visuel .citation p { font-size: var(--text-xl); line-height: var(--leading-relaxed); color: #F5F5F5; letter-spacing: -0.01em; }
 .auth-colonne { display: flex; flex-direction: column; padding: calc(var(--space-5) + var(--safe-top)) var(--space-4) calc(var(--space-6) + var(--safe-bottom)); }
 .auth-colonne .haut { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8); }
@@ -257,7 +263,10 @@
 :root:not([data-theme="light"]) .page-tableau .grille-stats .card-stat:nth-child(3) { box-shadow: 0 0 0 1px rgba(77, 208, 225, 0.10), 0 12px 40px -18px rgba(0, 188, 212, 0.40); }
 :root:not([data-theme="light"]) .page-tableau .grille-stats .card-stat:nth-child(4) { box-shadow: 0 0 0 1px rgba(102, 187, 106, 0.10), 0 12px 40px -18px rgba(76, 175, 80, 0.40); }
 
-.grille-direct { display: grid; gap: var(--space-4); }
+.grille-direct { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+.grille-direct > * { min-width: 0; }
+.flux-direct .contenu-flux { flex: 1; min-width: 0; }
+.flux-direct .contenu-flux .meta { overflow-wrap: anywhere; }
 .carte-classement, .carte-flux { display: flex; flex-direction: column; gap: var(--space-4); }
 .carte-classement h2, .carte-flux h2 { font-size: var(--text-base); display: flex; align-items: center; gap: var(--space-2); }
 
@@ -307,7 +316,7 @@
 .chaine-whatsapp li { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-full); background: var(--glass-bg); border: 1px solid var(--glass-border); font-size: var(--text-sm); }
 .chaine-whatsapp .bi { color: #25D366; }
 
-@media (min-width: 1024px) { .grille-direct { grid-template-columns: 1.2fr 1fr; } }
+@media (min-width: 1024px) { .grille-direct { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) {
     .classement-communes .barre span, .jauge-charge span, .flux-direct li:first-child { animation: none; }
 }

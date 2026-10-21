@@ -158,7 +158,7 @@
     --scrim: rgba(0, 0, 0, 0.32);
 
     /* Teintes assombries : les accents iOS clairs n'atteignent pas 4,5:1 sur blanc */
-    --accent-danger: #D70015;
+    --accent-danger: #C40013;
     --accent-danger-bg: rgba(215, 0, 21, 0.10);
     --accent-warning: #A85200;
     --accent-warning-bg: rgba(255, 149, 0, 0.14);
