@@ -25,19 +25,23 @@ Suivi de l'avancement. Mis à jour à chaque étape importante.
 - [ ] Liens réseaux sociaux et contact réels (aucune adresse fournie)
 
 ## Application citoyenne (`app.html`)
-- [x] Carte plein écran, fonds Esri sombre / clair selon le thème
-- [x] Marqueurs ronds colorés par sévérité (zone tactile 44 px), regroupements sombres
-- [x] Infobulles en verre (confirmer, voir le détail)
-- [x] Carte de chaleur, zones à risque, satellite Sentinel-2, ma position, zoom personnalisé
-- [x] Filtres : type, sévérité minimale, statut, commune, période
-- [x] Liste triable (récents, gravité, proches)
+- [x] Carte plein écran, fonds Esri sombre / clair selon le theme
+- [x] Marqueurs ronds colores par severite (zone tactile 44 px), regroupements sombres
+- [x] Infobulles en verre (confirmer, voir le detail)
+- [x] Carte de chaleur, zones a risque, satellite Sentinel-2, ma position, zoom personnalise
+- [x] Filtres : type, severite minimale, statut, commune, periode
+- [x] Liste triable (recents, gravite, proches)
 - [x] Classement avec podium
-- [x] Détail : photo, analyse IA, confirmer / infirmer, partager (lien direct)
-- [x] Alertes des autorités (pastille de nouveauté)
+- [x] Detail : photo, analyse IA, confirmer / infirmer, partager (lien direct)
+- [x] Alertes des autorites (pastille de nouveaute)
 - [x] Recherche locale + lieux (Nominatim)
-- [x] Assistant de signalement en 4 étapes, envoi, animation de réussite, +10 points, badges débloqués
-- [x] Temps réel et notification des signalements à moins de 1 km
+- [x] Assistant de signalement en 4 etapes, envoi, animation de reussite, +10 points, badges debloques
+- [x] Temps reel et notification des signalements a moins de 1 km
 - [x] File d'attente hors ligne
+- [x] Menu dropdown utilisateur (profil, espace agent, deconnexion)
+- [x] Toast de bienvenue apres connexion
+- [x] Indicateur actif (point) sur la barre de navigation mobile
+- [x] Redirection post-connexion vers app.html
 
 ## Tableau de bord (`dashboard.html`)
 - [x] Contrôle d'accès par rôle
@@ -52,9 +56,10 @@ Suivi de l'avancement. Mis à jour à chaque étape importante.
 - [ ] Optimisation des tournées de curage
 
 ## Comptes et profil
-- [x] Connexion, inscription, mot de passe oublié, nouveau mot de passe
-- [x] Profil : points, rang, prochain badge, badges, historique, édition
-- [x] Paramètres : thème, langue, notifications, installation
+- [x] Connexion, inscription, mot de passe oublie, nouveau mot de passe
+- [x] Profil : points, rang, prochain badge, badges, historique, edition
+- [x] Parametres : theme, langue, notifications, installation
+- [x] Bouton retour sur la page profil vers l'application
 
 ## Supabase
 - [x] Schéma, index spatiaux, colonnes `lat` / `lng` calculées
@@ -88,7 +93,8 @@ Suivi de l'avancement. Mis à jour à chaque étape importante.
 | 2026-10-18 | Documentation projet | `699d0cf` (ancien dépôt) |
 | 2026-10-19 | Projet déplacé dans son propre dépôt GitHub | `b866fd9` |
 | 2026-10-19 | Refonte « Obsidian Glass » : design, 5 pages, mode démo, sécurité Supabase | non commité |
-| 2026-10-19 | Mise en service Supabase (projet `debrisat`, eu-west-1) : migrations 001 à 004, 4 fonctions Edge, config.js | non commité |
+| 2026-10-19 | Mise en service Supabase (projet `debrisat`, eu-west-1) : migrations 001 à 004, 4 fonctions Edge, config.js | non commite |
+| 2026-10-21 | UX : menu utilisateur, redirection post-connexion, indicateurs de navigation | `09e2373` |
 
 ## Mise en service Supabase (2026-10-19)
 

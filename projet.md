@@ -26,10 +26,10 @@ Zones historiquement touchées : Pikine, Guédiawaye, Keur Massar (2009, 2012, 2
 | Page | Rôle |
 |---|---|
 | `index.html` | Accueil : hero (Terre vue de l'espace), fonctionnement en 3 étapes, carte en direct, chiffres clés animés, technologies, mentions légales |
-| `app.html` | Carte citoyenne plein écran : filtres, liste, classement, détail, alertes, recherche, assistant de signalement en 4 étapes |
+| `app.html` | Carte citoyenne plein ecran : filtres, liste, classement, detail, alertes, recherche, assistant de signalement en 4 etapes, menu utilisateur (profil, espace agent, deconnexion) |
 | `dashboard.html` | Autorités : indicateurs, carte d'administration, tableau triable avec actions groupées et assignation, alertes, zones à risque, statistiques, export CSV |
 | `auth.html` | Connexion, inscription, mot de passe oublié et nouveau mot de passe, accès démo |
-| `profil.html` | Points, rang, prochain badge, badges, historique, paramètres (thème, langue, notifications, installation) |
+| `profil.html` | Points, rang, prochain badge, badges, historique, parametres (theme, langue, notifications, installation), bouton retour vers l'app |
 
 Navigation interne par fragment d'URL (`js/router.js`) : `app.html#liste`, `#classement`, `#signaler`, `#carte?signalement=ID` (lien partageable) ; `dashboard.html#signalements`, `#carte`, `#zones`, `#alertes`, `#statistiques`, `#parametres`.
 

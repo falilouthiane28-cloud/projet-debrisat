@@ -76,6 +76,28 @@ Journal des decisions, changements et points d'attention du projet.
 
 ---
 
+## 2026-10-21 — UX : menu utilisateur et navigation
+
+### Ce qui a change
+- `index.html` : liens de connexion/inscription pointent vers `auth.html?retour=app.html` pour rediriger vers l'app apres connexion.
+- `app.html` : avatar remplace par un menu dropdown (profil, espace agent pour les autorites, deconnexion) avec animation et effet de verre.
+- `js/page-app.js` : logique du menu dropdown, toast de bienvenue apres connexion, fermeture au clic exterieur.
+- `css/app.css` : styles du menu dropdown avec glassmorphism et animation.
+- `css/components.css` : indicateur actif (point lumineux) sur la barre de navigation mobile.
+- `css/dashboard.css` : stats du profil centrees avec typographie amelioree.
+- `profil.html` : bouton retour vers l'application dans l'en-tete.
+- `js/config.js` : URL et cle Supabase renseignees.
+
+### Decisions et pourquoi
+- **Menu dropdown au lieu d'un lien direct** : permet d'acceder au profil, au tableau de bord (si autorite) et de se deconnecter sans quitter l'app.
+- **Redirection explicite via `retour=app.html`** : la logique `destinationRetour()` / `accueilRole()` fonctionnait deja mais l'ajout du parametre rend le comportement explicite depuis la landing.
+- **Toast de bienvenue** : retour visuel apres connexion, une seule fois par session (`sessionStorage`).
+
+### Commit
+- `09e2373`
+
+---
+
 ## Format des entrees futures
 
 Chaque modification importante sera documentee ici avec :
