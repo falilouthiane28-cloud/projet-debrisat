@@ -147,44 +147,41 @@
 .historique li:last-child { border-bottom: none; }
 .historique .points { font-family: var(--font-mono); font-weight: var(--weight-semibold); color: var(--accent-success); }
 
-/* ===== Navigation en tuiles (inspiration : barre laterale a icones encadrees) ===== */
+/* ===== Sidebar: plain rows, one soft selected surface (source-list style) ===== */
 .barre-laterale .marque { position: relative; }
 .btn-replier { display: none; }
-.barre-laterale nav { gap: var(--space-2); padding-inline: var(--space-3); }
+.barre-laterale nav { gap: 2px; padding-inline: var(--space-3); }
 .barre-laterale .sidebar-item {
     margin: 0;
     padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
-    min-height: 48px;
-    border: 1px solid var(--glass-border);
-    background: var(--glass-bg);
-    transition: background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), transform 100ms var(--ease-out);
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--color-secondary-text);
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), transform 100ms var(--ease-out);
 }
 .barre-laterale .sidebar-item::before { display: none; }
-.barre-laterale .sidebar-item:hover { border-color: var(--glass-border-hover); }
-.barre-laterale .sidebar-item:active { transform: scale(0.98); }
+.barre-laterale .sidebar-item:hover { background: var(--glass-bg); color: var(--color-heading); }
+.barre-laterale .sidebar-item:active { transform: scale(0.98); background: var(--glass-bg-active); }
 .sidebar-item .tuile {
     display: grid; place-items: center; flex-shrink: 0;
-    width: 38px; height: 38px;
-    border-radius: calc(var(--radius-md) - 2px);
-    border: 1px solid var(--glass-border);
-    background: var(--glass-bg);
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
 }
 .sidebar-item .tuile .bi { width: auto; }
-/* Element actif : surface sombre et brillante, reflet en haut a gauche */
 .barre-laterale .sidebar-item.active,
 .barre-laterale .sidebar-item[aria-current="page"] {
-    color: var(--color-bright);
-    border-color: var(--glass-border-hover);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02) 45%, rgba(0, 0, 0, 0.35));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.35);
+    color: var(--color-heading);
+    font-weight: var(--weight-semibold);
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-inner-glow);
 }
 .barre-laterale .sidebar-item.active .tuile,
-.barre-laterale .sidebar-item[aria-current="page"] .tuile { background: var(--color-contrast); color: var(--color-on-contrast); border-color: transparent; }
-[data-theme="light"] .barre-laterale .sidebar-item.active,
-[data-theme="light"] .barre-laterale .sidebar-item[aria-current="page"] {
-    background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.6));
-    box-shadow: inset 0 1px 0 #fff, 0 6px 18px rgba(0, 0, 0, 0.08);
-}
+.barre-laterale .sidebar-item[aria-current="page"] .tuile { background: var(--color-contrast); color: var(--color-on-contrast); }
+.barre-laterale .titre-groupe { margin-top: var(--space-2); }
 
 /* Repli en colonne d'icones, sur grand ecran seulement */
 @media (min-width: 1024px) {
