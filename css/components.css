@@ -667,6 +667,12 @@
 .bottom-nav-item .bi { font-size: 1.375rem; line-height: 1; }
 .bottom-nav-item:active { transform: scale(0.92); transition-duration: 100ms; }
 .bottom-nav-item.active, .bottom-nav-item[aria-current="page"] { color: var(--color-bright); }
+.bottom-nav-item.active::after, .bottom-nav-item[aria-current="page"]::after {
+    content: ''; display: block; width: 4px; height: 4px;
+    border-radius: var(--radius-full); background: var(--color-bright);
+    position: absolute; bottom: max(4px, calc(var(--safe-bottom) - 4px)); left: 50%; transform: translateX(-50%);
+}
+.bottom-nav-item { position: relative; }
 .bottom-nav-item.principal .bi {
     display: grid; place-items: center;
     width: 40px; height: 40px;

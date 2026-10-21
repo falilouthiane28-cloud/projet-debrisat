@@ -1,7 +1,7 @@
 // Renseigner ces deux valeurs active le mode Supabase ; sinon l'app tourne en mode demo.
 export const SUPABASE_URL = 'https://bezkifetuusykmmwwiad.supabase.co';
-// Cle publiable (sb_publishable_...) : publique par conception, la securite repose sur la RLS
-export const SUPABASE_ANON_KEY = 'sb_publishable_RJDBYG0hgdsxNnJtgoDXlg_Ymy9xSAW';
+// Cle anon (JWT) : publique par conception, la securite repose sur la RLS
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemtpZmV0dXVzeWttbXd3aWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNTg5NTgsImV4cCI6MjEwNzkzNDk1OH0.XDDjk9C9sphMK_e3LIr6N9Mw62T3R3Kub5wKx5xRwJg';
 
 const configure = /^https:\/\//.test(SUPABASE_URL) && !SUPABASE_ANON_KEY.startsWith('YOUR_');
 

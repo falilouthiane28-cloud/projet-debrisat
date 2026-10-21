@@ -56,9 +56,20 @@
             <button type="button" class="btn-icon nu" id="btnAlertes" aria-label="Alertes" aria-haspopup="dialog">
                 <i class="bi bi-bell" aria-hidden="true"></i><span class="pastille" id="pastilleAlertes" hidden></span>
             </button>
-            <a class="lien-avatar" href="profil.html" id="lienProfil" aria-label="Mon profil">
-                <span class="avatar" id="avatarUtilisateur"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
-            </a>
+            <div class="menu-utilisateur" id="menuUtilisateur">
+                <button type="button" class="lien-avatar" id="btnMenuUtilisateur" aria-label="Mon profil" aria-haspopup="true" aria-expanded="false">
+                    <span class="avatar" id="avatarUtilisateur"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
+                </button>
+                <div class="menu-dropdown glass-card" id="dropdownUtilisateur" role="menu" hidden>
+                    <p class="menu-nom" id="menuNomUtilisateur"></p>
+                    <p class="menu-meta texte-xs texte-muet" id="menuMetaUtilisateur"></p>
+                    <hr class="menu-sep">
+                    <a class="menu-item" href="profil.html" role="menuitem"><i class="bi bi-person" aria-hidden="true"></i>Mon profil</a>
+                    <a class="menu-item" href="dashboard.html" role="menuitem" id="menuTableau" hidden><i class="bi bi-grid-1x2" aria-hidden="true"></i>Espace agent</a>
+                    <hr class="menu-sep">
+                    <button type="button" class="menu-item menu-deconnexion" role="menuitem" id="btnMenuDeconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
+                </div>
+            </div>
         </div>
     </header>
 

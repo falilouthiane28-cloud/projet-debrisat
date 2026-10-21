@@ -581,19 +581,59 @@ function integrer(s) {
 function majAvatar() {
     const profil = profilCourant();
     const avatar = $('#avatarUtilisateur');
+    const btnMenu = $('#btnMenuUtilisateur');
     if (estConnecte() && profil) {
         avatar.textContent = initiales(profil.nom_complet);
-        $('#lienProfil').setAttribute('aria-label', `Mon profil, ${profil.nom_complet}, ${profil.points_total} points`);
+        btnMenu.setAttribute('aria-label', `Mon profil, ${profil.nom_complet}, ${profil.points_total} points`);
+        $('#menuNomUtilisateur').textContent = profil.nom_complet;
+        $('#menuMetaUtilisateur').textContent = `${profil.points_total} pts · ${profil.commune || ''}`;
+        const autorite = ['agent_municipal', 'admin'].includes(profil.role);
+        $('#menuTableau').hidden = !autorite;
     } else {
         avatar.innerHTML = '<i class="bi bi-person-circle" aria-hidden="true"></i>';
-        $('#lienProfil').setAttribute('aria-label', 'Se connecter');
-        $('#lienProfil').href = 'auth.html?retour=app.html';
+        btnMenu.setAttribute('aria-label', 'Se connecter');
+        $('#menuNomUtilisateur').textContent = '';
+        $('#menuMetaUtilisateur').textContent = '';
     }
 }
+
+function basculerMenuUtilisateur() {
+    const dropdown = $('#dropdownUtilisateur');
+    const btn = $('#btnMenuUtilisateur');
+    if (!estConnecte()) {
+        location.href = 'auth.html?retour=app.html';
+        return;
+    }
+    const ouvert = !dropdown.hidden;
+    dropdown.hidden = ouvert;
+    btn.setAttribute('aria-expanded', String(!ouvert));
+}
+
+$('#btnMenuUtilisateur').addEventListener('click', basculerMenuUtilisateur);
+document.addEventListener('click', e => {
+    const menu = $('#menuUtilisateur');
+    if (!menu.contains(e.target)) {
+        $('#dropdownUtilisateur').hidden = true;
+        $('#btnMenuUtilisateur').setAttribute('aria-expanded', 'false');
+    }
+});
+$('#btnMenuDeconnexion').addEventListener('click', async () => {
+    const { deconnexion } = await import('./auth.js');
+    await deconnexion();
+    location.href = 'auth.html';
+});
 
 const pretAuth = garderPage().then(() => {
     majAvatar();
     surChangementAuth(majAvatar);
+    // Message de bienvenue apres connexion (une seule fois par session)
+    try {
+        if (estConnecte() && profilCourant() && !sessionStorage.getItem('debrisat-bienvenue')) {
+            sessionStorage.setItem('debrisat-bienvenue', '1');
+            const prenom = (profilCourant().nom_complet || '').split(' ')[0];
+            if (prenom) succes(`Bienvenue, ${prenom}`, 'Bonne contribution sur Debrisat.', { duree: 3000 });
+        }
+    } catch { /* stockage indisponible */ }
 });
 
 async function demarrer() {
