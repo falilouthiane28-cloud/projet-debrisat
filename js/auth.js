@@ -4,10 +4,13 @@ import { lireStockage, ecrireStockage } from './utils.js';
 import { ID_DEMO } from './demo.js';
 
 const CLE_DECONNEXION_DEMO = 'debrisat-demo-deconnecte';
+export const CLE_MESSAGE_DECONNEXION = 'debrisat-deconnecte';
 const abonnes = new Set();
 let utilisateur = null;
 let profil = null;
+let erreurProfil = false;
 let pret = null;
+let deconnexionEnCours = false;
 
 export function initAuth() {
     if (pret) return pret;
@@ -18,9 +21,20 @@ export function initAuth() {
         }
         const { data: { session } } = await supabase.auth.getSession();
         await definirSession(session);
-        supabase.auth.onAuthStateChange(async (_evenement, nouvelleSession) => {
-            await definirSession(nouvelleSession);
-            notifier();
+        // auth-js runs this callback while holding its lock: awaiting any Supabase call here deadlocks the client
+        supabase.auth.onAuthStateChange((evenement, nouvelleSession) => {
+            if (evenement === 'INITIAL_SESSION') return;
+            if (evenement === 'SIGNED_OUT' || !nouvelleSession) {
+                utilisateur = null;
+                profil = null;
+                if (!deconnexionEnCours) notifier();
+                return;
+            }
+            if (evenement === 'TOKEN_REFRESHED' && nouvelleSession.user?.id === utilisateur?.id) return;
+            setTimeout(async () => {
+                await definirSession(nouvelleSession);
+                notifier();
+            }, 0);
         });
     })();
     return pret;
@@ -34,11 +48,13 @@ function definirDemo() {
 async function definirSession(session) {
     utilisateur = session?.user || null;
     profil = null;
+    erreurProfil = false;
     if (!utilisateur) return;
     try {
         profil = await obtenirProfil(utilisateur.id);
     } catch {
         profil = null;
+        erreurProfil = true;
     }
     // Un compte desactive par un administrateur est deconnecte des son arrivee
     if (profil && profil.compte_actif === false) {
@@ -72,6 +88,7 @@ export function surChangementAuth(rappel) {
 
 export const utilisateurCourant = () => utilisateur;
 export const profilCourant = () => profil;
+export const profilIndisponible = () => !!utilisateur && erreurProfil;
 export const estConnecte = () => !!utilisateur;
 export const estAutorite = () => !!profil && ROLES_AUTORITE.includes(profil.role);
 export const estAdmin = () => profil?.role === 'admin';
@@ -176,16 +193,45 @@ export async function changerMotDePasse(motDePasse) {
     if (error) throw new Error("Le nouveau mot de passe n'a pas pu être enregistré. Le lien a peut-être expiré.");
 }
 
+function effacerDonneesUtilisateur() {
+    try {
+        for (const cle of Object.keys(localStorage)) {
+            if (cle.startsWith('sb-')) localStorage.removeItem(cle);
+        }
+        for (const cle of Object.keys(sessionStorage)) {
+            if (cle.startsWith('debrisat-')) sessionStorage.removeItem(cle);
+        }
+    } catch { /* stockage indisponible */ }
+}
+
+// Single logout path for every page. The offline queue is kept: each item carries its author's id.
 export async function deconnexion() {
+    if (deconnexionEnCours) return;
+    deconnexionEnCours = true;
     if (MODE_DEMO) {
         ecrireStockage(CLE_DECONNEXION_DEMO, true);
-        utilisateur = null;
-        profil = null;
-        notifier();
-        return;
+    } else {
+        // A network failure must not keep the user signed in on this device
+        await Promise.race([
+            supabase.auth.signOut({ scope: 'local' }).catch(() => {}),
+            new Promise(resoudre => setTimeout(resoudre, 3000))
+        ]);
     }
-    await supabase.auth.signOut();
+    utilisateur = null;
+    profil = null;
+    effacerDonneesUtilisateur();
+    try { sessionStorage.setItem(CLE_MESSAGE_DECONNEXION, '1'); } catch { /* stockage indisponible */ }
+    location.replace('auth.html');
 }
+
+document.addEventListener('click', e => {
+    const bouton = e.target.closest('[data-action="deconnexion"]');
+    if (!bouton) return;
+    e.preventDefault();
+    bouton.disabled = true;
+    bouton.classList.add('btn-chargement');
+    deconnexion();
+});
 
 export function entrerEnDemo() {
     ecrireStockage(CLE_DECONNEXION_DEMO, false);
