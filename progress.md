@@ -96,6 +96,7 @@ Suivi de l'avancement. Mis à jour à chaque étape importante.
 | 2026-10-19 | Mise en service Supabase (projet `debrisat`, eu-west-1) : migrations 001 à 004, 4 fonctions Edge, config.js | non commite |
 | 2026-10-21 | UX : menu utilisateur, redirection post-connexion, indicateurs de navigation | `09e2373` |
 | 2026-10-21 | Correctif interblocage auth, déconnexion unique dans tous les en-têtes | branche `refonte-ux-whatsapp` |
+| 2026-10-21 | Bugs visuels (carte sur menu, débordements 360 px, contrastes, cibles 44 px), barre latérale allégée | `797417b`, `6763720` |
 
 ## Mise en service Supabase (2026-10-19)
 
