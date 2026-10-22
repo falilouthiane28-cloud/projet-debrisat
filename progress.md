@@ -97,6 +97,7 @@ Suivi de l'avancement. Mis à jour à chaque étape importante.
 | 2026-10-21 | UX : menu utilisateur, redirection post-connexion, indicateurs de navigation | `09e2373` |
 | 2026-10-21 | Correctif interblocage auth, déconnexion unique dans tous les en-têtes | branche `refonte-ux-whatsapp` |
 | 2026-10-21 | Bugs visuels (carte sur menu, débordements 360 px, contrastes, cibles 44 px), barre latérale allégée | `797417b`, `6763720` |
+| 2026-10-22 | Refonte accueil, 404, application (récapitulatif, brouillon, frise de suivi) et profil | `440406e`, `2f537da`, `37c1f91` |
 
 ## Mise en service Supabase (2026-10-19)
 

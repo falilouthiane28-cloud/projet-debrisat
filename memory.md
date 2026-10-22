@@ -129,3 +129,13 @@ Chaque modification importante sera documentee ici avec :
 - **Ce qui a changé** : les cartes Leaflet et leurs légendes sont isolées (`isolation: isolate`) pour rester sous les tiroirs, feuilles et voiles ; photo de la page de connexion collante sur grand écran ; plus de défilement horizontal à 360 px (vue d'ensemble, paramètres, hackathon) ; cibles tactiles de 44 px ; contrastes corrigés ; menu utilisateur fermable avec Échap ; barre latérale agent et admin en lignes simples.
 - **Pourquoi** : `--z-modal` (400) entrait en concurrence avec les panneaux Leaflet (400 à 1000), d'où la carte au-dessus du menu ouvert. Relevé par une revue visuelle de toutes les pages à 360, 768 et 1280 px, dans les deux thèmes.
 - **Commit** : `797417b`, `6763720`.
+
+## 2026-10-22 — Refonte des pages restantes (approche apple-design)
+- **Ce qui a changé** :
+  - Accueil : proposition de valeur en une phrase, « Signaler maintenant » et bouton WhatsApp (wa.me/221784277229), étapes Signaler → Vérifier → Curer.
+  - Nouvelle page `404.html`.
+  - Application : étape de récapitulatif avant envoi, brouillon local (sans la photo, 7 jours, par compte), frise de suivi construite seulement à partir des champs enregistrés, contrôles de carte en verre uniforme.
+  - Profil : carte d'identité, badges obtenus et verrouillés, réglages en listes groupées, styles déplacés dans `css/profil.css`.
+  - Service worker v7 (`404.html` et `profil.css` mis en cache).
+- **Pourquoi** : point de contrôle 2 validé ; les pages restantes alignées sur l'espace agent. Commentaires sur un signalement, suppression de compte et adhésion WhatsApp reportés : il faut d'abord une table ou une fonction côté serveur.
+- **Commit** : `440406e`, `2f537da`, `37c1f91`.
