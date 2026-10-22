@@ -654,6 +654,9 @@
     border-bottom: 1px solid var(--glass-border);
 }
 .marque { display: inline-flex; align-items: center; gap: var(--space-3); min-height: 44px; color: var(--color-heading); }
+/* Brand lockup: symbol + live text stays sharp at any size and follows the theme */
+.marque .nom-marque, .pied-logo .nom-marque { font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.02em; line-height: 1; color: var(--color-heading); }
+.marque .symbole-img, .pied-logo .symbole-img { height: 30px; width: auto; flex-shrink: 0; }
 
 .bottom-nav {
     position: fixed; left: 0; right: 0; bottom: 0;
