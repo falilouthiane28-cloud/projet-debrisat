@@ -22,3 +22,18 @@ The `onAuthStateChange` callback is synchronous: it updates the user immediately
 
 ## D7 — Logout lands on auth.html
 Every logout goes through `deconnexion()` in `js/auth.js`: sign out, clear user-scoped local data, redirect to `auth.html`, toast "Vous êtes déconnecté" shown there. Previously two pages sent users to `index.html`.
+
+## D8 — Webhook throttling answers 200, not 429 (rule S5)
+Meta retries any non-2xx delivery and can disable a webhook that fails too often. Per-sender throttling (more than 15 messages in 60 s) therefore skips processing and answers **200**; the sender gets one "patientez une minute" message. Invalid signatures still get **401** (S2). Approved scope: A4, 2026-10-22.
+
+## D9 — WhatsApp notifications need a double opt-in
+A status notification is sent only if the profile enabled `notifications_whatsapp` **and** that phone number has written to the bot and not replied STOP (`whatsapp_contacts.abonne`). Typing someone else's number in a profile is not enough to message them.
+
+## D10 — Tracking number
+`signalements.numero_suivi` (identity column) gives a readable code `DBS-<year>-<number padded to 5>`, year taken from `created_at` in Africa/Dakar time.
+
+## D11 — QR code generated at development time
+The WhatsApp QR code is a static SVG in `img/`, generated once with the `qrcode` npm package via `npx` (dev-time only). The site loads no QR library (S7: zero runtime dependency).
+
+## D12 — Bot logic testable without Deno
+Pure logic lives in `supabase/functions/whatsapp-meta/logique.ts` and `meta.ts` (Web APIs only, dependencies injected) and is tested with `node --test` (Node 24 strips TypeScript types natively). `index.ts` only wires Deno, Supabase and the environment.
