@@ -94,3 +94,18 @@
 @media (prefers-reduced-motion: reduce) {
     .ligne-bouton, .ligne-bouton .chevron { transition: none; }
 }
+
+/* WhatsApp bot: QR on a white card so it scans in both themes */
+.ligne-qr .qr-whatsapp {
+    flex-shrink: 0;
+    width: 88px; height: 88px;
+    padding: var(--space-1);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    image-rendering: pixelated;
+}
+@media (max-width: 479px) {
+    .ligne-qr { flex-wrap: wrap; }
+    .ligne-qr .qr-whatsapp { display: none; }
+}
+.historique .points.negatif { color: var(--accent-danger); }

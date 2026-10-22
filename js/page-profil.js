@@ -132,7 +132,39 @@ $('.onglets[role="tablist"]').addEventListener('keydown', e => {
 });
 
 // ============ Profil ============
-const ICONES_POINTS = { signalement: 'bi-exclamation-triangle', verification: 'bi-check-circle', signalement_verifie: 'bi-patch-check', signalement_resolu: 'bi-check-lg', badge: 'bi-award' };
+const ICONES_POINTS = { signalement: 'bi-exclamation-triangle', verification: 'bi-check-circle', signalement_verifie: 'bi-patch-check', signalement_resolu: 'bi-check-lg', badge: 'bi-award', signalement_supprime: 'bi-trash3' };
+const RAISONS_SUPPLEMENTAIRES = { signalement_supprime: 'Signalement supprimé' };
+
+// ============ Suivi WhatsApp (double opt-in : profil + message envoye au bot) ============
+function majWhatsapp(profil) {
+    $('#ligneWhatsapp').hidden = !profil;
+    if (!profil) return;
+    const interrupteur = $('#interrupteurWhatsapp');
+    const sansTelephone = !profil.telephone;
+    interrupteur.disabled = sansTelephone;
+    interrupteur.setAttribute('aria-checked', String(!sansTelephone && profil.notifications_whatsapp === true));
+    $('#descWhatsapp').textContent = sansTelephone
+        ? "Ajoutez d'abord votre numéro dans « Modifier mon profil »."
+        : "Écrivez d'abord au bot Debrisat depuis votre numéro. Répondez STOP à tout moment pour arrêter.";
+}
+$('#interrupteurWhatsapp').addEventListener('click', async e => {
+    const interrupteur = e.currentTarget;
+    if (interrupteur.disabled || !estConnecte()) return;
+    const active = interrupteur.getAttribute('aria-checked') !== 'true';
+    interrupteur.setAttribute('aria-checked', String(active));
+    interrupteur.disabled = true;
+    try {
+        await mettreAJourProfil(utilisateurCourant().id, { notifications_whatsapp: active });
+        await rafraichirProfil();
+        if (active) succes('Suivi WhatsApp activé', "Vous recevrez l'avancement de vos signalements, si vous avez déjà écrit au bot.");
+        else info('Suivi WhatsApp désactivé', 'Vous ne recevrez plus de messages de suivi.');
+    } catch {
+        interrupteur.setAttribute('aria-checked', String(!active));
+        erreur('Réglage non enregistré', 'Vérifiez votre connexion puis réessayez.');
+    } finally {
+        interrupteur.disabled = !profilCourant()?.telephone;
+    }
+});
 
 function etatErreur(message) {
     return `<div class="etat-erreur" role="alert">
@@ -192,8 +224,8 @@ function rendreHistorique(historique) {
         ? historique.map(h => `
             <li>
                 <span class="icone-ronde"><i class="bi ${ICONES_POINTS[h.raison] || 'bi-star'}" aria-hidden="true"></i></span>
-                <span class="flex-1"><span style="display:block;color:var(--color-heading)">${echapper(RAISONS_POINTS[h.raison] || h.raison)}</span><span class="texte-xs texte-secondaire">${echapper(formatRelatif(h.created_at))}</span></span>
-                <span class="points">+${formatNombre(h.points)}</span>
+                <span class="flex-1"><span style="display:block;color:var(--color-heading)">${echapper(RAISONS_POINTS[h.raison] || RAISONS_SUPPLEMENTAIRES[h.raison] || h.raison)}</span><span class="texte-xs texte-secondaire">${echapper(formatRelatif(h.created_at))}</span></span>
+                <span class="points${h.points < 0 ? ' negatif' : ''}">${h.points < 0 ? '-' : '+'}${formatNombre(Math.abs(h.points))}</span>
             </li>`).join('')
         : '<li class="etat-vide" style="border:none"><i class="bi bi-star" aria-hidden="true"></i><p>Vos points apparaîtront ici après votre premier signalement ou votre première vérification.</p></li>';
     liste.setAttribute('aria-busy', 'false');
@@ -231,6 +263,7 @@ async function rendre() {
         ${MODE_DEMO ? '<span class="badge badge-demo">Mode démo</span>' : ''}
         <span>Membre depuis ${echapper(formatDate(profil.created_at))}</span>`;
     if ($('#panneauEdition').hidden) remplirFormulaire(profil);
+    majWhatsapp(profil);
 
     let donnees;
     try {

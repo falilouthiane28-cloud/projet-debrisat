@@ -385,3 +385,60 @@
 .liens-404 a:hover { color: var(--color-heading); background: var(--glass-bg-hover); }
 .liens-404 a:active { background: var(--glass-bg-active); }
 @media (min-width: 480px) { .actions-404 { flex-direction: row; justify-content: center; } .actions-404 .btn { flex: 1; } }
+
+/* ===== WhatsApp ===== */
+/* QR for desktop visitors only: on phones the WhatsApp buttons open the chat directly */
+.carte-qr-hero { display: none; }
+@media (min-width: 1024px) {
+    .carte-qr-hero {
+        display: flex; align-items: center; gap: var(--space-4);
+        max-width: 440px; margin-top: var(--space-5);
+        padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
+        border-radius: var(--radius-lg);
+        /* The hero stays dark in both themes: same fixed palette as the hero buttons */
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+        backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    }
+    .carte-qr-hero img {
+        flex-shrink: 0; width: 72px; height: 72px;
+        padding: var(--space-1); border-radius: var(--radius-sm);
+        background: var(--color-white); image-rendering: pixelated;
+    }
+    .carte-qr-hero p { font-size: var(--text-sm); line-height: var(--leading-normal); color: #C8C8C8; }
+    .carte-qr-hero .titre-qr, .carte-qr-hero .numero-qr { color: #FAFAFA; font-weight: var(--weight-semibold); }
+}
+
+/* Floating chat button, public pages only. Sits under the mobile menu and above the content. */
+.fab-whatsapp {
+    position: fixed;
+    right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
+    bottom: calc(var(--space-4) + var(--safe-bottom));
+    z-index: calc(var(--z-dropdown) - 1);
+    display: grid; place-items: center;
+    width: 52px; height: 52px;
+    border-radius: var(--radius-full);
+    background: var(--glass-bg-heavy);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-border-hover);
+    box-shadow: var(--glass-shadow-elevated);
+    color: var(--color-heading);
+    font-size: 1.5rem;
+    transition: transform 100ms var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+.fab-whatsapp:hover { background: var(--glass-bg-hover); }
+.fab-whatsapp:active { transform: scale(0.92); }
+.fab-whatsapp:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--glass-shadow-elevated); }
+/* Leaves room at the very bottom so the button never hides the footer links or the back-to-top control */
+body:has(.fab-whatsapp) .pied-bas { padding-bottom: calc(52px + var(--space-6) + var(--safe-bottom)); }
+@media (prefers-reduced-motion: reduce) {
+    .fab-whatsapp { transition: none; }
+    .fab-whatsapp:active { transform: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .fab-whatsapp { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--color-elevated); }
+    .carte-qr-hero { -webkit-backdrop-filter: none; backdrop-filter: none; background: #1A1A1A; }
+}
+@media print { .fab-whatsapp { display: none; } }

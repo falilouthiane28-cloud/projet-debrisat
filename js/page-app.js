@@ -7,7 +7,7 @@ import { initTheme } from './theme.js';
 import { initI18n } from './i18n.js';
 import { initPwa, synchroniserAuRetour } from './pwa.js';
 import { estConnecte, utilisateurCourant, profilCourant, surChangementAuth, rafraichirProfil } from './auth.js';
-import { listerSignalements, listerZones, listerAlertes, classement, verifierSignalement, aDejaVerifie, obtenirSignalement } from './donnees.js';
+import { listerSignalements, listerZones, listerAlertes, classement, verifierSignalement, aDejaVerifie, obtenirSignalement, supprimerSignalement } from './donnees.js';
 import { creerCarte, CoucheSignalements, creerCoucheZones, marqueurPosition } from './map.js';
 import { creerCoucheChaleur, mettreAJourChaleur } from './heatmap.js';
 import { BasculeSatellite } from './satellite.js';
@@ -414,6 +414,7 @@ async function rendreDetail(s) {
                 <button type="button" class="btn btn-secondary" data-detail="carte"><i class="bi bi-map" aria-hidden="true"></i>Sur la carte</button>
                 <button type="button" class="btn btn-secondary" data-detail="partager"><i class="bi bi-share" aria-hidden="true"></i>Partager</button>
             </div>
+            ${estAuteur && s.statut === 'en_attente' ? `<div class="zone-suppression" id="zoneSuppression">${HTML_BOUTON_SUPPRIMER}</div>` : ''}
         </div>`;
     const corps = $('#corpsDetail');
     corps.querySelector('[data-detail="carte"]').onclick = () => {
@@ -422,6 +423,7 @@ async function rendreDetail(s) {
         setTimeout(() => couche.ouvrir(s.id), 300);
     };
     corps.querySelector('[data-detail="partager"]').onclick = () => partager(s);
+    if (estAuteur && s.statut === 'en_attente') brancherSuppression(s);
 
     if (actif && !estAuteur) {
         const zone = $('#zoneAvis');
@@ -445,6 +447,53 @@ async function rendreDetail(s) {
             if (!ok && b.isConnected) boutons.forEach(x => { x.disabled = false; });
         }));
     }
+}
+
+const HTML_BOUTON_SUPPRIMER = '<button type="button" class="btn btn-secondary btn-supprimer" data-suppression="demander"><i class="bi bi-trash3" aria-hidden="true"></i>Supprimer mon signalement</button>';
+
+// Irreversible: a second, explicit step with "Annuler" focused by default
+function brancherSuppression(s) {
+    const zone = $('#zoneSuppression');
+    zone.querySelector('[data-suppression="demander"]').onclick = () => {
+        zone.innerHTML = `
+            <div class="bloc-confirmation" role="alertdialog" aria-labelledby="titreConfSuppression" aria-describedby="descConfSuppression">
+                <p class="question-avis" id="titreConfSuppression">Supprimer ce signalement ?</p>
+                <p class="aide-avis" id="descConfSuppression">Cette action est définitive. Les ${POINTS.signalement} points gagnés seront retirés.</p>
+                <div class="detail-actions">
+                    <button type="button" class="btn btn-secondary" data-suppression="annuler">Annuler</button>
+                    <button type="button" class="btn btn-danger" data-suppression="confirmer"><i class="bi bi-trash3" aria-hidden="true"></i>Supprimer</button>
+                </div>
+            </div>`;
+        const annuler = zone.querySelector('[data-suppression="annuler"]');
+        const confirmer = zone.querySelector('[data-suppression="confirmer"]');
+        annuler.focus();
+        annuler.onclick = () => {
+            zone.innerHTML = HTML_BOUTON_SUPPRIMER;
+            brancherSuppression(s);
+            zone.querySelector('[data-suppression="demander"]').focus();
+        };
+        confirmer.onclick = async () => {
+            annuler.disabled = true;
+            confirmer.disabled = true;
+            confirmer.classList.add('btn-chargement');
+            try {
+                await supprimerSignalement(s.id, utilisateurCourant()?.id);
+                etat.signalements = etat.signalements.filter(x => x.id !== s.id);
+                couche.definir(etat.signalements);
+                appliquerFiltres();
+                feuilles.detail.fermer();
+                succes('Signalement supprimé', `Les ${POINTS.signalement} points gagnés ont été retirés.`);
+                rafraichirProfil();
+            } catch (err) {
+                erreur('Suppression impossible', err.message);
+                if (confirmer.isConnected) {
+                    annuler.disabled = false;
+                    confirmer.disabled = false;
+                    confirmer.classList.remove('btn-chargement');
+                }
+            }
+        };
+    };
 }
 
 async function partager(s) {

@@ -203,6 +203,16 @@
                     <span class="texte-reglage"><span class="titre">Alertes proches de moi</span><span class="description" id="descNotifications">Notification quand un signalement apparaît à moins de 1 km</span></span>
                     <button type="button" class="btn btn-sm btn-secondary" id="btnNotifications"><i class="bi bi-bell" aria-hidden="true"></i>Activer</button>
                 </div>
+                <div class="ligne-reglage" id="ligneWhatsapp" hidden>
+                    <span class="tuile-reglage"><i class="bi bi-whatsapp" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre" id="libelleWhatsapp">Recevoir le suivi de mes signalements sur WhatsApp</span><span class="description" id="descWhatsapp">Écrivez d'abord au bot Debrisat depuis votre numéro. Répondez STOP à tout moment pour arrêter.</span></span>
+                    <button type="button" class="interrupteur" role="switch" aria-checked="false" aria-labelledby="libelleWhatsapp" aria-describedby="descWhatsapp" id="interrupteurWhatsapp"><span></span></button>
+                </div>
+                <div class="ligne-reglage ligne-qr">
+                    <img class="qr-whatsapp" src="img/qr-whatsapp.svg" width="88" height="88" alt="QR code : écrire au bot WhatsApp Debrisat, +221 78 427 72 29">
+                    <span class="texte-reglage"><span class="titre">Le bot WhatsApp Debrisat</span><span class="description">Scannez ce code ou écrivez au +221 78 427 72 29 pour signaler et suivre vos signalements.</span></span>
+                    <a class="btn btn-sm btn-secondary" href="https://wa.me/221784277229?text=Bonjour%20DEBRISAT" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i>Ouvrir<span class="sr-only"> WhatsApp (nouvel onglet)</span></a>
+                </div>
             </div>
         </section>
 
