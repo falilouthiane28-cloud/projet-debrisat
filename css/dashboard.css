@@ -133,13 +133,6 @@
 .separateur-texte::before, .separateur-texte::after { content: ''; flex: 1; height: 1px; background: var(--glass-border-hover); }
 
 .page-profil .contenu-profil { max-width: 880px; margin: 0 auto; padding: calc(var(--topbar-h) + var(--safe-top) + var(--space-2) + var(--space-5)) var(--space-4) calc(var(--bottomnav-h) + var(--safe-bottom) + var(--space-8)); display: flex; flex-direction: column; gap: var(--space-5); }
-.entete-profil { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); text-align: center; padding: var(--space-7) var(--space-5); }
-.entete-profil .avatar.lg { width: 72px; height: 72px; font-size: var(--text-xl); border: 2px solid var(--glass-border-hover); box-shadow: 0 0 24px color-mix(in srgb, var(--color-bright) 12%, transparent); }
-.entete-profil h1 { font-size: var(--text-2xl); }
-.grille-stats-profil { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); width: 100%; }
-.stat-profil { padding: var(--space-4); text-align: center; }
-.stat-profil .label { font-size: var(--text-xs); color: var(--color-muted); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin-bottom: var(--space-1); }
-.stat-profil .chiffre { font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--color-heading); }
 .progression-badge { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); }
 .grille-badges { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
 .historique { display: flex; flex-direction: column; list-style: none; }

@@ -110,7 +110,6 @@
     .table td.col-collante, .table th.col-collante { position: static; background: transparent; }
 
     /* Profil */
-    .grille-stats-profil { grid-template-columns: repeat(4, 1fr); }
     .grille-badges { grid-template-columns: repeat(3, 1fr); }
     .page-profil .contenu-profil { padding-bottom: var(--space-10); }
 }

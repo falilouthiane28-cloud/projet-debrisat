@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/profil.css">
 </head>
 <body class="page-profil">
     <a class="lien-evitement" href="#contenu">Aller au contenu</a>
@@ -31,7 +32,7 @@
             <img src="img/symbole.png" class="symbole-img" alt="" width="32" height="28">
             <span class="nom">Debrisat</span>
         </a>
-        <p class="flex-1" style="font-weight:600;color:var(--color-heading)">Mon profil</p>
+        <p class="flex-1 titre-barre-profil">Mon profil</p>
         <div class="actions">
             <a class="btn-icon nu" href="dashboard.html" id="lienTableau" hidden aria-label="Espace autorités"><i class="bi bi-grid-1x2" aria-hidden="true"></i></a>
             <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
@@ -40,119 +41,193 @@
     </header>
 
     <main class="contenu-profil" id="contenu" aria-busy="true">
-        <section class="entete-profil glass-card" aria-labelledby="nomProfil">
-            <span class="avatar lg" id="avatarProfil"><span class="skeleton skeleton-circle" style="width:100%;height:100%"></span></span>
-            <div class="pile-sm" style="align-items:center">
-                <h1 id="nomProfil"><span class="skeleton skeleton-text" style="--l:180px;display:inline-block;width:180px;height:24px"></span></h1>
-                <p class="rangee texte-secondaire texte-sm" id="metaProfil" style="justify-content:center;flex-wrap:wrap"></p>
-            </div>
-            <div class="grille-stats-profil">
-                <div class="stat-profil glass-card"><p class="label">Points</p><p class="chiffre" id="statPoints">—</p></div>
-                <div class="stat-profil glass-card"><p class="label">Signalements</p><p class="chiffre" id="statSignalements">—</p></div>
-                <div class="stat-profil glass-card"><p class="label">Vérifications</p><p class="chiffre" id="statVerifications">—</p></div>
-                <div class="stat-profil glass-card"><p class="label">Rang</p><p class="chiffre" id="statRang">—</p></div>
-            </div>
-        </section>
-
-        <section class="progression-badge glass-card" id="blocProchainBadge" aria-labelledby="titreProchain" hidden>
-            <div class="rangee-entre">
-                <div class="rangee">
-                    <span class="icone-ronde" id="iconeProchain"><i class="bi bi-award" aria-hidden="true"></i></span>
-                    <div><p class="eyebrow">Prochain badge</p><h2 id="titreProchain" style="font-size:var(--text-lg)"></h2></div>
+        <section class="carte-identite glass-card" aria-labelledby="nomProfil" id="blocIdentite">
+            <div class="identite">
+                <span class="avatar lg" id="avatarProfil"><span class="skeleton skeleton-circle" style="width:100%;height:100%"></span></span>
+                <div class="identite-texte">
+                    <h1 id="nomProfil"><span class="skeleton skeleton-text" style="--l:180px;display:inline-block;width:180px;height:24px;margin:0"></span></h1>
+                    <p class="meta-profil" id="metaProfil"></p>
                 </div>
-                <p class="chiffre texte-sm" id="ratioProchain"></p>
             </div>
-            <div class="jauge" role="progressbar" aria-labelledby="titreProchain" aria-valuemin="0" id="jaugeProchain"><span></span></div>
-            <p class="texte-sm texte-secondaire" id="resteProchain"></p>
+
+            <dl class="chiffres-principaux">
+                <div class="chiffre-principal">
+                    <dt>Points</dt>
+                    <dd class="chiffre" id="statPoints">—</dd>
+                </div>
+                <div class="chiffre-principal">
+                    <dt>Rang</dt>
+                    <dd class="chiffre" id="statRang">—</dd>
+                </div>
+            </dl>
+            <dl class="chiffres-secondaires">
+                <div><dt>Signalements</dt><dd id="statSignalements">—</dd></div>
+                <div><dt>Vérifications</dt><dd id="statVerifications">—</dd></div>
+            </dl>
+
+            <div class="progression-badge" id="blocProchainBadge" hidden>
+                <div class="rangee-entre">
+                    <div class="rangee">
+                        <span class="icone-ronde" id="iconeProchain"><i class="bi bi-award" aria-hidden="true"></i></span>
+                        <div>
+                            <p class="eyebrow">Prochain badge</p>
+                            <h2 id="titreProchain"></h2>
+                        </div>
+                    </div>
+                    <p class="ratio-prochain" id="ratioProchain"></p>
+                </div>
+                <div class="jauge" role="progressbar" aria-labelledby="titreProchain" aria-describedby="resteProchain" aria-valuemin="0" id="jaugeProchain"><span></span></div>
+                <p class="texte-sm texte-secondaire" id="resteProchain"></p>
+            </div>
         </section>
 
-        <section class="pile" aria-labelledby="titreBadges">
-            <h2 id="titreBadges"><i class="bi bi-award" aria-hidden="true"></i> Badges</h2>
-            <div class="grille-badges" id="grilleBadges" role="list"></div>
+        <section class="section-profil" aria-labelledby="titreBadges" id="blocBadges">
+            <div class="entete-section">
+                <h2 id="titreBadges">Badges</h2>
+                <p class="texte-sm texte-secondaire" id="compteBadges"></p>
+            </div>
+            <div class="grille-badges" id="grilleBadges" role="list" aria-busy="true">
+                <div class="card-badge squelette-badge" aria-hidden="true"><span class="skeleton skeleton-circle"></span><span class="skeleton skeleton-text" style="--l:70%"></span></div>
+                <div class="card-badge squelette-badge" aria-hidden="true"><span class="skeleton skeleton-circle"></span><span class="skeleton skeleton-text" style="--l:60%"></span></div>
+                <div class="card-badge squelette-badge" aria-hidden="true"><span class="skeleton skeleton-circle"></span><span class="skeleton skeleton-text" style="--l:75%"></span></div>
+            </div>
         </section>
 
-        <section class="pile" aria-label="Activité">
+        <section class="section-profil" aria-labelledby="titreActivite" id="blocActivite">
+            <div class="entete-section">
+                <h2 id="titreActivite">Activité</h2>
+            </div>
             <div class="onglets" role="tablist" aria-label="Activité">
                 <button type="button" class="onglet" role="tab" id="ongletSignalements" aria-controls="panneauSignalements" aria-selected="true"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Mes signalements</button>
-                <button type="button" class="onglet" role="tab" id="ongletPoints" aria-controls="panneauPoints" aria-selected="false" tabindex="-1"><i class="bi bi-star" aria-hidden="true"></i>Historique des points</button>
+                <button type="button" class="onglet" role="tab" id="ongletPoints" aria-controls="panneauPoints" aria-selected="false" tabindex="-1"><i class="bi bi-star" aria-hidden="true"></i>Mes points</button>
             </div>
             <div class="panneau-onglet" id="panneauSignalements" role="tabpanel" aria-labelledby="ongletSignalements">
-                <div class="liste-signalements" id="mesSignalements"></div>
+                <div class="liste-signalements" id="mesSignalements" aria-busy="true">
+                    <div class="ligne-squelette" aria-hidden="true"><span class="skeleton vignette-squelette"></span><span class="flex-1"><span class="skeleton skeleton-text" style="--l:55%"></span><span class="skeleton skeleton-text" style="--l:80%"></span></span></div>
+                    <div class="ligne-squelette" aria-hidden="true"><span class="skeleton vignette-squelette"></span><span class="flex-1"><span class="skeleton skeleton-text" style="--l:45%"></span><span class="skeleton skeleton-text" style="--l:70%"></span></span></div>
+                </div>
             </div>
-            <div class="panneau-onglet card" id="panneauPoints" role="tabpanel" aria-labelledby="ongletPoints" hidden style="padding:var(--space-2) var(--space-5)">
-                <ul class="historique" id="historiquePoints" role="list"></ul>
+            <div class="panneau-onglet liste-reglages" id="panneauPoints" role="tabpanel" aria-labelledby="ongletPoints" hidden>
+                <ul class="historique" id="historiquePoints" role="list" aria-busy="true">
+                    <li class="ligne-squelette" aria-hidden="true"><span class="skeleton skeleton-circle" style="width:40px;height:40px"></span><span class="flex-1"><span class="skeleton skeleton-text" style="--l:60%"></span></span></li>
+                    <li class="ligne-squelette" aria-hidden="true"><span class="skeleton skeleton-circle" style="width:40px;height:40px"></span><span class="flex-1"><span class="skeleton skeleton-text" style="--l:50%"></span></span></li>
+                </ul>
             </div>
         </section>
 
-        <section class="card pile" aria-labelledby="titreParametres">
-            <h2 id="titreParametres"><i class="bi bi-gear" aria-hidden="true"></i> Paramètres</h2>
-            <div>
-                <div class="ligne-parametre">
-                    <div><p class="titre">Apparence</p><p class="description">Sombre par défaut, ou selon votre téléphone</p></div>
-                    <div class="segmente" role="group" aria-label="Thème" id="choixTheme">
-                        <button type="button" data-theme-choix="sombre" aria-pressed="false"><i class="bi bi-moon" aria-hidden="true"></i><span class="sr-only">Sombre</span></button>
-                        <button type="button" data-theme-choix="clair" aria-pressed="false"><i class="bi bi-sun" aria-hidden="true"></i><span class="sr-only">Clair</span></button>
-                        <button type="button" data-theme-choix="systeme" aria-pressed="false"><i class="bi bi-circle-half" aria-hidden="true"></i><span class="sr-only">Système</span></button>
+        <section class="carte-deconnecte glass-card" id="blocDeconnecte" data-public hidden>
+            <span class="icone-ronde lg"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
+            <h2>Connectez-vous pour suivre vos contributions</h2>
+            <p class="texte-secondaire">Points, badges et historique de vos signalements apparaissent ici une fois connecté.</p>
+            <a class="btn btn-plein" href="auth.html?retour=profil.html">Se connecter<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </section>
+
+        <section class="groupe-reglages" aria-labelledby="titreGroupeCompte" id="blocCompte" hidden>
+            <h2 class="titre-groupe-reglages" id="titreGroupeCompte">Compte</h2>
+            <div class="liste-reglages">
+                <button type="button" class="ligne-reglage ligne-bouton" id="btnOuvrirEdition" aria-expanded="false" aria-controls="panneauEdition">
+                    <span class="tuile-reglage"><i class="bi bi-person" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre">Modifier mon profil</span><span class="description">Nom, commune et téléphone</span></span>
+                    <i class="bi bi-chevron-down chevron" aria-hidden="true"></i>
+                </button>
+                <div class="panneau-reglage" id="panneauEdition" hidden>
+                    <form class="pile" id="formProfil" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="champNomProfil">Nom complet</label>
+                            <input class="input" id="champNomProfil" autocomplete="name" required minlength="2" aria-describedby="erreurNomProfil">
+                            <p class="form-error" id="erreurNomProfil" role="alert"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="champCommuneProfil">Commune</label>
+                            <select class="select" id="champCommuneProfil"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="champTelProfil">Téléphone</label>
+                            <input class="input" id="champTelProfil" type="tel" autocomplete="tel" inputmode="tel" placeholder="+221 77 123 45 67" aria-describedby="aideTelProfil erreurTelProfil">
+                            <p class="form-helper" id="aideTelProfil">Utilisé pour les alertes SMS ou WhatsApp, et pour relier vos signalements WhatsApp à votre compte.</p>
+                            <p class="form-error" id="erreurTelProfil" role="alert"></p>
+                        </div>
+                        <div class="actions-formulaire">
+                            <button type="button" class="btn btn-secondary" id="btnAnnulerEdition">Annuler</button>
+                            <button type="submit" class="btn btn-plein" id="btnEnregistrerProfil">Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="blocCodeAgent" hidden>
+                    <button type="button" class="ligne-reglage ligne-bouton" id="btnOuvrirCode" aria-expanded="false" aria-controls="panneauCode">
+                        <span class="tuile-reglage"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+                        <span class="texte-reglage"><span class="titre">Vous êtes agent municipal ?</span><span class="description">Activez votre accès avec le code reçu</span></span>
+                        <i class="bi bi-chevron-down chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="panneau-reglage" id="panneauCode" hidden>
+                        <p class="texte-sm texte-secondaire">Saisissez le code d'accès remis par l'administrateur : votre compte sera rattaché à votre commune et vous accéderez à l'espace agent.</p>
+                        <form class="pile-sm" id="formCodeAgent" novalidate>
+                            <label class="form-label" for="champCodeAgent">Code d'accès</label>
+                            <div class="rangee-wrap">
+                                <input class="input champ-code" id="champCodeAgent" placeholder="AGT-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="erreurCodeAgent">
+                                <button type="submit" class="btn btn-secondary" id="btnCodeAgent"><i class="bi bi-key" aria-hidden="true"></i>Activer</button>
+                            </div>
+                            <p class="form-error" id="erreurCodeAgent" role="alert"></p>
+                        </form>
                     </div>
                 </div>
-                <div class="ligne-parametre">
-                    <div><p class="titre"><label for="choixLangue">Langue</label></p><p class="description">Le wolof est en cours de traduction</p></div>
-                    <select class="select compact" id="choixLangue" style="width:auto"></select>
+            </div>
+        </section>
+
+        <section class="groupe-reglages" aria-labelledby="titreGroupeApparence" data-public>
+            <h2 class="titre-groupe-reglages" id="titreGroupeApparence">Apparence et langue</h2>
+            <div class="liste-reglages">
+                <div class="ligne-reglage">
+                    <span class="tuile-reglage"><i class="bi bi-circle-half" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre" id="libelleTheme">Thème</span><span class="description">Sombre par défaut, ou selon votre téléphone</span></span>
+                    <div class="segmente" role="group" aria-labelledby="libelleTheme" id="choixTheme">
+                        <button type="button" data-theme-choix="sombre" aria-pressed="false" title="Sombre"><i class="bi bi-moon" aria-hidden="true"></i><span class="sr-only">Sombre</span></button>
+                        <button type="button" data-theme-choix="clair" aria-pressed="false" title="Clair"><i class="bi bi-sun" aria-hidden="true"></i><span class="sr-only">Clair</span></button>
+                        <button type="button" data-theme-choix="systeme" aria-pressed="false" title="Système"><i class="bi bi-phone" aria-hidden="true"></i><span class="sr-only">Système</span></button>
+                    </div>
                 </div>
-                <div class="ligne-parametre">
-                    <div><p class="titre">Alertes proches de moi</p><p class="description" id="descNotifications">Notification quand un signalement apparaît à moins de 1 km</p></div>
+                <div class="ligne-reglage">
+                    <span class="tuile-reglage"><i class="bi bi-translate" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><label class="titre" for="choixLangue">Langue</label><span class="description">Le wolof est en cours de traduction</span></span>
+                    <select class="select compact" id="choixLangue"></select>
+                </div>
+            </div>
+        </section>
+
+        <section class="groupe-reglages" aria-labelledby="titreGroupeNotifications" data-public>
+            <h2 class="titre-groupe-reglages" id="titreGroupeNotifications">Notifications</h2>
+            <div class="liste-reglages">
+                <div class="ligne-reglage">
+                    <span class="tuile-reglage"><i class="bi bi-bell" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre">Alertes proches de moi</span><span class="description" id="descNotifications">Notification quand un signalement apparaît à moins de 1 km</span></span>
                     <button type="button" class="btn btn-sm btn-secondary" id="btnNotifications"><i class="bi bi-bell" aria-hidden="true"></i>Activer</button>
                 </div>
-                <div class="ligne-parametre" id="ligneInstallation" hidden>
-                    <div><p class="titre">Installer l'application</p><p class="description">Accès direct depuis l'écran d'accueil, même hors ligne</p></div>
-                    <button type="button" class="btn btn-sm btn-secondary" id="btnInstaller"><i class="bi bi-download" aria-hidden="true"></i>Installer</button>
+            </div>
+        </section>
+
+        <section class="groupe-reglages" aria-labelledby="titreGroupeApplication" id="groupeApplication" data-public hidden>
+            <h2 class="titre-groupe-reglages" id="titreGroupeApplication">Application</h2>
+            <div class="liste-reglages">
+                <div class="ligne-reglage" id="ligneInstallation" hidden>
+                    <span class="tuile-reglage"><i class="bi bi-download" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre">Installer l'application</span><span class="description">Accès direct depuis l'écran d'accueil, même hors ligne</span></span>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnInstaller">Installer</button>
+                </div>
+                <div class="ligne-reglage" id="blocDemo" hidden>
+                    <span class="tuile-reglage"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre">Données de démonstration</span><span class="description">Efface vos signalements et votes de démo enregistrés sur cet appareil</span></span>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnReinitDemo">Réinitialiser</button>
                 </div>
             </div>
         </section>
 
-        <section class="card pile" aria-labelledby="titreCompte" id="blocCompte" hidden>
-            <h2 id="titreCompte"><i class="bi bi-person-circle" aria-hidden="true"></i> Mon compte</h2>
-            <form class="pile" id="formProfil" novalidate>
-                <div class="form-group">
-                    <label class="form-label" for="champNomProfil">Nom complet</label>
-                    <input class="input" id="champNomProfil" autocomplete="name" required minlength="2">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="champCommuneProfil">Commune</label>
-                    <select class="select" id="champCommuneProfil"></select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="champTelProfil">Téléphone</label>
-                    <input class="input" id="champTelProfil" type="tel" autocomplete="tel" inputmode="tel" placeholder="+221 77 123 45 67" aria-describedby="aideTelProfil">
-                    <p class="form-helper" id="aideTelProfil">Utilisé pour les alertes SMS / WhatsApp et pour relier vos signalements WhatsApp à votre compte.</p>
-                </div>
-                <div class="rangee-wrap" style="justify-content:space-between">
-                    <button type="button" class="btn btn-danger" id="btnDeconnexion" data-action="deconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
-                    <button type="submit" class="btn btn-plein" id="btnEnregistrerProfil">Enregistrer</button>
-                </div>
-            </form>
-            <div id="blocDemo" hidden class="ligne-parametre" style="border-top:1px solid var(--glass-border);border-bottom:none">
-                <div><p class="titre">Données de démonstration</p><p class="description">Efface vos signalements et votes de démo enregistrés sur cet appareil</p></div>
-                <button type="button" class="btn btn-sm btn-secondary" id="btnReinitDemo"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Réinitialiser</button>
-            </div>
-        </section>
-
-        <section class="card pile" aria-labelledby="titreCodeAgent" id="blocCodeAgent" hidden>
-            <h2 id="titreCodeAgent"><i class="bi bi-person-badge" aria-hidden="true"></i> Vous êtes agent municipal ?</h2>
-            <p class="texte-sm texte-secondaire">Saisissez le code d'accès remis par l'administrateur : votre compte sera rattaché à votre commune et vous accéderez à l'espace agent.</p>
-            <form class="rangee-wrap" id="formCodeAgent" novalidate>
-                <label class="sr-only" for="champCodeAgent">Code d'accès</label>
-                <input class="input" id="champCodeAgent" placeholder="AGT-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:180px">
-                <button type="submit" class="btn btn-secondary" id="btnCodeAgent"><i class="bi bi-key" aria-hidden="true"></i>Activer</button>
-            </form>
-        </section>
-
-        <section class="card acces-refuse" id="blocDeconnecte" hidden style="min-height:auto">
-            <div class="pile" style="align-items:center;text-align:center">
-                <span class="icone-ronde lg"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
-                <h2>Connectez-vous pour suivre vos contributions</h2>
-                <p class="texte-secondaire">Points, badges et historique de vos signalements apparaissent ici une fois connecté.</p>
-                <a class="btn btn-plein" href="auth.html?retour=profil.html">Se connecter<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        <section class="groupe-reglages" aria-label="Session" id="groupeSession" hidden>
+            <div class="liste-reglages">
+                <button type="button" class="ligne-reglage ligne-bouton ligne-danger" id="btnDeconnexion" data-action="deconnexion">
+                    <span class="tuile-reglage"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></span>
+                    <span class="texte-reglage"><span class="titre">Se déconnecter</span></span>
+                </button>
             </div>
         </section>
     </main>
