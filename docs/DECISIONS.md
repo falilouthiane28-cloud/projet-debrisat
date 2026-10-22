@@ -37,3 +37,6 @@ The WhatsApp QR code is a static SVG in `img/`, generated once with the `qrcode`
 
 ## D12 — Bot logic testable without Deno
 Pure logic lives in `supabase/functions/whatsapp-meta/logique.ts` and `meta.ts` (Web APIs only, dependencies injected) and is tested with `node --test` (Node 24 strips TypeScript types natively). `index.ts` only wires Deno, Supabase and the environment.
+
+## D13 — Login lands on the role home; OAuth failures are shown
+After login, citoyen goes to `app.html`, agent_municipal to `dashboard.html`, admin to `admin.html`. A `?retour=` target is kept only when it is a deep link (hash or query, e.g. `app.html#signaler`) or a specific page (profile, dashboard); generic entries (`index.html`, `app.html`, `auth.html`) give way to the role home. Errors Supabase returns in the URL after Google sign-in are now displayed in French instead of failing silently. Agents signing up with Google are taken to their profile to enter the access code.

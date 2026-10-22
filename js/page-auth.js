@@ -12,12 +12,43 @@ initRetourTactile();
 
 // Seules les pages de l'application sont acceptees comme destination de retour (pas de redirection ouverte)
 const PAGES_RETOUR = ['app.html', 'profil.html', 'dashboard.html', 'admin.html', 'index.html'];
-// Sans page de retour, chaque role arrive sur son interface (la page cible verifie de toute facon le role)
+const CLE_INSCRIPTION_AGENT = 'debrisat-inscription-agent';
+// Generic entry pages: landing there after login would hide the agent/admin space, so the role home wins
+const ENTREES_GENERIQUES = ['', 'index.html', 'app.html', 'auth.html'];
+
+// Each role lands on its own interface; a deep link (#signaler, a report, the profile...) is kept
 function destinationRetour() {
+    try {
+        if (sessionStorage.getItem(CLE_INSCRIPTION_AGENT)) {
+            sessionStorage.removeItem(CLE_INSCRIPTION_AGENT);
+            if (accueilRole() === 'app.html') return 'profil.html?code=agent';
+        }
+    } catch { /* stockage indisponible */ }
     const brut = new URLSearchParams(location.search).get('retour');
-    if (!brut) return accueilRole();
-    const page = brut.split(/[?#]/)[0];
-    return PAGES_RETOUR.includes(page) && !/^[a-z]+:|^\/\//i.test(brut) ? brut : accueilRole();
+    if (!brut || /^[a-z]+:|^\/\//i.test(brut)) return accueilRole();
+    const [page] = brut.split(/[?#]/);
+    if (!PAGES_RETOUR.includes(page)) return accueilRole();
+    const lienProfond = brut !== page;
+    if (ENTREES_GENERIQUES.includes(page) && !lienProfond) return accueilRole();
+    return brut;
+}
+
+const roleChoisi = () => $('input[name="typeCompte"]:checked')?.value || 'citoyen';
+
+// Errors Supabase puts in the URL after an OAuth return (query or fragment); without this the failure is silent
+function erreurRetourOAuth() {
+    const p = new URLSearchParams(location.search);
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const code = p.get('error') || h.get('error');
+    if (!code) return null;
+    const detail = `${p.get('error_description') || h.get('error_description') || ''} ${p.get('error_code') || h.get('error_code') || ''}`;
+    history.replaceState(null, '', location.pathname + (p.get('retour') ? `?retour=${encodeURIComponent(p.get('retour'))}` : ''));
+    if (code === 'access_denied') return 'Connexion Google annulée. Vous pouvez réessayer ou utiliser votre e-mail.';
+    if (/exchange external code|server_error/i.test(`${code} ${detail}`)) {
+        return "La connexion avec Google n'a pas abouti à cause d'un réglage du service. Connectez-vous avec votre e-mail en attendant, ou réessayez plus tard.";
+    }
+    if (/Database error|signup/i.test(detail)) return "Votre compte n'a pas pu être créé. Les inscriptions sont peut-être fermées : contactez un administrateur.";
+    return "La connexion avec Google a échoué. Réessayez, ou connectez-vous avec votre e-mail.";
 }
 
 let mode = 'connexion';
@@ -37,7 +68,7 @@ function definirMode(nouveau) {
     form.setAttribute('aria-labelledby', inscrire ? 'ongletInscription' : 'ongletConnexion');
     $$('[data-champ="inscription"]').forEach(el => { el.hidden = !inscrire; });
     $$('[data-champ="connexion"]').forEach(el => { el.hidden = inscrire; });
-    $('#groupeCode').hidden = !inscrire || $('#champRole').value !== 'agent_municipal';
+    majTypeCompte();
     $('#champMotDePasse').autocomplete = inscrire ? 'new-password' : 'current-password';
     $('#titreAuth').textContent = inscrire ? 'Rejoindre Debrisat' : 'Bon retour parmi nous';
     $('#sousTitreAuth').textContent = inscrire
@@ -85,16 +116,20 @@ const REGLES = {
     champNom: v => (mode === 'inscription' && v.trim().length < 2 ? 'Indiquez votre nom complet.' : ''),
     champCommune: v => (mode === 'inscription' && !v ? 'Choisissez votre commune.' : ''),
     champTelephone: v => (v && !/^\+?[\d\s.-]{9,16}$/.test(v) ? 'Numéro invalide. Exemple : +221 77 123 45 67' : ''),
-    champCode: v => (mode === 'inscription' && $('#champRole').value === 'agent_municipal' && !/^AGT-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(v) ? "Saisissez le code d'accès remis par votre administrateur (format AGT-XXXX-XXXX)." : ''),
+    champCode: v => (mode === 'inscription' && roleChoisi() === 'agent_municipal' && !/^AGT-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(v) ? "Saisissez le code d'accès remis par votre administrateur (format AGT-XXXX-XXXX)." : ''),
     champConditions: () => (mode === 'inscription' && !$('#champConditions').checked ? "Acceptez les conditions d'utilisation pour continuer." : '')
 };
 
 // Le choix « Agent municipal » demande un code ; le role reel est decide cote serveur a partir de ce code
-$('#champRole').addEventListener('change', () => {
-    const agent = $('#champRole').value === 'agent_municipal';
+function majTypeCompte() {
+    const inscrire = mode === 'inscription';
+    const agent = inscrire && roleChoisi() === 'agent_municipal';
     $('#groupeCode').hidden = !agent;
+    $('#aideGoogleAgent').hidden = !agent;
+    $('#libelleGoogle').textContent = inscrire ? "S'inscrire avec Google" : 'Continuer avec Google';
     if (!agent) erreurChamp('champCode', '');
-});
+}
+$$('input[name="typeCompte"]').forEach(r => r.addEventListener('change', majTypeCompte));
 
 // Force du mot de passe sur quatre segments, a l'inscription seulement
 function forceMotDePasse(v) {
@@ -152,7 +187,7 @@ form.addEventListener('submit', async e => {
                 nomComplet: $('#champNom').value.trim(),
                 commune: $('#champCommune').value,
                 telephone: $('#champTelephone').value.replace(/[\s.-]/g, ''),
-                codeAcces: $('#champRole').value === 'agent_municipal' ? $('#champCode').value.trim().toUpperCase() : null
+                codeAcces: roleChoisi() === 'agent_municipal' ? $('#champCode').value.trim().toUpperCase() : null
             });
             if (confirmationRequise) {
                 succes('Compte créé', `Un lien de confirmation a été envoyé à ${email}. Ouvrez-le pour activer votre compte.`, { duree: 10000 });
@@ -239,11 +274,24 @@ initAuth().then(() => {
 $('#btnGoogle').addEventListener('click', async () => {
     const bouton = $('#btnGoogle');
     bouton.disabled = true;
+    bouton.classList.add('btn-chargement');
+    $('#erreurGenerale').innerHTML = '';
+    try {
+        if (mode === 'inscription' && roleChoisi() === 'agent_municipal') sessionStorage.setItem(CLE_INSCRIPTION_AGENT, '1');
+        else sessionStorage.removeItem(CLE_INSCRIPTION_AGENT);
+    } catch { /* stockage indisponible */ }
     try {
         await connexionGoogle();
         if (MODE_DEMO) location.replace(destinationRetour());
     } catch (err) {
         $('#erreurGenerale').innerHTML = `<i class="bi bi-exclamation-circle" aria-hidden="true"></i>${echapper(err.message)}`;
         bouton.disabled = false;
+        bouton.classList.remove('btn-chargement');
     }
 });
+
+const erreurOAuth = erreurRetourOAuth();
+if (erreurOAuth) {
+    $('#erreurGenerale').innerHTML = `<i class="bi bi-exclamation-circle" aria-hidden="true"></i>${echapper(erreurOAuth)}`;
+    $('#champEmail').focus();
+}

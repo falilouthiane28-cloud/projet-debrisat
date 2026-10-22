@@ -139,3 +139,11 @@ Chaque modification importante sera documentee ici avec :
   - Service worker v7 (`404.html` et `profil.css` mis en cache).
 - **Pourquoi** : point de contrôle 2 validé ; les pages restantes alignées sur l'espace agent. Commentaires sur un signalement, suppression de compte et adhésion WhatsApp reportés : il faut d'abord une table ou une fonction côté serveur.
 - **Commit** : `440406e`, `2f537da`, `37c1f91`.
+
+## 2026-10-22 — Boucle de connexion Google, redirection par rôle, logo
+- **Ce qui a changé** :
+  - La page de connexion affiche les erreurs renvoyées par Google au lieu d'échouer en silence.
+  - Chaque rôle arrive sur son interface après connexion.
+  - À l'inscription, choix « Citoyen / Agent municipal » sous forme de cartes ; un agent inscrit via Google est conduit à la saisie de son code dans le profil.
+  - Le logo image (mot-symbole de 22 px illisible) est remplacé par le symbole suivi du texte « Debrisat » sur l'accueil, la connexion, le hackathon et la 404.
+- **Pourquoi** : les journaux Supabase Auth montrent `invalid_client : The provided client secret is invalid` à chaque retour de Google. Le secret client Google enregistré dans Supabase est faux, Supabase renvoie donc sans session et la page n'affichait rien. Le secret doit être corrigé dans Supabase (Authentication, Providers, Google).
