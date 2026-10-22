@@ -1,5 +1,5 @@
 import { TYPES_OBSTRUCTION, SEVERITES, DAKAR_CENTRE, POINTS } from './config.js';
-import { $, echapper, compresserImage, obtenirPosition, geocodageInverse, debounce } from './utils.js';
+import { $, echapper, compresserImage, obtenirPosition, geocodageInverse, debounce, formatRelatif, lireStockage, ecrireStockage } from './utils.js';
 import { creerSignalement, listerBadges } from './donnees.js';
 import { utilisateurCourant, profilCourant, rafraichirProfil } from './auth.js';
 import { creerCarte } from './map.js';
@@ -9,11 +9,18 @@ import { erreur, annoncer, avertissement } from './notifications.js';
 import { mettreEnAttente } from './pwa.js';
 
 const ETAPES = [
-    { cle: 'photo', titre: 'Photo' },
-    { cle: 'type', titre: "Type d'obstruction" },
-    { cle: 'severite', titre: 'Sévérité' },
-    { cle: 'lieu', titre: 'Localisation' }
+    { cle: 'photo', titre: 'Photo', manque: "Ajoutez une photo de l'obstruction pour continuer." },
+    { cle: 'type', titre: "Type d'obstruction", manque: "Choisissez le type d'obstruction pour continuer." },
+    { cle: 'severite', titre: 'Sévérité', manque: 'Indiquez la sévérité pour continuer.' },
+    { cle: 'lieu', titre: 'Localisation', manque: "Placez le repère sur l'obstruction pour continuer." },
+    { cle: 'recap', titre: 'Vérifier et envoyer', manque: 'Une information manque : touchez « Modifier » sur la ligne concernée.' }
 ];
+const INDEX_RECAP = ETAPES.length - 1;
+
+// The photo blob is never stored: only the fields a person would have to retype
+const CLE_BROUILLON = 'debrisat-brouillon-signalement';
+const CHAMPS_BROUILLON = ['type_obstruction', 'severite', 'lat', 'lng', 'adresse', 'commune', 'quartier', 'description'];
+const DUREE_BROUILLON = 7 * 24 * 3600 * 1000;
 
 export class AssistantSignalement {
     constructor(feuille, { surCree } = {}) {
@@ -27,7 +34,10 @@ export class AssistantSignalement {
         this.titre = $('#titreSignalement', this.el);
         this.libelleEtape = $('#etapeLibelle', this.el);
         this.progression = $('#progressionAssistant', this.el);
-        this.btnPrecedent.addEventListener('click', () => this.aller(this.index - 1, true));
+        this.btnPrecedent.addEventListener('click', () => {
+            if (this.btnPrecedent.hasAttribute('data-fermer')) return;
+            this.aller(this.retourRecap ? INDEX_RECAP : this.index - 1, true);
+        });
         this.btnSuivant.addEventListener('click', () => this.suivant());
         this.reinitialiser();
     }
@@ -39,6 +49,10 @@ export class AssistantSignalement {
         this.apercuUrl = null;
         this.index = 0;
         this.envoi = false;
+        this.termine = false;
+        this.enReprise = false;
+        this.repris = false;
+        this.retourRecap = false;
         this.donnees = {
             photo: null, type_obstruction: null, severite: 3,
             lat: null, lng: null, adresse: '', commune: '', quartier: '', description: ''
@@ -47,55 +61,177 @@ export class AssistantSignalement {
 
     ouvrir() {
         this.reinitialiser();
-        this.pied.hidden = false;
-        this.aller(0);
+        const brouillon = this.lireBrouillon();
+        if (brouillon) {
+            this.rendre_reprise(brouillon);
+        } else {
+            this.pied.hidden = false;
+            this.aller(0);
+        }
         this.feuille.ouvrir();
     }
 
     valide(index = this.index) {
         const d = this.donnees;
-        return [!!d.photo, !!d.type_obstruction, d.severite >= 1, d.lat != null][index];
+        const etapes = [!!d.photo, !!d.type_obstruction, d.severite >= 1 && d.severite <= 5, d.lat != null];
+        return index === INDEX_RECAP ? etapes.every(Boolean) : etapes[index];
     }
 
     aller(index, retour = false) {
         if (index < 0 || index >= ETAPES.length) return;
         this.index = index;
         const etape = ETAPES[index];
+        const recap = index === INDEX_RECAP;
+        if (recap) this.retourRecap = false;
         this.titre.textContent = etape.titre;
         this.libelleEtape.textContent = `Étape ${index + 1} sur ${ETAPES.length}`;
         this.progression.innerHTML = ETAPES.map((_, i) => `<span class="pas${i < index ? ' fait' : ''}${i === index ? ' actif' : ''}"></span>`).join('');
-        this.btnPrecedent.style.visibility = index === 0 ? 'hidden' : 'visible';
-        const derniere = index === ETAPES.length - 1;
-        this.btnSuivant.innerHTML = derniere
-            ? '<i class="bi bi-send" aria-hidden="true"></i>Envoyer le signalement'
-            : 'Suivant<i class="bi bi-arrow-right" aria-hidden="true"></i>';
-        this.btnSuivant.style.flex = derniere ? '1' : '';
-        // Sur la derniere etape, « Precedent » se reduit a une icone pour laisser la place a l'envoi
-        this.btnPrecedent.innerHTML = derniere
-            ? '<i class="bi bi-arrow-left" aria-hidden="true"></i>'
-            : '<i class="bi bi-arrow-left" aria-hidden="true"></i>Précédent';
-        this.btnPrecedent.classList.toggle('btn-icon', derniere);
-        if (derniere) this.btnPrecedent.setAttribute('aria-label', 'Étape précédente');
+
+        // Step 1 offers a way out instead of an invisible "back" button
+        const premiere = index === 0 && !this.retourRecap;
+        this.btnPrecedent.style.visibility = 'visible';
+        this.btnPrecedent.toggleAttribute('data-fermer', premiere);
+        this.btnPrecedent.classList.toggle('btn-icon', recap);
+        this.btnPrecedent.innerHTML = premiere
+            ? 'Annuler'
+            : recap
+                ? '<i class="bi bi-arrow-left" aria-hidden="true"></i>'
+                : this.retourRecap
+                    ? '<i class="bi bi-arrow-left" aria-hidden="true"></i>Récapitulatif'
+                    : '<i class="bi bi-arrow-left" aria-hidden="true"></i>Précédent';
+        if (recap) this.btnPrecedent.setAttribute('aria-label', 'Étape précédente');
         else this.btnPrecedent.removeAttribute('aria-label');
+
+        this.btnSuivant.innerHTML = recap
+            ? '<i class="bi bi-send" aria-hidden="true"></i>Envoyer le signalement'
+            : this.retourRecap
+                ? '<i class="bi bi-check-lg" aria-hidden="true"></i>Valider'
+                : 'Suivant<i class="bi bi-arrow-right" aria-hidden="true"></i>';
+        this.btnSuivant.style.flex = recap ? '1' : '';
+
         this[`rendre_${etape.cle}`](retour);
         this.majBouton();
         annoncer(`Étape ${index + 1} sur ${ETAPES.length} : ${etape.titre}`);
     }
 
+    // The button stays focusable when a step is incomplete, so a tap can explain what is missing
     majBouton() {
-        this.btnSuivant.disabled = !this.valide() || this.envoi;
+        const ok = this.valide();
+        this.btnSuivant.disabled = this.envoi;
+        this.btnSuivant.setAttribute('aria-disabled', String(!ok));
+        if (ok) this.afficherManque('');
+        this.sauverBrouillon();
+    }
+
+    afficherManque(message) {
+        const zone = this.corps.querySelector('.erreur-etape');
+        if (!zone) return;
+        zone.innerHTML = message ? `<i class="bi bi-exclamation-circle" aria-hidden="true"></i>${echapper(message)}` : '';
     }
 
     suivant() {
-        if (!this.valide()) return;
-        if (this.index < ETAPES.length - 1) this.aller(this.index + 1);
-        else this.envoyer();
+        if (this.envoi) return;
+        if (!this.valide()) {
+            this.afficherManque(ETAPES[this.index].manque);
+            return;
+        }
+        if (this.index === INDEX_RECAP) {
+            this.envoyer();
+            return;
+        }
+        this.aller(this.retourRecap ? INDEX_RECAP : this.index + 1);
     }
 
     conteneurEtape(html, retour) {
-        this.corps.innerHTML = `<div class="etape-assistant${retour ? ' retour' : ''}">${html}</div>`;
+        this.corps.innerHTML = `<div class="etape-assistant${retour ? ' retour' : ''}">${html}<p class="form-error erreur-etape" role="alert"></p></div>`;
         this.corps.scrollTop = 0;
         return this.corps.firstElementChild;
+    }
+
+    // ============ Brouillon ============
+    sauverBrouillon() {
+        if (this.envoi || this.termine || this.enReprise) return;
+        const d = this.donnees;
+        if (!d.type_obstruction && d.lat == null && !d.description.trim()) return;
+        const brouillon = { userId: utilisateurCourant()?.id || null, maj: Date.now() };
+        for (const champ of CHAMPS_BROUILLON) brouillon[champ] = d[champ];
+        ecrireStockage(CLE_BROUILLON, brouillon);
+    }
+
+    lireBrouillon() {
+        const b = lireStockage(CLE_BROUILLON, null);
+        if (!b || typeof b !== 'object') return null;
+        const perime = !Number.isFinite(b.maj) || Date.now() - b.maj > DUREE_BROUILLON;
+        const autreCompte = b.userId && b.userId !== utilisateurCourant()?.id;
+        if (perime || autreCompte) {
+            this.effacerBrouillon();
+            return null;
+        }
+        // Stored data is re-validated: it can be stale or edited by hand
+        const nombre = v => (Number.isFinite(v) ? v : null);
+        const texte = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+        const propre = {
+            maj: b.maj,
+            type_obstruction: TYPES_OBSTRUCTION[b.type_obstruction] ? b.type_obstruction : null,
+            severite: Number.isInteger(b.severite) && b.severite >= 1 && b.severite <= 5 ? b.severite : 3,
+            lat: nombre(b.lat),
+            lng: nombre(b.lng),
+            adresse: texte(b.adresse, 300),
+            commune: texte(b.commune, 120),
+            quartier: texte(b.quartier, 120),
+            description: texte(b.description, 500)
+        };
+        if (propre.lat == null || propre.lng == null) {
+            Object.assign(propre, { lat: null, lng: null, adresse: '', commune: '', quartier: '' });
+        }
+        if (!propre.type_obstruction && propre.lat == null && !propre.description.trim()) return null;
+        return propre;
+    }
+
+    effacerBrouillon() {
+        try { localStorage.removeItem(CLE_BROUILLON); } catch { /* stockage indisponible */ }
+    }
+
+    rendre_reprise(b) {
+        this.enReprise = true;
+        this.titre.textContent = 'Reprendre votre signalement ?';
+        this.libelleEtape.textContent = `Brouillon enregistré ${formatRelatif(new Date(b.maj).toISOString())}`;
+        this.progression.innerHTML = '';
+        this.pied.hidden = true;
+        const type = TYPES_OBSTRUCTION[b.type_obstruction];
+        const lieu = b.adresse || (b.lat != null ? `${b.lat.toFixed(5)}, ${b.lng.toFixed(5)}` : '');
+        const description = b.description.trim();
+        const lignes = [
+            type && `<li><i class="bi ${type.icone}" aria-hidden="true"></i><span>${echapper(type.libelle)} · sévérité ${b.severite}/5</span></li>`,
+            lieu && `<li><i class="bi bi-geo-alt" aria-hidden="true"></i><span>${echapper(lieu)}</span></li>`,
+            description && `<li><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>${echapper(description.length > 90 ? description.slice(0, 90) + '…' : description)}</span></li>`
+        ].filter(Boolean).join('');
+        this.corps.innerHTML = `
+            <div class="etape-assistant reprise-brouillon">
+                <p class="consigne">Vous aviez commencé un signalement. Reprenez-le là où vous l'aviez laissé : seule la photo est à refaire.</p>
+                <ul class="resume-brouillon" role="list">${lignes}</ul>
+                <div class="pile-sm">
+                    <button type="button" class="btn btn-plein btn-block" data-reprendre><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Reprendre le brouillon</button>
+                    <button type="button" class="btn btn-secondary btn-block" data-recommencer><i class="bi bi-plus-lg" aria-hidden="true"></i>Recommencer</button>
+                </div>
+            </div>`;
+        const demarrer = () => {
+            this.enReprise = false;
+            this.pied.hidden = false;
+            this.aller(0);
+        };
+        this.corps.querySelector('[data-reprendre]').addEventListener('click', () => {
+            for (const champ of CHAMPS_BROUILLON) this.donnees[champ] = b[champ];
+            this.repris = true;
+            demarrer();
+            annoncer('Brouillon repris. Ajoutez une photo pour continuer.');
+        });
+        this.corps.querySelector('[data-recommencer]').addEventListener('click', () => {
+            this.effacerBrouillon();
+            demarrer();
+        });
+        annoncer('Un brouillon de signalement est disponible.');
+        setTimeout(() => this.corps.querySelector('[data-reprendre]')?.focus(), 50);
     }
 
     // ============ Etape 1 : photo ============
@@ -103,6 +239,7 @@ export class AssistantSignalement {
         const avecPhoto = !!this.apercuUrl;
         const el = this.conteneurEtape(`
             <p class="consigne">Photographiez l'obstruction en entier, avec le canal ou le caniveau visible.</p>
+            ${this.repris && !avecPhoto ? '<p class="note-brouillon"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Brouillon repris : vos autres réponses sont conservées, seule la photo est à refaire.</p>' : ''}
             <div class="zone-photo${avecPhoto ? ' avec-photo' : ''}" id="zonePhoto">
                 ${avecPhoto
                     ? `<img src="${this.apercuUrl}" alt="Aperçu de la photo choisie">
@@ -257,6 +394,7 @@ export class AssistantSignalement {
         $('#champDescription', el).addEventListener('input', e => {
             d.description = e.target.value;
             $('#compteurDescription', el).textContent = e.target.value.length;
+            this.sauverBrouillon();
         });
 
         const depart = d.lat != null ? [d.lat, d.lng] : DAKAR_CENTRE;
@@ -271,6 +409,7 @@ export class AssistantSignalement {
             if (this.donnees.lat !== lat) return;
             Object.assign(this.donnees, geo);
             adresse.textContent = geo.adresse || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            this.sauverBrouillon();
         }, 900);
         const definir = () => {
             const c = carte.getCenter();
@@ -304,6 +443,61 @@ export class AssistantSignalement {
         else definir();
     }
 
+    // ============ Etape 5 : recapitulatif ============
+    rendre_recap(retour) {
+        const d = this.donnees;
+        const type = TYPES_OBSTRUCTION[d.type_obstruction];
+        const sev = SEVERITES[d.severite];
+        const lieu = d.adresse || (d.lat != null ? `${d.lat.toFixed(5)}, ${d.lng.toFixed(5)}` : '');
+        const description = d.description.trim();
+        const ligne = ({ index, visuel, titre, valeur, manquant }) => `
+            <li class="ligne-recap${manquant ? ' manquant' : ''}">
+                ${visuel}
+                <span class="contenu-recap">
+                    <span class="titre-recap">${titre}</span>
+                    <span class="valeur-recap">${valeur}</span>
+                </span>
+                <button type="button" class="btn btn-sm btn-ghost" data-modifier="${index}" aria-label="Modifier : ${titre}">Modifier</button>
+            </li>`;
+        const icone = nom => `<span class="icone-recap"><i class="bi ${nom}" aria-hidden="true"></i></span>`;
+        const el = this.conteneurEtape(`
+            <p class="consigne">Relisez votre signalement avant de l'envoyer. Touchez « Modifier » pour corriger une ligne.</p>
+            <ul class="liste-recap" role="list">
+                ${ligne({
+                    index: 0, titre: 'Photo', manquant: !this.apercuUrl,
+                    visuel: this.apercuUrl ? `<span class="vignette-recap"><img src="${this.apercuUrl}" alt="Photo jointe au signalement"></span>` : icone('bi-camera'),
+                    valeur: this.apercuUrl ? 'Photo jointe' : 'Aucune photo'
+                })}
+                ${ligne({
+                    index: 1, titre: "Type d'obstruction", manquant: !type,
+                    visuel: icone(type?.icone || 'bi-question-circle'),
+                    valeur: type ? echapper(type.libelle) : 'Non choisi'
+                })}
+                ${ligne({
+                    index: 2, titre: 'Sévérité', manquant: !sev,
+                    visuel: `<span class="icone-recap niveau-recap" style="--couleur:${sev?.couleur || 'var(--color-muted)'}">${d.severite}</span>`,
+                    valeur: sev ? `${d.severite} sur 5 · ${echapper(sev.libelle)}` : 'Non indiquée'
+                })}
+                ${ligne({
+                    index: 3, titre: 'Lieu', manquant: d.lat == null,
+                    visuel: icone('bi-geo-alt'),
+                    valeur: lieu ? echapper(lieu) : 'Repère non placé'
+                })}
+                ${ligne({
+                    index: 3, titre: 'Précisions',
+                    visuel: icone('bi-chat-left-text'),
+                    valeur: description ? echapper(description) : '<span class="texte-muet">Aucune précision</span>'
+                })}
+            </ul>
+            <p class="form-helper"><i class="bi bi-star" aria-hidden="true"></i> Vous gagnerez ${POINTS.signalement} points à l'envoi, puis ${POINTS.signalement_verifie} de plus si la communauté le confirme.</p>`, retour);
+        el.addEventListener('click', e => {
+            const bouton = e.target.closest('[data-modifier]');
+            if (!bouton) return;
+            this.retourRecap = true;
+            this.aller(Number(bouton.dataset.modifier), true);
+        });
+    }
+
     // ============ Envoi ============
     async envoyer() {
         const utilisateur = utilisateurCourant();
@@ -315,11 +509,13 @@ export class AssistantSignalement {
         try {
             if (!navigator.onLine) {
                 await mettreEnAttente(donnees, utilisateur.id);
+                this.terminer();
                 this.afficherReussite({ horsLigne: true });
                 return;
             }
             const profilAvant = profilCourant();
             const s = await creerSignalement(donnees, utilisateur.id);
+            this.terminer();
             celebrerPoints(POINTS.signalement);
             this.afficherReussite({ signalement: s });
             this.surCree?.(s);
@@ -333,6 +529,11 @@ export class AssistantSignalement {
             this.btnSuivant.classList.remove('btn-chargement');
             this.majBouton();
         }
+    }
+
+    terminer() {
+        this.termine = true;
+        this.effacerBrouillon();
     }
 
     afficherReussite({ signalement, horsLigne = false }) {

@@ -23,7 +23,9 @@
     width: 1px; background: var(--glass-border-hover);
 }
 @media (prefers-reduced-transparency: reduce) {
-    .barre-app { background: var(--color-surface, #111); -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .page-app .barre-app, .page-app .groupe-controles, .page-app .controles-carte > .btn-icon, .page-app .resume-carte, .page-app .menu-dropdown, .page-app .resultats-recherche {
+        background: var(--color-surface); -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
 }
 .barre-app .marque { min-width: 44px; justify-content: center; }
 .barre-app .marque .nom { display: none; font-weight: var(--weight-semibold); letter-spacing: -0.01em; }
@@ -103,22 +105,50 @@
 }
 .controles-haut-droite { top: calc(var(--topbar-h) + var(--safe-top) + var(--space-2) + var(--space-3)); right: var(--space-3); }
 .controles-haut-gauche { top: calc(var(--topbar-h) + var(--safe-top) + var(--space-2) + var(--space-3)); left: var(--space-3); }
-.controles-bas-droite { right: var(--space-4); bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + 88px); }
-.groupe-controles {
-    display: flex; flex-direction: column;
-    border-radius: var(--radius-full);
+.controles-bas-droite { right: var(--space-3); bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + var(--space-8)); }
+
+/* Every floating control shares one material: heavy glass, bright top edge, soft shadow */
+.groupe-controles,
+.controles-carte > .btn-icon,
+.resume-carte {
     background: var(--glass-bg-heavy);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturate));
     border: 1px solid var(--glass-border-hover);
-    box-shadow: var(--glass-shadow);
-    overflow: hidden;
+    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
 }
-.groupe-controles .btn-icon { border: none; border-radius: 0; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.groupe-controles { display: flex; flex-direction: column; border-radius: var(--radius-full); overflow: hidden; }
+.controles-carte .btn-icon {
+    color: var(--color-heading);
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), transform 100ms var(--ease-out);
+}
+.groupe-controles .btn-icon { border: none; border-radius: 0; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .groupe-controles .btn-icon + .btn-icon { border-top: 1px solid var(--glass-border); }
 .groupe-controles .btn-icon:hover { background: var(--glass-bg-hover); }
+.groupe-controles .btn-icon:active { background: var(--glass-bg-active); }
 .groupe-controles .btn-icon[aria-pressed="true"] { background: var(--color-contrast); color: var(--color-on-contrast); }
-.controles-carte > .btn-icon { background: var(--glass-bg-heavy); border-color: var(--glass-border-hover); box-shadow: var(--glass-shadow); }
+.controles-carte > .btn-icon:active { transform: scale(0.92); background: var(--glass-bg-active); }
+
+/* Icon buttons have no .btn class, so they get their own in-flight spinner */
+.page-app .btn-icon.btn-chargement { pointer-events: none; position: relative; }
+.page-app .btn-icon.btn-chargement .bi { visibility: hidden; }
+.page-app .btn-icon.btn-chargement::after {
+    content: ''; position: absolute; inset: 0; margin: auto;
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--glass-border-hover); border-top-color: var(--color-heading);
+    animation: rotation 0.7s linear infinite;
+}
+
+/* Leaflet attribution and scale must stay visible above the bottom navigation */
+.page-app .leaflet-bottom { bottom: calc(var(--bottomnav-h) + var(--safe-bottom)); }
+@media (min-width: 768px) {
+    .page-app .leaflet-bottom { bottom: 0; }
+    .page-app .controles-bas-droite { right: var(--space-4); }
+}
+/* On phones the search field matters more than the theme switch, which stays in the profile */
+@media (max-width: 479px) {
+    .barre-app [data-action="basculer-theme"] { display: none; }
+}
 .compteur-filtres {
     position: absolute; top: -2px; right: -2px;
     min-width: 18px; height: 18px; padding: 0 5px;
@@ -134,13 +164,11 @@
     display: inline-flex; align-items: center; gap: var(--space-2);
     min-height: 36px; padding: 6px 14px;
     border-radius: var(--radius-full);
-    background: var(--glass-bg-heavy);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    border: 1px solid var(--glass-border-hover);
-    box-shadow: var(--glass-shadow);
     font-size: var(--text-sm); color: var(--color-heading);
     white-space: nowrap;
+    /* Never slides under the side controls, whatever the count */
+    max-width: calc(100vw - 2 * (44px + 2 * var(--space-3)));
+    overflow: hidden;
 }
 .resume-carte .chiffre { font-size: var(--text-sm); }
 
@@ -196,6 +224,37 @@
 .detail-photo { border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-4); }
 .detail-photo img { width: 100%; max-height: 320px; object-fit: cover; }
 .detail-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.description-detail { font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--color-primary-text); overflow-wrap: anywhere; }
+.titre-section { font-size: var(--text-xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--color-secondary-text); margin-bottom: var(--space-3); }
+
+/* Community vote: the question first, then two equal choices */
+.bloc-avis { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-lg); background: var(--glass-bg); border: 1px solid var(--glass-border-hover); }
+.question-avis { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--color-heading); }
+.aide-avis { font-size: var(--text-sm); color: var(--color-secondary-text); margin-bottom: var(--space-1); }
+.avis-merci { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--accent-success-bg); color: var(--color-heading); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.avis-merci .bi { color: var(--accent-success); }
+
+/* Status timeline: done steps are filled, the current one is outlined, future ones are muted */
+.chronologie { list-style: none; display: flex; flex-direction: column; }
+.etape-chrono { position: relative; display: flex; gap: var(--space-3); padding-bottom: var(--space-4); }
+.etape-chrono:last-child { padding-bottom: 0; }
+.etape-chrono:not(:last-child)::before {
+    content: ''; position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px;
+    background: var(--glass-border-hover); border-radius: 1px;
+}
+.etape-chrono[data-etat="fait"]:not(:last-child)::before { background: var(--color-secondary-text); }
+.repere-chrono {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: var(--radius-full);
+    display: grid; place-items: center; font-size: 0.9rem;
+    background: var(--glass-bg); border: 1px solid var(--glass-border-hover); color: var(--color-muted);
+}
+.etape-chrono[data-etat="fait"] .repere-chrono { background: var(--color-contrast); border-color: var(--color-contrast); color: var(--color-on-contrast); }
+.etape-chrono[data-etat="courant"] .repere-chrono { border: 2px solid var(--color-bright); color: var(--color-heading); background: var(--glass-bg-active); }
+.etape-chrono[data-etat="rejete"] .repere-chrono { background: var(--accent-danger-bg); border-color: var(--accent-danger); color: var(--accent-danger); }
+.texte-chrono { display: flex; flex-direction: column; gap: 2px; padding-top: 5px; min-width: 0; }
+.titre-chrono { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-heading); }
+.etape-chrono[data-etat="a-venir"] .titre-chrono { color: var(--color-secondary-text); font-weight: var(--weight-medium); }
+.detail-chrono { font-size: var(--text-xs); color: var(--color-secondary-text); }
 .bloc-ia { padding: var(--space-4); border-radius: var(--radius-md); background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: var(--space-2); }
 .bloc-ia .entete-ia { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-heading); }
 
@@ -301,6 +360,50 @@
 .mini-carte.deplacement .viseur { transform: translate(-50%, -115%); }
 .adresse-detectee { display: flex; align-items: flex-start; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-primary-text); min-height: 40px; }
 .adresse-detectee .bi { color: var(--color-secondary-text); margin-top: 2px; }
+
+.erreur-etape:empty { display: none; }
+.note-brouillon {
+    display: flex; align-items: flex-start; gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--accent-info-bg);
+    color: var(--color-primary-text); font-size: var(--text-sm);
+}
+.note-brouillon .bi { color: var(--accent-info); margin-top: 2px; }
+
+/* Draft resume: a short summary, then one clear choice */
+.resume-brouillon {
+    list-style: none; display: flex; flex-direction: column; gap: var(--space-1);
+    padding: var(--space-2); border-radius: var(--radius-lg);
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+}
+.resume-brouillon li { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-2); font-size: var(--text-sm); color: var(--color-heading); overflow-wrap: anywhere; }
+.resume-brouillon .bi { color: var(--color-secondary-text); font-size: 1.05rem; margin-top: 1px; }
+
+/* Review step: one row per answer, each editable in place */
+.liste-recap {
+    list-style: none; display: flex; flex-direction: column;
+    border-radius: var(--radius-lg); overflow: hidden;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+}
+.ligne-recap { display: flex; align-items: center; gap: var(--space-3); min-height: 60px; padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); }
+.ligne-recap + .ligne-recap { border-top: 1px solid var(--glass-border); }
+.ligne-recap .btn { flex-shrink: 0; }
+.icone-recap, .vignette-recap {
+    flex-shrink: 0; width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--glass-bg-hover); color: var(--color-heading); font-size: 1.1rem;
+    overflow: hidden;
+}
+.vignette-recap img { width: 100%; height: 100%; object-fit: cover; }
+/* Severity colors are too light for text on light glass: the color becomes a ring, the digit stays readable */
+.niveau-recap { font-family: var(--font-mono); font-weight: var(--weight-semibold); font-size: var(--text-base); color: var(--color-heading); box-shadow: inset 0 0 0 2px var(--couleur); }
+.contenu-recap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.titre-recap { font-size: var(--text-xs); color: var(--color-secondary-text); letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+.valeur-recap { font-size: var(--text-sm); color: var(--color-heading); font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+.ligne-recap.manquant .valeur-recap { color: var(--accent-danger); }
+.ligne-recap.manquant .icone-recap { color: var(--accent-danger); background: var(--accent-danger-bg); }
 
 .reussite { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); padding: var(--space-6) 0; text-align: center; }
 .reussite h3 { font-size: var(--text-xl); }
