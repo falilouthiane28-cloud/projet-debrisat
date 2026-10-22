@@ -29,6 +29,7 @@ function appliquerAjoutsDemo(ajouts) {
         const s = etat.signalements.find(x => x.id === m.id);
         if (s) Object.assign(s, m.champs);
     }
+    for (const id of ajouts.suppressions || []) etat.signalements = etat.signalements.filter(x => x.id !== id);
     for (const v of ajouts.verifications || []) etat.verifications.push(v);
     for (const h of ajouts.historique || []) etat.historique.push(h);
     for (const a of ajouts.alertes || []) etat.alertes.unshift(a);
@@ -184,6 +185,27 @@ export async function creerSignalement({ photo, type_obstruction, severite, lat,
         .single();
     verifierErreur(error, "L'enregistrement du signalement a échoué.");
     return data;
+}
+
+// The author may delete their own report while it is still pending; the 10 points are taken back (migration 008)
+export async function supprimerSignalement(id, userId) {
+    const refus = 'Ce signalement ne peut plus être supprimé : il a déjà été vérifié ou pris en charge.';
+    if (MODE_DEMO) {
+        etatDemo();
+        await attendre(300);
+        const s = etat.signalements.find(x => x.id === id);
+        if (!s || s.user_id !== userId || s.statut !== 'en_attente') throw new Error(refus);
+        etat.signalements = etat.signalements.filter(x => x.id !== id);
+        sauverAjout('suppressions', id);
+        ajouterPointsDemo(userId, -POINTS.signalement, 'signalement_supprime', null);
+        recalculerProfils();
+        emettre('DELETE', s);
+        return;
+    }
+    // RLS filters silently: a refused delete returns no row instead of an error
+    const { data, error } = await supabase.from('signalements').delete().eq('id', id).select('id');
+    verifierErreur(error, 'La suppression du signalement a échoué. Réessayez dans un instant.');
+    if (!data?.length) throw new Error(refus);
 }
 
 function lireCommeDataUrl(fichier) {
@@ -351,7 +373,7 @@ export async function obtenirProfil(id) {
 
 export async function mettreAJourProfil(id, champs) {
     const autorises = {};
-    for (const cle of ['nom_complet', 'commune', 'telephone']) if (cle in champs) autorises[cle] = champs[cle];
+    for (const cle of ['nom_complet', 'commune', 'telephone', 'notifications_whatsapp']) if (cle in champs) autorises[cle] = champs[cle];
     if (MODE_DEMO) {
         const p = etatDemo().profils.find(x => x.id === id);
         Object.assign(p, autorises);

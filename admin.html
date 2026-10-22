@@ -80,6 +80,7 @@
             </div>
             <span class="badge badge-demo" id="chipDemo" hidden><i class="bi bi-info-circle" aria-hidden="true"></i>Démo</span>
             <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair" style="margin-left:auto"><i class="bi bi-sun" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-sm btn-secondary btn-deconnexion" data-action="deconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="libelle-deconnexion">Se déconnecter</span></button>
         </header>
 
         <main class="contenu-tableau" id="contenu">
@@ -424,7 +425,7 @@
                     </div>
                     <div class="ligne-parametre">
                         <div><p class="titre">Session</p><p class="description" id="descSession"></p></div>
-                        <button type="button" class="btn btn-sm btn-danger" id="btnDeconnexionTableau"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
+                        <button type="button" class="btn btn-sm btn-danger" id="btnDeconnexionTableau" data-action="deconnexion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter</button>
                     </div>
                 </div>
             </section>

@@ -3,7 +3,7 @@
 .entete-concept h1 { font-size: var(--text-4xl); letter-spacing: -0.03em; line-height: 1.08; max-width: 18ch; }
 .entete-concept .chapeau { font-size: var(--text-lg); line-height: var(--leading-relaxed); color: var(--color-secondary-text); max-width: 68ch; }
 
-.carte-demo { position: relative; padding: 0; overflow: hidden; border-radius: var(--radius-2xl); }
+.carte-demo { position: relative; padding: 0; overflow: hidden; border-radius: var(--radius-2xl); isolation: isolate; }
 #carteDemo { height: min(70svh, 620px); min-height: 380px; background: #0A0A0A; }
 .etat-carte {
     position: absolute; inset: auto 50% 50% auto; transform: translate(50%, 50%); z-index: 500;
@@ -76,7 +76,7 @@
 .chaine-traitement .bi { color: var(--accent-info); }
 .bloc-code {
     overflow-x: auto; padding: var(--space-4) var(--space-5); border-radius: var(--radius-md);
-    background: var(--color-pure-dark); border: 1px solid var(--glass-border);
+    background: var(--color-black); border: 1px solid var(--glass-border);
     font-family: var(--font-mono); font-size: var(--text-sm); color: #E5E5E5; line-height: 1.7;
 }
 
@@ -94,3 +94,6 @@
 @media (prefers-reduced-motion: reduce) {
     .comparateur-bouton, .puce-couche span { transition: none; }
 }
+
+/* Long event names wrap instead of widening the page on phones */
+.badge-multiligne { white-space: normal; max-width: 100%; text-align: left; }

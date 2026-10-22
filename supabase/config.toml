@@ -3,3 +3,7 @@ project_id = "debrisat"
 # Twilio n'envoie pas de JWT Supabase : la fonction verifie la signature X-Twilio-Signature a la place
 [functions.webhook-whatsapp]
 verify_jwt = false
+
+# Meta signe ses appels (X-Hub-Signature-256) et le webhook de statut presente x-debrisat-secret : pas de JWT Supabase
+[functions.whatsapp-meta]
+verify_jwt = false

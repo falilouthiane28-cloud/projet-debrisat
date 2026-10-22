@@ -1,14 +1,14 @@
 // Service worker Debrisat : coquille de l'application hors ligne, tuiles de carte mises en cache au fil de la navigation.
-const VERSION = 'debrisat-v6';
+const VERSION = 'debrisat-v7';
 const CACHE_COQUILLE = `${VERSION}-coquille`;
 const CACHE_CDN = `${VERSION}-cdn`;
 const CACHE_TUILES = `${VERSION}-tuiles`;
 const MAX_TUILES = 600;
 
 const COQUILLE = [
-    './', 'index.html', 'app.html', 'dashboard.html', 'admin.html', 'hackathon.html', 'auth.html', 'profil.html', 'manifest.json',
+    './', 'index.html', 'app.html', 'dashboard.html', 'admin.html', 'hackathon.html', 'auth.html', 'profil.html', '404.html', 'manifest.json',
     'css/tokens.css', 'css/reset.css', 'css/base.css', 'css/components.css',
-    'css/landing.css', 'css/hackathon.css', 'css/app.css', 'css/dashboard.css', 'css/responsive.css',
+    'css/landing.css', 'css/hackathon.css', 'css/app.css', 'css/dashboard.css', 'css/profil.css', 'css/responsive.css',
     'js/config.js', 'js/utils.js', 'js/demo.js', 'js/donnees.js', 'js/auth.js', 'js/router.js',
     'js/map.js', 'js/signalement.js', 'js/heatmap.js', 'js/gamification.js', 'js/realtime.js',
     'js/dashboard.js', 'js/notifications.js', 'js/theme.js', 'js/animations.js', 'js/ia-analysis.js',

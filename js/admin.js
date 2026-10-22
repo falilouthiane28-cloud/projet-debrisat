@@ -394,6 +394,10 @@ async function chargerConfiguration() {
         else champ.value = valeur ?? '';
     }
     $('#infoUrlSupabase').textContent = MODE_DEMO ? 'Mode démo : Supabase non configuré' : SUPABASE_URL;
+    if (MODE_DEMO) {
+        $('#infoGoogle').textContent = 'Non disponible en mode démo.';
+        return;
+    }
     try {
         const reponse = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON_KEY } });
         const actif = (await reponse.json())?.external?.google === true;

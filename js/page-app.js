@@ -7,7 +7,7 @@ import { initTheme } from './theme.js';
 import { initI18n } from './i18n.js';
 import { initPwa, synchroniserAuRetour } from './pwa.js';
 import { estConnecte, utilisateurCourant, profilCourant, surChangementAuth, rafraichirProfil } from './auth.js';
-import { listerSignalements, listerZones, listerAlertes, classement, verifierSignalement, aDejaVerifie, obtenirSignalement } from './donnees.js';
+import { listerSignalements, listerZones, listerAlertes, classement, verifierSignalement, aDejaVerifie, obtenirSignalement, supprimerSignalement } from './donnees.js';
 import { creerCarte, CoucheSignalements, creerCoucheZones, marqueurPosition } from './map.js';
 import { creerCoucheChaleur, mettreAJourChaleur } from './heatmap.js';
 import { BasculeSatellite } from './satellite.js';
@@ -340,6 +340,49 @@ async function ouvrirDetail(id) {
     feuilles.detail.ouvrir();
 }
 
+// Built only from what the record holds: no date is shown for a step the data does not timestamp
+function htmlChronologie(s) {
+    const confirmations = s.nombre_confirmations || 0;
+    const infirmations = s.nombre_infirmations || 0;
+    const pluriel = (n, mot) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+    const rang = { en_attente: 1, verifie: 2, en_cours: 3, resolu: 4 }[s.statut] || 1;
+    const etapes = [{ titre: 'Signalé', detail: formatDate(s.created_at, true), etat: 'fait', icone: 'bi-flag' }];
+    if (s.statut === 'rejete') {
+        etapes.push({ titre: 'Rejeté par la communauté', detail: pluriel(infirmations, 'avis contraire'), etat: 'rejete', icone: 'bi-x-lg' });
+    } else {
+        etapes.push({
+            titre: 'Vérifié par la communauté',
+            detail: rang >= 2 ? pluriel(confirmations, 'confirmation') : `${confirmations} sur ${SEUIL_VERIFICATION} confirmations nécessaires`,
+            etat: rang >= 2 ? 'fait' : 'courant', icone: 'bi-people'
+        });
+        etapes.push({
+            titre: 'Intervention',
+            detail: rang >= 4 ? 'Terminée' : rang === 3 ? (s.assigne_a ? 'En cours, une équipe est assignée' : 'En cours') : 'À venir',
+            etat: rang >= 4 ? 'fait' : rang === 3 ? 'courant' : 'a-venir', icone: 'bi-tools'
+        });
+        etapes.push({
+            titre: 'Résolu',
+            detail: s.resolu_at ? formatDate(s.resolu_at, true) : rang === 4 ? 'Canal dégagé' : 'À venir',
+            etat: rang === 4 ? 'fait' : 'a-venir', icone: 'bi-check-lg'
+        });
+    }
+    const etats = { fait: 'terminé', courant: 'étape actuelle', 'a-venir': 'à venir', rejete: 'étape finale' };
+    return `
+        <section class="bloc-chronologie" aria-labelledby="titreChronologie">
+            <h3 class="titre-section" id="titreChronologie">Suivi</h3>
+            <ol class="chronologie">
+                ${etapes.map(e => `
+                    <li class="etape-chrono" data-etat="${e.etat}"${e.etat === 'courant' ? ' aria-current="step"' : ''}>
+                        <span class="repere-chrono"><i class="bi ${e.etat === 'fait' ? 'bi-check-lg' : e.icone}" aria-hidden="true"></i></span>
+                        <span class="texte-chrono">
+                            <span class="titre-chrono">${e.titre}<span class="sr-only"> : ${etats[e.etat]}</span></span>
+                            <span class="detail-chrono">${echapper(e.detail)}</span>
+                        </span>
+                    </li>`).join('')}
+            </ol>
+        </section>`;
+}
+
 async function rendreDetail(s) {
     const type = TYPES_OBSTRUCTION[s.type_obstruction] || TYPES_OBSTRUCTION.autre;
     const moi = utilisateurCourant()?.id;
@@ -349,28 +392,29 @@ async function rendreDetail(s) {
     $('#titreDetail').textContent = type.libelle;
     const sources = { webapp: 'Application', whatsapp: 'WhatsApp', satellite: 'Détection satellite' };
     const iconesSources = { webapp: 'bi-phone', whatsapp: 'bi-whatsapp', satellite: 'bi-broadcast' };
+    const confirmations = s.nombre_confirmations || 0;
+    const infirmations = s.nombre_infirmations || 0;
     $('#corpsDetail').innerHTML = `
         <div class="detail-photo">${s.photo_url
             ? `<img src="${echapper(s.photo_url)}" alt="Photo de l'obstruction : ${echapper(type.libelle.toLowerCase())}">`
             : htmlVignette(s, 'large')}</div>
         <div class="pile">
             <div class="rangee-entre">${htmlStatut(s.statut)}<span class="badge badge-severity-${s.severite}">${s.severite}/5 · ${echapper(SEVERITES[s.severite]?.libelle || '')}</span></div>
-            ${s.description ? `<p>${echapper(s.description)}</p>` : ''}
+            ${s.description ? `<p class="description-detail">${echapper(s.description)}</p>` : ''}
+            <div id="zoneAvis">${actif && !estAuteur ? '<div class="skeleton" style="height:96px;border-radius:12px"></div>' : ''}</div>
+            ${htmlChronologie(s)}
             <dl class="liste-def">
                 <dt><i class="bi bi-geo-alt" aria-hidden="true"></i>Lieu</dt><dd>${echapper(s.adresse || lieuSignalement(s))}</dd>
-                <dt><i class="bi bi-calendar3" aria-hidden="true"></i>Signalé le</dt><dd>${echapper(formatDate(s.created_at, true))}</dd>
                 <dt><i class="bi ${iconesSources[s.source] || 'bi-phone'}" aria-hidden="true"></i>Source</dt><dd>${echapper(sources[s.source] || s.source)}</dd>
-                <dt><i class="bi bi-check-circle" aria-hidden="true"></i>Confirmations</dt><dd class="mono">${s.nombre_confirmations}${s.statut === 'en_attente' ? ` / ${SEUIL_VERIFICATION}` : ''}</dd>
-                <dt><i class="bi bi-x-circle" aria-hidden="true"></i>Infirmations</dt><dd class="mono">${s.nombre_infirmations || 0}</dd>
-                ${s.resolu_at ? `<dt><i class="bi bi-check-lg" aria-hidden="true"></i>Résolu le</dt><dd>${echapper(formatDate(s.resolu_at, true))}</dd>` : ''}
+                <dt><i class="bi bi-people" aria-hidden="true"></i>Avis</dt><dd class="mono">${confirmations} pour · ${infirmations} contre</dd>
             </dl>
             ${htmlAnalyse(s.photo_analyse, { avecPhoto: !!s.photo_url })}
-            <div id="zoneAvis">${actif && !estAuteur ? '<div class="skeleton" style="height:44px;border-radius:12px"></div>' : ''}</div>
             ${estAuteur ? '<p class="form-helper"><i class="bi bi-info-circle" aria-hidden="true"></i> Vous êtes l\'auteur de ce signalement : d\'autres citoyens doivent le vérifier.</p>' : ''}
             <div class="detail-actions">
                 <button type="button" class="btn btn-secondary" data-detail="carte"><i class="bi bi-map" aria-hidden="true"></i>Sur la carte</button>
                 <button type="button" class="btn btn-secondary" data-detail="partager"><i class="bi bi-share" aria-hidden="true"></i>Partager</button>
             </div>
+            ${estAuteur && s.statut === 'en_attente' ? `<div class="zone-suppression" id="zoneSuppression">${HTML_BOUTON_SUPPRIMER}</div>` : ''}
         </div>`;
     const corps = $('#corpsDetail');
     corps.querySelector('[data-detail="carte"]').onclick = () => {
@@ -379,20 +423,77 @@ async function rendreDetail(s) {
         setTimeout(() => couche.ouvrir(s.id), 300);
     };
     corps.querySelector('[data-detail="partager"]').onclick = () => partager(s);
+    if (estAuteur && s.statut === 'en_attente') brancherSuppression(s);
 
     if (actif && !estAuteur) {
         const zone = $('#zoneAvis');
         const dejaVote = moi ? await aDejaVerifie(s.id, moi) : false;
         if (!zone.isConnected) return;
         zone.innerHTML = dejaVote
-            ? '<p class="form-helper"><i class="bi bi-check-circle" aria-hidden="true"></i> Merci, votre avis a été pris en compte.</p>'
-            : `<p class="label" style="margin-bottom:var(--space-2)">Avez-vous vu cette obstruction ?</p>
-               <div class="detail-actions">
-                   <button type="button" class="btn btn-succes" data-avis="1"><i class="bi bi-check-circle" aria-hidden="true"></i>Confirmer</button>
-                   <button type="button" class="btn btn-danger" data-avis="0"><i class="bi bi-x-circle" aria-hidden="true"></i>Infirmer</button>
+            ? '<p class="avis-merci"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Merci, votre avis a été pris en compte.</p>'
+            : `<div class="bloc-avis">
+                   <p class="question-avis">Avez-vous vu cette obstruction sur place ?</p>
+                   <p class="aide-avis">Votre avis aide les équipes à intervenir au bon endroit. Vous gagnez ${POINTS.verification} points.</p>
+                   <div class="detail-actions">
+                       <button type="button" class="btn btn-succes" data-avis="1"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>Je confirme</button>
+                       <button type="button" class="btn btn-secondary" data-avis="0"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i>Je conteste</button>
+                   </div>
                </div>`;
-        zone.querySelectorAll('[data-avis]').forEach(b => b.addEventListener('click', () => donnerAvis(s.id, b.dataset.avis === '1', b)));
+        const boutons = [...zone.querySelectorAll('[data-avis]')];
+        boutons.forEach(b => b.addEventListener('click', async () => {
+            // Both choices lock while the vote is in flight: one tap, one request
+            boutons.forEach(x => { x.disabled = true; });
+            const ok = await donnerAvis(s.id, b.dataset.avis === '1', b);
+            if (!ok && b.isConnected) boutons.forEach(x => { x.disabled = false; });
+        }));
     }
+}
+
+const HTML_BOUTON_SUPPRIMER = '<button type="button" class="btn btn-secondary btn-supprimer" data-suppression="demander"><i class="bi bi-trash3" aria-hidden="true"></i>Supprimer mon signalement</button>';
+
+// Irreversible: a second, explicit step with "Annuler" focused by default
+function brancherSuppression(s) {
+    const zone = $('#zoneSuppression');
+    zone.querySelector('[data-suppression="demander"]').onclick = () => {
+        zone.innerHTML = `
+            <div class="bloc-confirmation" role="alertdialog" aria-labelledby="titreConfSuppression" aria-describedby="descConfSuppression">
+                <p class="question-avis" id="titreConfSuppression">Supprimer ce signalement ?</p>
+                <p class="aide-avis" id="descConfSuppression">Cette action est définitive. Les ${POINTS.signalement} points gagnés seront retirés.</p>
+                <div class="detail-actions">
+                    <button type="button" class="btn btn-secondary" data-suppression="annuler">Annuler</button>
+                    <button type="button" class="btn btn-danger" data-suppression="confirmer"><i class="bi bi-trash3" aria-hidden="true"></i>Supprimer</button>
+                </div>
+            </div>`;
+        const annuler = zone.querySelector('[data-suppression="annuler"]');
+        const confirmer = zone.querySelector('[data-suppression="confirmer"]');
+        annuler.focus();
+        annuler.onclick = () => {
+            zone.innerHTML = HTML_BOUTON_SUPPRIMER;
+            brancherSuppression(s);
+            zone.querySelector('[data-suppression="demander"]').focus();
+        };
+        confirmer.onclick = async () => {
+            annuler.disabled = true;
+            confirmer.disabled = true;
+            confirmer.classList.add('btn-chargement');
+            try {
+                await supprimerSignalement(s.id, utilisateurCourant()?.id);
+                etat.signalements = etat.signalements.filter(x => x.id !== s.id);
+                couche.definir(etat.signalements);
+                appliquerFiltres();
+                feuilles.detail.fermer();
+                succes('Signalement supprimé', `Les ${POINTS.signalement} points gagnés ont été retirés.`);
+                rafraichirProfil();
+            } catch (err) {
+                erreur('Suppression impossible', err.message);
+                if (confirmer.isConnected) {
+                    annuler.disabled = false;
+                    confirmer.disabled = false;
+                    confirmer.classList.remove('btn-chargement');
+                }
+            }
+        };
+    };
 }
 
 async function partager(s) {
@@ -423,14 +524,16 @@ async function donnerAvis(id, confirme, bouton) {
         integrer(maj);
         celebrerPoints(POINTS.verification);
         const change = maj.statut !== statutAvant;
-        succes(confirme ? 'Confirmation enregistrée' : 'Infirmation enregistrée',
+        succes(confirme ? 'Confirmation enregistrée' : 'Contestation enregistrée',
             change && maj.statut === 'verifie' ? `Le signalement est désormais vérifié par la communauté. Vous gagnez ${POINTS.verification} points.`
                 : change && maj.statut === 'rejete' ? `Le signalement a été rejeté par la communauté. Vous gagnez ${POINTS.verification} points.`
                     : `Vous gagnez ${POINTS.verification} points.`);
         if (feuilles.detail.ouverte) rendreDetail(couche.donnees.get(id));
         rafraichirProfil();
+        return true;
     } catch (err) {
         erreur("Votre avis n'a pas été enregistré", err.message);
+        return false;
     } finally {
         bouton?.classList.remove('btn-chargement');
     }
@@ -610,17 +713,18 @@ function basculerMenuUtilisateur() {
 }
 
 $('#btnMenuUtilisateur').addEventListener('click', basculerMenuUtilisateur);
+$('#menuUtilisateur').addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || $('#dropdownUtilisateur').hidden) return;
+    $('#dropdownUtilisateur').hidden = true;
+    $('#btnMenuUtilisateur').setAttribute('aria-expanded', 'false');
+    $('#btnMenuUtilisateur').focus();
+});
 document.addEventListener('click', e => {
     const menu = $('#menuUtilisateur');
     if (!menu.contains(e.target)) {
         $('#dropdownUtilisateur').hidden = true;
         $('#btnMenuUtilisateur').setAttribute('aria-expanded', 'false');
     }
-});
-$('#btnMenuDeconnexion').addEventListener('click', async () => {
-    const { deconnexion } = await import('./auth.js');
-    await deconnexion();
-    location.href = 'auth.html';
 });
 
 const pretAuth = garderPage().then(() => {

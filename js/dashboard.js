@@ -7,7 +7,7 @@ import { initTheme, themeEffectif, preferenceTheme, definirTheme } from './theme
 import { initPwa } from './pwa.js';
 import { initRetourTactile, compterJusqua } from './animations.js';
 import { Routeur } from './router.js';
-import { estConnecte, estAutorite, estAgent, profilCourant, deconnexion } from './auth.js';
+import { estConnecte, estAutorite, estAgent, profilCourant } from './auth.js';
 import { garderPage } from './guard.js';
 import { listerSignalements, listerZones, listerAlertes, creerAlerte, changerStatut, listerAgents } from './donnees.js';
 import { creerCarte, CoucheSignalements, creerCoucheZones, couleurRisque } from './map.js';
@@ -895,10 +895,6 @@ $('#choixThemeTableau').addEventListener('click', e => {
     if (!b) return;
     definirTheme(b.dataset.themeChoix);
     rendreParametres();
-});
-$('#btnDeconnexionTableau').addEventListener('click', async () => {
-    await deconnexion();
-    location.href = 'index.html';
 });
 
 // ============ Donnees ============

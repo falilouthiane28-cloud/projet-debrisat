@@ -105,7 +105,17 @@
 
 .btn-sm { min-height: 36px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); border-radius: var(--radius-sm); }
 /* Au doigt, meme les petits boutons gardent une cible de 44 px */
-@media (pointer: coarse) { .btn-sm { min-height: 44px; } }
+@media (pointer: coarse) {
+    .btn-sm, .segmente button, .onglet, .select.compact { min-height: 44px; }
+    .toast-close { width: 44px; height: 44px; min-height: 44px; }
+}
+.btn-icon { flex-shrink: 0; }
+/* Logout stays one tap away on every authenticated header; the label collapses to the icon on phones */
+.btn-deconnexion { flex-shrink: 0; }
+@media (max-width: 767px) {
+    .btn-deconnexion { min-width: 44px; min-height: 44px; padding-inline: var(--space-3); justify-content: center; }
+    .btn-deconnexion .libelle-deconnexion { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 .btn-lg { min-height: 52px; padding: var(--space-4) var(--space-7); font-size: var(--text-lg); }
 .btn-block { width: 100%; }
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
@@ -759,6 +769,8 @@
 .leaflet-container {
     background: var(--color-void) !important;
     font-family: var(--font-sans) !important;
+    /* Leaflet panes use z-index 400-1000: keep them inside the map so drawers, sheets and scrims stay on top */
+    isolation: isolate;
 }
 .leaflet-popup-content-wrapper {
     background: var(--glass-bg-sheet) !important;

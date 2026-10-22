@@ -120,3 +120,22 @@ Chaque modification importante sera documentee ici avec :
 - **Ce qui a changé** : barre de l'app en pilule flottante, barre latérale du tableau de bord en tuiles repliables, bouton Google (`connexionGoogle` dans auth.js).
 - **Pourquoi** : références visuelles fournies par l'équipe (barre Tourera, barre latérale à tuiles). Google vérifie d'abord `/auth/v1/settings` : sans ce contrôle, un fournisseur désactivé mène à une page d'erreur JSON de Supabase.
 - **Commit** : non commité.
+
+## 2026-10-21 — Correctif auth : interblocage et déconnexion unique
+- **Ce qui a changé** : le rappel `onAuthStateChange` (`js/auth.js`) est devenu synchrone, le profil est chargé hors du verrou d'auth ; `deconnexion()` unique (bouton `data-action="deconnexion"` sur toutes les pages), qui renvoie sur `auth.html` avec le toast « Vous êtes déconnecté » ; bouton de déconnexion dans l'en-tête de `dashboard.html`, `admin.html` et `profil.html` ; les pages protégées renvoient vers la connexion quand la session se termine ; message « Profil indisponible » au lieu d'un rôle citoyen silencieux.
+- **Pourquoi** : le rappel `async` attendait une requête Supabase sous le verrou d'auth. Au retour sur l'onglet ou au renouvellement du jeton, tout le client restait bloqué (connexion, données, déconnexion). Reproduit puis corrigé (docs/AUDIT.md §4.1).
+- **Commit** : branche `refonte-ux-whatsapp`.
+## 2026-10-21 — Bugs visuels et barre latérale
+- **Ce qui a changé** : les cartes Leaflet et leurs légendes sont isolées (`isolation: isolate`) pour rester sous les tiroirs, feuilles et voiles ; photo de la page de connexion collante sur grand écran ; plus de défilement horizontal à 360 px (vue d'ensemble, paramètres, hackathon) ; cibles tactiles de 44 px ; contrastes corrigés ; menu utilisateur fermable avec Échap ; barre latérale agent et admin en lignes simples.
+- **Pourquoi** : `--z-modal` (400) entrait en concurrence avec les panneaux Leaflet (400 à 1000), d'où la carte au-dessus du menu ouvert. Relevé par une revue visuelle de toutes les pages à 360, 768 et 1280 px, dans les deux thèmes.
+- **Commit** : `797417b`, `6763720`.
+
+## 2026-10-22 — Refonte des pages restantes (approche apple-design)
+- **Ce qui a changé** :
+  - Accueil : proposition de valeur en une phrase, « Signaler maintenant » et bouton WhatsApp (wa.me/221784277229), étapes Signaler → Vérifier → Curer.
+  - Nouvelle page `404.html`.
+  - Application : étape de récapitulatif avant envoi, brouillon local (sans la photo, 7 jours, par compte), frise de suivi construite seulement à partir des champs enregistrés, contrôles de carte en verre uniforme.
+  - Profil : carte d'identité, badges obtenus et verrouillés, réglages en listes groupées, styles déplacés dans `css/profil.css`.
+  - Service worker v7 (`404.html` et `profil.css` mis en cache).
+- **Pourquoi** : point de contrôle 2 validé ; les pages restantes alignées sur l'espace agent. Commentaires sur un signalement, suppression de compte et adhésion WhatsApp reportés : il faut d'abord une table ou une fonction côté serveur.
+- **Commit** : `440406e`, `2f537da`, `37c1f91`.

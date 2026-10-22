@@ -1,8 +1,9 @@
 // Protection des pages par role, et mode maintenance.
 // La securite reelle est dans la RLS : ce garde evite seulement d'afficher une interface inutile.
 import { MODE_DEMO } from './config.js';
-import { initAuth, estConnecte, profilCourant, accueilRole } from './auth.js';
+import { initAuth, estConnecte, profilCourant, profilIndisponible, accueilRole, surChangementAuth } from './auth.js';
 import { lireConfig } from './donnees.js';
+import { toast } from './notifications.js';
 
 const PAGE = location.pathname.split('/').pop() || 'index.html';
 
@@ -32,6 +33,9 @@ function afficherMaintenance() {
 export async function garderPage({ roles = null } = {}) {
     await initAuth();
     const profil = profilCourant();
+    if (profilIndisponible()) {
+        toast({ type: 'warning', titre: 'Profil indisponible', message: "Votre profil n'a pas pu être chargé. Rechargez la page ; si le problème continue, reconnectez-vous.", duree: 8000 });
+    }
 
     if (!MODE_DEMO && profil?.role !== 'admin') {
         try {
@@ -51,5 +55,8 @@ export async function garderPage({ roles = null } = {}) {
         location.replace(accueilRole());
         return false;
     }
+    surChangementAuth(({ utilisateur }) => {
+        if (!utilisateur) versConnexion();
+    });
     return true;
 }

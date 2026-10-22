@@ -1,0 +1,111 @@
+/* Profile page: identity card, badges, activity, grouped settings (iOS settings style) */
+.page-profil .contenu-profil { max-width: 720px; gap: var(--space-7); }
+.titre-barre-profil { font-weight: var(--weight-semibold); color: var(--color-heading); letter-spacing: -0.01em; }
+
+/* ===== Identity ===== */
+.carte-identite { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-6) var(--space-5); }
+.identite { display: flex; align-items: center; gap: var(--space-4); }
+.identite .avatar.lg { flex-shrink: 0; border: 2px solid var(--glass-border-hover); }
+.identite-texte { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.identite-texte h1 { font-size: var(--text-2xl); line-height: var(--leading-tight); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.meta-profil { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-secondary-text); }
+.meta-profil .lieu { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+.chiffres-principaux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.chiffre-principal { padding: var(--space-4); border-radius: var(--radius-lg); background: var(--glass-bg); border: 1px solid var(--glass-border); }
+.chiffre-principal dt,
+.chiffres-secondaires dt { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--color-secondary-text); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+.chiffre-principal dd { margin-top: var(--space-1); font-size: var(--text-4xl); font-weight: var(--weight-bold); line-height: 1.05; letter-spacing: -0.03em; color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.chiffres-secondaires { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-7); padding-inline: var(--space-1); }
+.chiffres-secondaires div { display: flex; flex-direction: column-reverse; gap: 2px; }
+.chiffres-secondaires dd { font-size: var(--text-lg); font-weight: var(--weight-semibold); color: var(--color-heading); font-variant-numeric: tabular-nums; }
+
+.carte-identite .progression-badge { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5) 0 0; border-top: 1px solid var(--glass-border); }
+.progression-badge h2 { font-size: var(--text-base); letter-spacing: -0.01em; }
+.ratio-prochain { flex-shrink: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.progression-badge .jauge { height: 8px; }
+
+/* ===== Sections ===== */
+.section-profil { display: flex; flex-direction: column; gap: var(--space-3); }
+.entete-section { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-inline: var(--space-1); }
+.entete-section h2 { font-size: var(--text-xl); letter-spacing: -0.015em; }
+
+/* ===== Badges: earned vs locked readable without color (icon + label) ===== */
+.page-profil .grille-badges { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.page-profil .card-badge .condition { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-secondary-text); }
+.page-profil .card-badge.obtenu .condition { color: var(--color-heading); font-weight: var(--weight-medium); }
+.page-profil .card-badge.verrouille { opacity: 1; background: transparent; border-style: dashed; }
+.page-profil .card-badge.verrouille .icone-ronde { color: var(--color-secondary-text); }
+.page-profil .card-badge.verrouille .nom { color: var(--color-secondary-text); }
+.squelette-badge .skeleton-circle { width: 52px; height: 52px; }
+.squelette-badge .skeleton-text { width: var(--l); margin: 0; }
+
+/* ===== Activity ===== */
+.page-profil .onglets .onglet { flex: 1 1 0; justify-content: center; }
+.ligne-squelette { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); list-style: none; }
+.vignette-squelette { width: 64px; height: 64px; flex-shrink: 0; border-radius: var(--radius-md); }
+.ligne-squelette .skeleton-text { margin-bottom: var(--space-2); }
+.page-profil #panneauPoints .historique li { padding: var(--space-3) var(--space-4); }
+.etat-erreur { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); text-align: center; }
+.etat-erreur .bi { font-size: 1.75rem; color: var(--accent-warning); }
+.etat-erreur p { max-width: 36ch; font-size: var(--text-sm); color: var(--color-secondary-text); }
+
+.carte-deconnecte { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); padding: var(--space-8) var(--space-5); text-align: center; }
+
+/* ===== Grouped settings ===== */
+.groupe-reglages { display: flex; flex-direction: column; gap: var(--space-2); }
+.titre-groupe-reglages { padding-inline: var(--space-4); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--color-secondary-text); }
+.liste-reglages { border-radius: var(--radius-lg); background: var(--glass-bg); border: 1px solid var(--glass-border); overflow: hidden; }
+/* A separator only above rows that follow another visible row */
+.liste-reglages > :not([hidden]) ~ :not([hidden]) { border-top: 1px solid var(--glass-border); }
+.ligne-reglage {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3);
+    width: 100%; min-height: 56px; padding: var(--space-3) var(--space-4);
+    background: none; border: 0; color: inherit; font: inherit; text-align: left;
+}
+.tuile-reglage { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--color-contrast); color: var(--color-on-contrast); }
+.texte-reglage { flex: 1 1 160px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.texte-reglage .titre { font-weight: var(--weight-medium); color: var(--color-heading); }
+.texte-reglage .description { font-size: var(--text-sm); color: var(--color-secondary-text); }
+.ligne-reglage > .segmente,
+.ligne-reglage > .select,
+.ligne-reglage > .btn { margin-left: auto; flex-shrink: 0; }
+.ligne-reglage > .select.compact { width: auto; }
+.ligne-reglage .segmente button { min-width: 44px; }
+
+.ligne-bouton { cursor: pointer; transition: background-color var(--duration-fast) var(--ease-out); }
+.ligne-bouton:hover { background: var(--glass-bg-hover); }
+.ligne-bouton:active { background: var(--glass-bg-active); }
+.ligne-bouton:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-bright); }
+.ligne-bouton .chevron { flex-shrink: 0; color: var(--color-secondary-text); transition: transform var(--duration-normal) var(--ease-out); }
+.ligne-bouton[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+.ligne-danger .titre { color: var(--accent-danger); }
+.ligne-danger .tuile-reglage { background: var(--accent-danger-bg); color: var(--accent-danger); }
+
+.panneau-reglage { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); border-top: 1px solid var(--glass-border); }
+.actions-formulaire { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); }
+.champ-code { flex: 1 1 180px; min-width: 0; text-transform: uppercase; }
+
+@media (min-width: 768px) {
+    .carte-identite { padding: var(--space-7); }
+    .identite-texte h1 { font-size: var(--text-3xl); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ligne-bouton, .ligne-bouton .chevron { transition: none; }
+}
+
+/* WhatsApp bot: QR on a white card so it scans in both themes */
+.ligne-qr .qr-whatsapp {
+    flex-shrink: 0;
+    width: 88px; height: 88px;
+    padding: var(--space-1);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    image-rendering: pixelated;
+}
+@media (max-width: 479px) {
+    .ligne-qr { flex-wrap: wrap; }
+    .ligne-qr .qr-whatsapp { display: none; }
+}
+.historique .points.negatif { color: var(--accent-danger); }

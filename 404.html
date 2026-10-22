@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex">
+    <title>Page introuvable · Debrisat</title>
+    <meta name="description" content="Cette page n'existe pas ou a été déplacée.">
+    <meta name="theme-color" content="#0A0A0A">
+    <script>try{var t=JSON.parse(localStorage.getItem('debrisat-theme'));if(t==='clair'||(t==='systeme'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.setAttribute('data-theme','light')}catch(e){}document.documentElement.classList.add('js')</script>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body class="page-404">
+    <header class="barre-404">
+        <a class="marque" href="/index.html" aria-label="Debrisat, retour à l'accueil">
+            <img src="/img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
+        </a>
+        <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
+    </header>
+
+    <main id="contenu">
+        <div class="carte-404 glass-card">
+            <span class="icone-ronde lg"><i class="bi bi-signpost-split" aria-hidden="true"></i></span>
+            <p class="code-404">Erreur 404</p>
+            <h1>Cette page est introuvable</h1>
+            <p>Le lien est peut-être incomplet, ou la page a été déplacée. Les canaux, eux, sont toujours sur la carte.</p>
+            <div class="actions-404">
+                <a class="btn btn-plein" href="/app.html"><i class="bi bi-map" aria-hidden="true"></i>Voir la carte</a>
+                <a class="btn btn-secondary" href="/index.html"><i class="bi bi-house" aria-hidden="true"></i>Retour à l'accueil</a>
+            </div>
+            <nav class="liens-404" aria-label="Autres destinations">
+                <a href="/app.html#signaler"><i class="bi bi-plus-circle" aria-hidden="true"></i>Signaler une obstruction</a>
+                <a href="https://wa.me/221784277229?text=Bonjour%20DEBRISAT" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i>WhatsApp<span class="sr-only"> (nouvel onglet)</span></a>
+            </nav>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initTheme } from '/js/theme.js';
+        initTheme();
+    </script>
+</body>
+</html>

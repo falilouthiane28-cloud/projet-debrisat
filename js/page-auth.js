@@ -3,7 +3,7 @@ import { $, $$, echapper } from './utils.js';
 import { initTheme } from './theme.js';
 import { initPwa } from './pwa.js';
 import { initRetourTactile } from './animations.js';
-import { initAuth, estConnecte, accueilRole, connexion, connexionGoogle, inscription, reinitialiserMotDePasse, entrerEnDemo, surRecuperationMotDePasse, changerMotDePasse } from './auth.js';
+import { initAuth, estConnecte, surChangementAuth, CLE_MESSAGE_DECONNEXION, accueilRole, connexion, connexionGoogle, inscription, reinitialiserMotDePasse, entrerEnDemo, surRecuperationMotDePasse, changerMotDePasse } from './auth.js';
 import { succes, info } from './notifications.js';
 
 initTheme();
@@ -193,6 +193,10 @@ if (MODE_DEMO) {
 if (new URLSearchParams(location.search).get('mode') === 'inscription') definirMode('inscription');
 
 try {
+    if (sessionStorage.getItem(CLE_MESSAGE_DECONNEXION)) {
+        sessionStorage.removeItem(CLE_MESSAGE_DECONNEXION);
+        info('Vous êtes déconnecté', 'À bientôt sur Debrisat.', { duree: 4000 });
+    }
     if (sessionStorage.getItem('debrisat-compte-desactive')) {
         sessionStorage.removeItem('debrisat-compte-desactive');
         $('#erreurGenerale').innerHTML = '<i class="bi bi-slash-circle" aria-hidden="true"></i>Ce compte a été désactivé. Contactez un administrateur.';
@@ -222,7 +226,14 @@ surRecuperationMotDePasse(modeRecuperation);
 initAuth().then(() => {
     if (recuperation) return;
     // Deja connecte (hors mode demo, ou on laisse le choix de se reconnecter) : retour direct
-    if (estConnecte() && !MODE_DEMO) location.replace(destinationRetour());
+    if (estConnecte() && !MODE_DEMO) {
+        location.replace(destinationRetour());
+        return;
+    }
+    // A sign-in finished elsewhere (other tab, OAuth return processed late) must also leave this page
+    surChangementAuth(({ utilisateur }) => {
+        if (utilisateur && !recuperation && !MODE_DEMO) location.replace(destinationRetour());
+    });
 });
 
 $('#btnGoogle').addEventListener('click', async () => {

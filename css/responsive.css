@@ -110,7 +110,6 @@
     .table td.col-collante, .table th.col-collante { position: static; background: transparent; }
 
     /* Profil */
-    .grille-stats-profil { grid-template-columns: repeat(4, 1fr); }
     .grille-badges { grid-template-columns: repeat(3, 1fr); }
     .page-profil .contenu-profil { padding-bottom: var(--space-10); }
 }
@@ -136,8 +135,10 @@
     .carte-admin { height: 540px; }
 
     .page-auth { grid-template-columns: 1.1fr 1fr; }
-    .auth-visuel { display: block; }
-    .auth-colonne { padding: var(--space-8) var(--space-9); }
+    /* The photo stays pinned to the viewport so its caption is never cut off when the form is taller */
+    .auth-visuel { display: block; position: sticky; top: 0; align-self: start; height: 100vh; height: 100dvh; }
+    .auth-colonne { padding: var(--space-6) var(--space-9); }
+    .auth-colonne .haut { margin-bottom: var(--space-6); }
 }
 
 /* ===== Grand ecran ===== */

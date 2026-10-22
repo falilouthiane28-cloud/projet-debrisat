@@ -57,6 +57,7 @@
         <a href="#technologies"><i class="bi bi-broadcast" aria-hidden="true"></i>Technologies</a>
         <hr class="separateur">
         <a href="app.html"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Signaler une obstruction</a>
+        <a href="https://wa.me/221784277229?text=Bonjour%20DEBRISAT" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i>Signaler sur WhatsApp<span class="sr-only"> (nouvel onglet)</span></a>
         <a href="dashboard.html"><i class="bi bi-grid-1x2" aria-hidden="true"></i>Espace autorités</a>
     </nav>
 
@@ -69,11 +70,16 @@
                 <a class="badge-defi" href="hackathon.html" data-reveal="fade-up"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i>Earth Observation Data Challenge 2026 · TRL Space × SENSAT<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
                 <p class="hero-eyebrow" data-reveal="fade-up"><span class="point-direct" aria-hidden="true"></span><span id="eyebrowDirect">Signalements en direct à Dakar</span></p>
                 <h1 id="titreHero" data-reveal="fade-up" data-delay="80">Prévenir les inondations. <span>Protéger Dakar.</span></h1>
-                <p class="hero-sous-titre" data-reveal="fade-up" data-delay="160">Détection intelligente des obstructions par satellite et signalement citoyen en temps réel.</p>
+                <p class="hero-sous-titre" data-reveal="fade-up" data-delay="160">Signalez en une photo un canal bouché près de chez vous : Debrisat le fait vérifier par vos voisins et l'imagerie satellite, puis guide les équipes de curage avant la pluie.</p>
                 <div class="hero-cta" data-reveal="fade-up" data-delay="240">
                     <a class="btn btn-primary btn-lg" href="app.html#signaler"><span data-i18n="accueil.cta.signaler">Signaler maintenant</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-                    <a class="btn btn-secondary btn-lg" href="dashboard.html"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span data-i18n="accueil.cta.autorites">Espace Autorités</span></a>
+                    <a class="btn btn-secondary btn-lg" href="https://wa.me/221784277229?text=Bonjour%20DEBRISAT" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i>Signaler sur WhatsApp<span class="sr-only"> (nouvel onglet)</span></a>
                 </div>
+                <div class="carte-qr-hero" data-reveal="fade-up" data-delay="280">
+                    <img src="img/qr-whatsapp.svg" width="72" height="72" alt="QR code : écrire au bot WhatsApp Debrisat">
+                    <p><span class="titre-qr">Sur ordinateur ?</span> Scannez ce code avec votre téléphone pour écrire au bot Debrisat, ou écrivez au <span class="numero-qr">+221 78 427 72 29</span>.</p>
+                </div>
+                <a class="lien-carte-hero" href="app.html" data-reveal="fade-up" data-delay="300">Ou explorez la carte des signalements<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
                 <div class="hero-stats" data-stagger>
                     <div class="hero-stat" data-reveal="fade-up">
                         <span class="icone-ronde"><i class="bi bi-people" aria-hidden="true"></i></span>
@@ -127,7 +133,7 @@
                 <div class="entete-section centre" data-reveal="fade-up">
                     <p class="eyebrow">Fonctionnement</p>
                     <h2 id="titreFonctionnement">Comment ça marche</h2>
-                    <p>Trois étapes entre un canal bouché et l'arrivée d'une équipe de curage.</p>
+                    <p>Signaler, vérifier, curer : trois étapes entre un canal bouché et l'arrivée d'une équipe de curage.</p>
                 </div>
                 <ol class="etapes" role="list" data-stagger>
                     <li class="etape glass-card" data-reveal="fade-up">
@@ -138,12 +144,12 @@
                     <li class="etape glass-card" data-reveal="fade-up">
                         <span class="numero">02</span>
                         <span class="icone-etape"><i class="bi bi-broadcast" aria-hidden="true"></i></span>
-                        <div><h3>Vérifier</h3><p>Notre IA et les images satellite confirment le signalement, complétées par trois confirmations de voisins.</p></div>
+                        <div><h3>Vérifier</h3><p>Trois voisins confirment le signalement ; l'analyse de la photo par IA et l'imagerie satellite complètent le diagnostic.</p></div>
                     </li>
                     <li class="etape glass-card" data-reveal="fade-up">
                         <span class="numero">03</span>
-                        <span class="icone-etape"><i class="bi bi-bell" aria-hidden="true"></i></span>
-                        <div><h3>Alerter</h3><p>Les autorités compétentes sont notifiées et priorisent les interventions dans les zones les plus exposées.</p></div>
+                        <span class="icone-etape"><i class="bi bi-truck" aria-hidden="true"></i></span>
+                        <div><h3>Curer</h3><p>Les agents municipaux reçoivent les signalements vérifiés, priorisent les zones les plus exposées et envoient les équipes de curage avant la pluie.</p></div>
                     </li>
                 </ol>
             </div>
@@ -253,7 +259,7 @@
                     </a>
                     <p class="pied-accroche">Les habitants signalent les canaux bouchés, les autorités interviennent avant la pluie.</p>
                     <div class="pied-actions">
-                        <a class="btn btn-sm btn-plein" href="app.html"><i class="bi bi-plus-circle" aria-hidden="true"></i>Signaler une obstruction</a>
+                        <a class="btn btn-sm btn-plein" href="app.html#signaler"><i class="bi bi-plus-circle" aria-hidden="true"></i>Signaler une obstruction</a>
                         <a class="btn btn-sm btn-secondary" href="app.html"><i class="bi bi-map" aria-hidden="true"></i>Voir la carte</a>
                     </div>
                 </div>
@@ -276,7 +282,8 @@
                     </div>
                     <div class="pied-colonne">
                         <p class="pied-titre">Projet</p>
-                        <a href="auth.html?mode=inscription&retour=app.html">Créer un compte</a>
+                        <a href="auth.html?mode=inscription&amp;retour=app.html">Créer un compte</a>
+                        <a href="https://wa.me/221784277229?text=Bonjour%20DEBRISAT" target="_blank" rel="noopener">Signaler sur WhatsApp<span class="sr-only"> (nouvel onglet)</span></a>
                         <button type="button" id="btnMentions">Mentions légales</button>
                         <span class="pied-lieu"><i class="bi bi-geo-alt" aria-hidden="true"></i>Dakar, Sénégal</span>
                     </div>
@@ -291,6 +298,8 @@
             </div>
         </div>
     </footer>
+
+    <a class="fab-whatsapp" href="https://wa.me/221784277229?text=Bonjour%20DEBRISAT" target="_blank" rel="noopener" aria-label="Écrire à Debrisat sur WhatsApp (nouvel onglet)"><i class="bi bi-whatsapp" aria-hidden="true"></i></a>
 
     <section class="feuille" id="feuilleMentions" data-desktop="modale" aria-labelledby="titreMentions">
         <div class="bottom-sheet-handle" aria-hidden="true"></div>
