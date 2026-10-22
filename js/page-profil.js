@@ -254,6 +254,12 @@ async function rendre() {
     $('#blocCodeAgent').hidden = profil.role !== 'citoyen' || MODE_DEMO;
     $('#blocDemo').hidden = !MODE_DEMO;
     majGroupeApplication();
+    // Agent sign-up through Google: the access code is entered here, right after the OAuth return
+    if (new URLSearchParams(location.search).get('code') === 'agent' && !$('#blocCodeAgent').hidden && $('#panneauCode').hidden) {
+        basculerPanneau($('#btnOuvrirCode'), true);
+        $('#blocCodeAgent').scrollIntoView({ block: 'center' });
+        info('Dernière étape', "Saisissez le code d'accès remis par votre administrateur pour activer votre espace agent.", { duree: 8000 });
+    }
 
     $('#avatarProfil').textContent = initiales(profil.nom_complet);
     $('#nomProfil').textContent = profil.nom_complet;
