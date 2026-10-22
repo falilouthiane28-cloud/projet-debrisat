@@ -127,6 +127,29 @@
 .auth-colonne .haut { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8); }
 .auth-carte { width: 100%; max-width: 420px; margin: auto; display: flex; flex-direction: column; gap: var(--space-5); }
 .auth-carte h1 { font-size: var(--text-2xl); }
+
+/* Account type: two large radio cards, chosen before Google or the e-mail form */
+.choix-compte { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.choix-compte legend { padding: 0; margin-bottom: var(--space-2); }
+.choix-compte-options { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
+@media (min-width: 420px) { .choix-compte-options { grid-template-columns: 1fr 1fr; } }
+.carte-choix {
+    position: relative; display: flex; align-items: flex-start; gap: var(--space-3);
+    min-height: 44px; padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+    background: var(--glass-bg); cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), transform 100ms var(--ease-out);
+}
+.carte-choix:hover { border-color: var(--glass-border-hover); }
+.carte-choix:active { transform: scale(0.98); }
+.carte-choix input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.carte-choix-icone { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--glass-bg-hover); color: var(--color-heading); }
+.carte-choix-texte { display: flex; flex-direction: column; gap: 2px; font-size: var(--text-sm); color: var(--color-secondary-text); line-height: var(--leading-normal); }
+.carte-choix-texte strong { color: var(--color-heading); font-size: var(--text-base); }
+.carte-choix:has(input:checked) { border-color: var(--color-heading); background: var(--glass-bg-hover); box-shadow: var(--glass-inner-glow); }
+.carte-choix:has(input:checked) .carte-choix-icone { background: var(--color-contrast); color: var(--color-on-contrast); }
+.carte-choix:has(input:focus-visible) { box-shadow: var(--focus-ring); }
+@media (prefers-reduced-motion: reduce) { .carte-choix { transition: none; } .carte-choix:active { transform: none; } }
 .bandeau-demo { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); border-radius: var(--radius-md); background: var(--accent-info-bg); color: var(--color-primary-text); font-size: var(--text-sm); }
 .bandeau-demo .bi { color: var(--accent-info); font-size: 1.1rem; }
 .separateur-texte { display: flex; align-items: center; gap: var(--space-3); color: var(--color-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: var(--tracking-wide); }

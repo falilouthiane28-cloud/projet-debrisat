@@ -35,7 +35,7 @@
         <main class="auth-colonne" id="contenu">
             <div class="haut">
                 <a class="marque" href="index.html" aria-label="Debrisat, retour à l'accueil">
-                    <img src="img/logo.png" class="logo-img" alt="Debrisat" width="98" height="22">
+                    <img src="img/symbole.png" class="symbole-img" alt="" width="34" height="30"><span class="nom-marque">Debrisat</span>
                 </a>
                 <button type="button" class="btn-icon nu" data-action="basculer-theme" aria-label="Passer en mode clair"><i class="bi bi-sun" aria-hidden="true"></i></button>
             </div>
@@ -54,13 +54,30 @@
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-lg btn-block btn-google" id="btnGoogle"><i class="bi bi-google" aria-hidden="true"></i>Continuer avec Google</button>
-                <div class="separateur-ou" role="separator"><span>ou avec votre e-mail</span></div>
-
                 <div class="onglets" role="tablist" aria-label="Choisir une action">
                     <button type="button" class="onglet" role="tab" id="ongletConnexion" aria-selected="true" aria-controls="formulaire" data-mode="connexion" style="flex:1;justify-content:center">Connexion</button>
                     <button type="button" class="onglet" role="tab" id="ongletInscription" aria-selected="false" aria-controls="formulaire" data-mode="inscription" style="flex:1;justify-content:center" tabindex="-1">Inscription</button>
                 </div>
+
+                <fieldset class="choix-compte" data-champ="inscription" hidden>
+                    <legend class="form-label">Je crée un compte</legend>
+                    <div class="choix-compte-options">
+                        <label class="carte-choix">
+                            <input type="radio" name="typeCompte" value="citoyen" form="formulaire" checked>
+                            <span class="carte-choix-icone"><i class="bi bi-person" aria-hidden="true"></i></span>
+                            <span class="carte-choix-texte"><strong>Citoyen</strong><span>Je signale et je vérifie.</span></span>
+                        </label>
+                        <label class="carte-choix">
+                            <input type="radio" name="typeCompte" value="agent_municipal" form="formulaire">
+                            <span class="carte-choix-icone"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+                            <span class="carte-choix-texte"><strong>Agent municipal</strong><span>Je traite les signalements. Code requis.</span></span>
+                        </label>
+                    </div>
+                    <p class="form-helper" id="aideGoogleAgent" hidden><i class="bi bi-info-circle" aria-hidden="true"></i> Avec Google, vous saisirez votre code d'accès juste après la connexion.</p>
+                </fieldset>
+
+                <button type="button" class="btn btn-lg btn-block btn-google" id="btnGoogle"><i class="bi bi-google" aria-hidden="true"></i><span id="libelleGoogle">Continuer avec Google</span></button>
+                <div class="separateur-ou" role="separator"><span>ou avec votre e-mail</span></div>
 
                 <form class="pile" id="formulaire" role="tabpanel" aria-labelledby="ongletConnexion" novalidate>
                     <div class="form-group" data-champ="inscription" hidden>
@@ -100,13 +117,6 @@
                         <input class="input" id="champTelephone" name="telephone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+221 77 123 45 67" aria-describedby="aideTelephone erreurTelephone">
                         <p class="form-helper" id="aideTelephone">Pour recevoir les alertes par SMS ou WhatsApp et signaler depuis WhatsApp.</p>
                         <p class="form-error" id="erreurTelephone"></p>
-                    </div>
-                    <div class="form-group" data-champ="inscription" hidden>
-                        <label class="form-label" for="champRole"><i class="bi bi-person-badge" aria-hidden="true"></i> Type de compte</label>
-                        <select class="select" id="champRole" name="role">
-                            <option value="citoyen">Citoyen</option>
-                            <option value="agent_municipal">Agent municipal (code d'accès requis)</option>
-                        </select>
                     </div>
                     <div class="form-group" id="groupeCode" hidden>
                         <label class="form-label" for="champCode"><i class="bi bi-key" aria-hidden="true"></i> Code d'accès agent</label>
